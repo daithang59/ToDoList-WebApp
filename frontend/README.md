@@ -1,47 +1,16 @@
-# Frontend - Ứng dụng To-Do List
+# React + Vite
 
-## Mô tả
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-Đây là phần frontend của ứng dụng To-Do List được xây dựng bằng React.js. Phần này cung cấp giao diện người dùng để quản lý các nhiệm vụ (todos), bao gồm việc tạo, cập nhật, xóa và đánh dấu hoàn thành các nhiệm vụ.
+Currently, two official plugins are available:
 
-## Công nghệ sử dụng
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-- **React.js**: Thư viện JavaScript để xây dựng giao diện người dùng.
-- **Axios**: Thư viện để thực hiện các yêu cầu HTTP đến backend.
-- **CSS/Bootstrap**: Để styling và responsive design (có thể tùy chỉnh).
+## React Compiler
 
-## Cài đặt và chạy
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
-1. Đảm bảo bạn đã cài đặt Node.js và npm.
-2. Chạy lệnh sau để cài đặt các dependencies:
-   ```
-   npm install
-   ```
-3. Khởi động ứng dụng:
-   ```
-   npm start
-   ```
-   Ứng dụng sẽ chạy trên `http://localhost:3000` (mặc định).
+## Expanding the ESLint configuration
 
-## Cấu trúc thư mục
-
-- `src/`: Chứa mã nguồn chính.
-  - `components/`: Các component React.
-  - `services/`: Các hàm gọi API đến backend.
-  - `App.js`: Component chính.
-  - `index.js`: Điểm vào của ứng dụng.
-- `public/`: Chứa các tệp tĩnh như HTML, favicon, v.v.
-
-## API Endpoints
-
-Frontend giao tiếp với backend thông qua các API sau:
-
-- `GET /api/todos`: Lấy danh sách todos.
-- `POST /api/todos`: Tạo todo mới.
-- `PATCH /api/todos/:id`: Cập nhật todo.
-- `DELETE /api/todos/:id`: Xóa todo.
-
-## Lưu ý
-
-- Đảm bảo backend đang chạy trên `http://localhost:4000` để frontend có thể kết nối.
-- Có thể cấu hình URL backend trong file config nếu cần.
+If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
