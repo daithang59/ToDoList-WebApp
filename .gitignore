@@ -1,0 +1,102 @@
+# =========================================
+# 🌐 GENERAL (áp dụng cho toàn dự án)
+# =========================================
+# Node dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment variables
+.env
+.env.*
+!.env.example   # giữ file ví dụ cấu hình
+
+# Logs & temporary files
+logs/
+*.log
+*.out
+*.err
+.tmp/
+temp/
+.cache/
+
+# OS / Editor junk
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# =========================================
+# ⚙️ BACKEND
+# =========================================
+backend/node_modules/
+backend/dist/
+backend/build/
+backend/coverage/
+backend/.env
+
+# Express uploads, local storage
+backend/uploads/
+backend/temp/
+backend/logs/
+
+# PM2 / process manager
+.pids
+*.pid
+*.seed
+
+# SQLite / database temp (nếu có)
+backend/data/*.db
+backend/data/*.sqlite
+
+# =========================================
+# 💻 FRONTEND
+# =========================================
+frontend/node_modules/
+frontend/build/
+frontend/dist/
+frontend/.cache/
+frontend/coverage/
+frontend/.env
+# React / CRA specific
+frontend/.eslintcache
+frontend/.parcel-cache
+
+# Cypress / Jest test outputs
+frontend/cypress/screenshots/
+frontend/cypress/videos/
+frontend/jest/
+
+# Generated files
+frontend/public/assets/
+frontend/public/static/
+
+# =========================================
+# 🐳 DOCKER / DEPLOYMENT
+# =========================================
+# Docker
+Dockerfile
+Dockerfile.*
+docker-compose.yml
+docker-compose.*.yml
+
+# Build cache / runtime data
+*.tar
+*.tgz
+*.zip
+*.gz
+
+# =========================================
+# 🧪 MISC
+# =========================================
+# TypeScript build artifacts
+*.tsbuildinfo
+
+# Optional lock files (chọn giữ lại 1 loại)
+package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
