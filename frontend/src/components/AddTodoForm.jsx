@@ -1,38 +1,23 @@
-import { Button, Input, message } from "antd";
-import { useState } from "react";
+// src/components/AddTodoForm.jsx
 
-export default function AddTodoForm({ onAdd }) {
-  const [title, setTitle] = useState("");
-  const [loading, setLoading] = useState(false);
+import { Button, Input } from "antd";
 
-  async function handleAdd() {
-    const t = title.trim();
-    if (!t) return message.warning("Nhập tiêu đề công việc");
-    try {
-      setLoading(true);
-      await onAdd({ title: t });
-      setTitle("");
-    } catch (e) {
-      message.error(e?.response?.data?.message || "Không thể thêm công việc");
-    } finally {
-      setLoading(false);
-    }
-  }
-
+export default function AddTodoForm({ value, onChange, onAdd, loading }) {
   return (
-    <div className="control-lg flex gap-3 w-full">
+    <div className="add-todo-form">
       <Input
-        className="flex-1 min-w-0"
-        placeholder="Việc cần làm..."
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        onPressEnter={handleAdd}
+        placeholder="Thêm một công việc mới..."
+        size="large"
         allowClear
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        onPressEnter={onAdd}
       />
-      <Button
-        onClick={handleAdd}
+      <Button 
+        type="primary" 
+        size="large" 
+        onClick={onAdd}
         loading={loading}
-        className="btn-gradient shadow-sm px-5"
       >
         Thêm
       </Button>

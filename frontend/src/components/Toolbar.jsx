@@ -1,8 +1,6 @@
-import {
-  AppstoreTwoTone,
-  CheckCircleTwoTone,
-  ClockCircleTwoTone,
-} from "@ant-design/icons";
+// src/components/Toolbar/Toolbar.jsx
+
+import { CheckCircle2, History, LayoutGrid } from "lucide-react";
 import { Segmented, Select } from "antd";
 
 const sortOptions = [
@@ -18,56 +16,51 @@ export default function Toolbar({
   pageSize,
   onPageSizeChange,
 }) {
+  const iconSize = 16;
+  const iconStrokeWidth = 2;
+
   return (
-    <div className="control-lg w-full flex flex-col gap-3">
-      <div className="w-full">
-        <Segmented
-          block
-          size="large"
-          style={{ height: 44, width: "100%" }}
-          value={filter}
-          onChange={(val) => onFilterChange(val)}
-          options={[
-            {
-              label: (
-                <div className="flex items-center justify-center gap-1 px-1">
-                  <AppstoreTwoTone
-                    twoToneColor="#7C3AED"
-                    style={{ fontSize: "14px" }}
-                  />
-                  <span className="text-xs">Tất cả</span>
-                </div>
-              ),
-              value: "all",
-            },
-            {
-              label: (
-                <div className="flex items-center justify-center gap-1 px-1">
-                  <ClockCircleTwoTone
-                    twoToneColor="#6366F1"
-                    style={{ fontSize: "14px" }}
-                  />
-                  <span className="text-xs">Đang làm</span>
-                </div>
-              ),
-              value: "active",
-            },
-            {
-              label: (
-                <div className="flex items-center justify-center gap-1 px-1">
-                  <CheckCircleTwoTone
-                    twoToneColor="#22C55E"
-                    style={{ fontSize: "14px" }}
-                  />
-                  <span className="text-xs">Hoàn thành</span>
-                </div>
-              ),
-              value: "completed",
-            },
-          ]}
-        />
-      </div>
-      <div className="flex items-center gap-3">
+    // Class mới để quản lý layout dọc
+    <div className="toolbar-layout">
+      <Segmented
+        block
+        size="large"
+        value={filter}
+        onChange={(val) => onFilterChange(val)}
+        options={[
+          {
+            label: (
+              // Class mới để quản lý khoảng cách giữa icon và chữ
+              <div className="segmented-label">
+                <LayoutGrid size={iconSize} strokeWidth={iconStrokeWidth} />
+                <span>Tất cả</span>
+              </div>
+            ),
+            value: "all",
+          },
+          {
+            label: (
+              <div className="segmented-label">
+                <History size={iconSize} strokeWidth={iconStrokeWidth} />
+                <span>Đang làm</span>
+              </div>
+            ),
+            value: "active",
+          },
+          {
+            label: (
+              <div className="segmented-label">
+                <CheckCircle2 size={iconSize} strokeWidth={iconStrokeWidth} />
+                <span>Hoàn thành</span>
+              </div>
+            ),
+            value: "completed",
+          },
+        ]}
+      />
+      
+      {/* Nhóm các ô Select lại */}
+      <div className="toolbar-actions">
         <Select
           value={sort}
           onChange={onSortChange}

@@ -1,360 +1,208 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* src/index.css */
 
-/* ======= Themeable backgrounds ======= */
-html,
-body,
-#root {
-  height: 100%;
-  width: 100%;
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+
+:root {
+  --ac-primary: #22c55e;
+  --ac-secondary: #14b8a6;
+  --gradient-primary: linear-gradient(
+    to right,
+    var(--ac-primary),
+    var(--ac-secondary)
+  );
+  --glow-color: 150, 60%, 50%;
+  --bg-base: #f7f8fa;
+  --bg-elev-1: #ffffff;
+  --text-1: #1a202c;
+  --text-2: #4a5568;
+  --border: #e2e8f0;
+  --shadow-color: 220, 3%, 15%;
 }
+
+html[data-theme="dark"] {
+  --bg-base: #141824;
+  --bg-elev-1: #1c2232;
+  --text-1: #e4eaf3;
+  --text-2: #94a3b8;
+  --border: #323c52;
+  --shadow-color: 220, 50%, 2%;
+}
+
 body {
+  color: var(--text-1);
+  background-color: var(--bg-base);
+  font-family: "Poppins", sans-serif;
+}
+.theme-anim,
+.theme-anim * {
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease,
+    border-color 0.3s ease !important;
+}
+
+/* --- LAYOUT STYLES --- */
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 1.5rem;
+  height: 64px;
+  background-color: var(--bg-elev-1);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  box-shadow: 0 2px 8px hsla(var(--shadow-color), 0.1);
+}
+.header-title {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  gap: 0.75rem;
+}
+.header-title h1 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-1);
   margin: 0;
-  display: block;
-  background:
-    radial-gradient(
-      1200px 800px at 15% -10%,
-      rgba(20, 184, 166, 0.1),
-      transparent
-    ),
-    radial-gradient(
-      1000px 600px at 110% 20%,
-      rgba(6, 182, 212, 0.08),
-      transparent
-    ),
-    #f8fafc; /* light base */
-  font-family:
-    Inter,
-    ui-sans-serif,
-    system-ui,
-    -apple-system,
-    Segoe UI,
-    Roboto,
-    Helvetica,
-    Arial,
-    "Apple Color Emoji",
-    "Segoe UI Emoji";
 }
-html[data-theme="dark"] body {
-  background:
-    radial-gradient(
-      1200px 800px at 15% -10%,
-      rgba(20, 184, 166, 0.12),
-      transparent
-    ),
-    radial-gradient(
-      1000px 600px at 110% 20%,
-      rgba(6, 182, 212, 0.1),
-      transparent
-    ),
-    #0b1222; /* dark base */
+.app-logo-svg {
+  height: 36px;
+  width: auto;
+  object-fit: contain;
+}
+html[data-theme="dark"] .app-logo-svg text {
+  fill: var(--text-1) !important;
+}
+html[data-theme="light"] .app-logo-svg text {
+  fill: var(--text-1) !important;
 }
 
-/* Nút gradient Teal → Cyan */
-.btn-gradient {
-  background: linear-gradient(90deg, #14b8a6 0%, #06b6d4 100%);
-  color: #fff !important;
+.app-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  height: calc(100vh - 64px);
 }
-.btn-gradient:hover {
-  filter: brightness(1.06);
-}
-
-/* card đẹp (bo lớn, bóng mềm), không viền */
-.card {
-  border: 0 !important;
-  overflow: visible;
-  background: #fff;
-  border-radius: 18px;
-  box-shadow:
-    0 1px 2px rgba(15, 23, 42, 0.04),
-    0 10px 30px rgba(124, 58, 237, 0.06);
-}
-
-/* input pill nhẹ */
-.input-pill .ant-input {
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06);
-}
-
-/* nút gradient chủ đạo */
-.btn-gradient {
-  background: linear-gradient(90deg, #7c3aed 0%, #6366f1 100%);
-  color: #fff !important;
-}
-.btn-gradient:hover {
-  filter: brightness(1.05);
-}
-
-/* item hover viền phát sáng dịu */
-.item-hover {
+.app-sidebar {
+  background-color: var(--bg-elev-1);
+  border-right: 1px solid var(--border);
+  padding: 1.5rem;
+  overflow-y: auto;
   transition:
-    box-shadow 0.2s ease,
-    transform 0.1s ease;
+    background-color 0.3s ease,
+    border-color 0.3s ease;
 }
-.item-hover:hover {
-  box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.04),
-    0 8px 24px rgba(124, 58, 237, 0.12);
-  transform: translateY(-1px);
+.main-content {
+  overflow-y: auto;
 }
-/* ========== DARK THEME OVERRIDES (theo data-theme) ========== */
-html[data-theme="dark"] body {
-  background:
-    radial-gradient(
-      1200px 800px at 15% -10%,
-      rgba(20, 184, 166, 0.12),
-      transparent
-    ),
-    radial-gradient(
-      1000px 600px at 110% 20%,
-      rgba(6, 182, 212, 0.1),
-      transparent
-    ),
-    #0b1222; /* nền tối */
-  color: #e5e7eb;
-}
-
-/* Card tối: nền + bóng + viền nhẹ */
-html[data-theme="dark"] .card {
-  background: #0f172a; /* slate-900 */
-  box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.35),
-    0 10px 30px rgba(0, 0, 0, 0.35);
-  border: 1px solid #1f2937; /* slate-800 */
-}
-
-/* Input / Select / TextArea / Affix wrapper */
-html[data-theme="dark"] .ant-input,
-html[data-theme="dark"] .ant-input-affix-wrapper,
-html[data-theme="dark"] .ant-input-affix-wrapper-focused,
-html[data-theme="dark"] .ant-select-selector,
-html[data-theme="dark"] .ant-select-dropdown,
-html[data-theme="dark"] .ant-input-number,
-html[data-theme="dark"] .ant-textarea {
-  background: #0b1222 !important;
-  border-color: #1f2937 !important;
-  color: #e5e7eb !important;
-}
-html[data-theme="dark"] .ant-input::placeholder,
-html[data-theme="dark"] .ant-select-selection-placeholder {
-  color: #94a3b8 !important; /* slate-400 */
-}
-
-/* Segmented (filter All/Active/Completed) */
-html[data-theme="dark"] .ant-segmented {
-  background: #0b1222 !important;
-  border: 1px solid #1f2937;
-}
-html[data-theme="dark"] .ant-segmented-item-selected {
-  background: linear-gradient(
-    90deg,
-    #14b8a6 0%,
-    #06b6d4 100%
-  ) !important; /* teal→cyan */
-  color: #fff !important;
-  border: 0 !important;
-}
-
-/* Select dropdown items */
-html[data-theme="dark"] .ant-select-item {
-  color: #e5e7eb;
-}
-html[data-theme="dark"] .ant-select-item-option-active,
-html[data-theme="dark"] .ant-select-item-option-selected {
-  background: rgba(20, 184, 166, 0.12);
-}
-
-/* Empty / pagination màu chữ nhạt */
-html[data-theme="dark"] .ant-empty-description,
-html[data-theme="dark"] .ant-pagination {
-  color: #94a3b8;
-}
-
-/* Scrollbar (Chrome/Edge) tối nhẹ */
-html[data-theme="dark"] *::-webkit-scrollbar {
-  height: 10px;
-  width: 10px;
-}
-html[data-theme="dark"] *::-webkit-scrollbar-thumb {
-  background: #1f2937;
-  border-radius: 10px;
-}
-html[data-theme="dark"] *::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-/* Nút gradient vẫn nổi trong dark */
-html[data-theme="dark"] .btn-gradient {
-  background: linear-gradient(90deg, #14b8a6 0%, #06b6d4 100%) !important;
-  color: #0b1222 !important; /* chữ đậm trên nền sáng của nút */
-}
-/* ====== Transition mượt cho đổi theme/hover ====== */
-.theme-anim,
-.theme-anim body,
-.theme-anim .card,
-.theme-anim .ant-layout,
-.theme-anim .ant-input,
-.theme-anim .ant-input-affix-wrapper,
-.theme-anim .ant-select-selector,
-.theme-anim .ant-select-dropdown,
-.theme-anim .ant-segmented,
-.theme-anim .ant-modal,
-.theme-anim .ant-list,
-.theme-anim .ant-pagination,
-.theme-anim .ant-switch,
-.theme-anim .ant-switch-handle {
-  transition:
-    background-color 0.28s ease,
-    color 0.28s ease,
-    border-color 0.28s ease,
-    box-shadow 0.28s ease,
-    transform 0.22s ease !important;
-}
-
-/* Switch: bảo đảm tay cầm trượt mượt */
-.ant-switch .ant-switch-handle {
-  transition: transform 0.22s cubic-bezier(0.22, 0.61, 0.36, 1) !important;
-}
-.ant-switch {
-  transition:
-    background-color 0.22s ease,
-    box-shadow 0.22s ease !important;
-}
-
-/* Segmented to hơn & dễ bấm */
-.ant-segmented {
-  padding: 4px !important;
-}
-.ant-segmented-item {
-  padding: 10px 14px !important;
-  font-weight: 600;
-}
-
-/* ===== Transition mượt toàn site khi đổi theme/hover ===== */
-.theme-anim,
-.theme-anim body,
-.theme-anim .card,
-.theme-anim .ant-layout,
-.theme-anim .ant-input,
-.theme-anim .ant-input-affix-wrapper,
-.theme-anim .ant-select-selector,
-.theme-anim .ant-segmented,
-.theme-anim .ant-modal,
-.theme-anim .ant-list,
-.theme-anim .ant-pagination,
-.theme-anim .ant-switch,
-.theme-anim .ant-switch-handle {
-  transition:
-    background-color 0.35s ease,
-    color 0.35s ease,
-    border-color 0.35s ease,
-    box-shadow 0.35s ease,
-    transform 0.28s cubic-bezier(0.22, 0.61, 0.36, 1) !important;
-}
-
-/* Switch (toggle darkmode) – chậm & trượt mượt */
-.ant-switch {
-  transition:
-    background-color 0.28s ease,
-    box-shadow 0.28s ease !important;
-}
-.ant-switch .ant-switch-handle {
-  will-change: transform;
-  transition: transform 0.34s cubic-bezier(0.22, 0.61, 0.36, 1) !important; /* chậm hơn */
-}
-
-/* Segmented: tránh tràn & clip gradient, bo đều */
-.ant-segmented {
-  overflow: hidden;
-  border-radius: 16px;
-}
-.ant-segmented-item {
-  border-radius: 12px !important;
-}
-
-/* Chống chóng mặt nếu người dùng chọn giảm chuyển động */
-@media (prefers-reduced-motion: reduce) {
-  * {
-    transition: none !important;
-  }
-}
-
-/* Preset control lớn, đồng bộ Input/Select/Switch... */
-.control-lg .ant-input,
-.control-lg .ant-input-affix-wrapper,
-.control-lg .ant-select-selector {
-  height: 44px !important;
-  padding: 10px 14px !important;
-  border-radius: 14px !important;
-  display: flex;
-  align-items: center; /* vertical center */
-}
-
-.control-lg .ant-select-selection-item,
-.control-lg .ant-input input {
-  line-height: 24px;
-}
-
-/* Segmented to hơn, đều 3 cột, canh giữa */
-.control-lg .ant-segmented {
-  padding: 6px !important;
-}
-.control-lg .ant-segmented-item {
-  height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-}
-
-/* Dropdown Select rộng & canh đều */
-.control-lg .ant-select-dropdown {
-  min-width: 180px;
-}
-
-/* Switch: căn icon chuẩn, không đẩy lệch */
-.ant-switch {
-  display: inline-flex; /* tránh co kéo lạ */
-  align-items: center;
-}
-
-.ant-switch .ant-switch-inner {
-  position: absolute; /* để AntD tự animate */
-  inset: 0;
-  display: grid; /* center tuyệt đối */
-  place-items: center;
-  padding: 0 6px; /* đủ chỗ cho icon */
-  line-height: 0; /* tránh cộng line-height */
-}
-
-.ant-switch .ant-switch-inner > * {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.ant-switch .ant-switch-handle {
-  z-index: 1; /* handle luôn trên nền */
-  transition: transform 0.34s cubic-bezier(0.22, 0.61, 0.36, 1) !important;
-}
-
-/* Segmented: full width, không tràn nội dung */
-.ant-segmented {
-  width: 100% !important;
-  overflow: hidden; /* để phần selection & motion nằm gọn */
-  border-radius: 16px;
-}
-.ant-segmented .ant-segmented-item {
-  flex: 1 1 0 !important; /* chia đều 3 cột */
-  min-width: 0 !important; /* tránh tràn chữ */
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  border-radius: 12px !important;
-}
-.ant-segmented .ant-segmented-item-label {
+.container {
   width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+/* --- COMPONENT STYLES --- */
+.card {
+  background-color: var(--bg-elev-1);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow:
+    0 4px 6px -1px hsla(var(--shadow-color), 0.07),
+    0 2px 4px -2px hsla(var(--shadow-color), 0.07);
+}
+.add-todo-form {
+  display: flex;
+  gap: 0.75rem;
+}
+.add-todo-form .ant-input-wrapper {
+  flex-grow: 1;
+}
+.control-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+/* --- BỐ CỤC MỚI CHO THANH CÔNG CỤ --- */
+.toolbar-layout {
+  display: flex;
+  flex-direction: column; /* Xếp các phần tử theo chiều dọc */
+  gap: 1rem; /* Tạo khoảng cách 16px giữa thanh lọc và các ô select */
+}
+
+.toolbar-actions {
+  display: flex;
+  gap: 0.75rem; /* Giữ khoảng cách ngang cho các ô select */
+}
+
+.segmented-label {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 3px; /* Tạo khoảng cách 12px giữa icon và chữ */
+}
+/* --- KẾT THÚC BỐ CỤC MỚI --- */
+
+.todo-item {
+  padding: 1rem;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background-color: var(--bg-elev-1);
+  transition: all 0.2s ease-out;
+}
+.todo-item:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 10px 15px -3px hsla(var(--shadow-color), 0.1),
+    0 4px 6px -4px hsla(var(--shadow-color), 0.1);
+  border-color: var(--ac-primary);
+}
+.todo-title.completed {
+  color: var(--text-2);
+  text-decoration: line-through;
+}
+
+/* --- ANT DESIGN OVERRIDES --- */
+.ant-btn-primary {
+  background: var(--gradient-primary) !important;
+}
+.ant-segmented {
+  background-color: var(--bg-base) !important;
+  padding: 4px !important;
+  border-radius: 12px !important;
+}
+.ant-segmented .ant-segmented-item-selected {
+  background: var(--gradient-primary) !important;
+  border-radius: 8px !important;
+}
+.ant-segmented .ant-segmented-thumb {
+  background: var(--gradient-primary) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 12px hsla(var(--glow-color), 0.4);
+}
+.ant-segmented .ant-segmented-item-selected .ant-segmented-item-label {
+  color: white !important;
+}
+.ant-input-affix-wrapper:not(.ant-input-affix-wrapper-disabled):focus-within {
+  box-shadow: 0 0 0 3px hsla(var(--glow-color), 0.3) !important;
+  border-color: var(--ac-primary) !important;
+}
+.ant-empty-description {
+  color: var(--text-2) !important;
+}
+
+/* --- STYLE TINH CHỈNH CHO ICON LUCIDE --- */
+.ant-segmented-item-label .lucide {
+  vertical-align: -0.15em;
+}
+.ant-segmented-item-selected .ant-segmented-item-label .lucide {
+  color: white !important;
+}
+.ant-segmented-item-label .lucide {
+  color: var(--text-2);
+  transition: color 0.3s ease;
 }

@@ -1,3 +1,5 @@
+// src/main.jsx
+
 import { ConfigProvider, theme as antdTheme } from "antd";
 import "antd/dist/reset.css";
 import React, { useEffect, useMemo, useState } from "react";
@@ -6,7 +8,6 @@ import App from "./App.jsx";
 import "./index.css";
 
 function Root() {
-  // lấy mặc định từ localStorage hoặc media query
   const getInitial = () => {
     const saved = localStorage.getItem("theme:dark");
     if (saved !== null) return saved === "1";
@@ -19,51 +20,40 @@ function Root() {
 
   useEffect(() => {
     localStorage.setItem("theme:dark", isDark ? "1" : "0");
-    document.documentElement.setAttribute(
-      "data-theme",
-      isDark ? "dark" : "light"
-    );
+    document.documentElement.setAttribute("data-theme", isDark ? "dark" : "light");
   }, [isDark]);
 
-  // Palette mới: Teal → Cyan
   const themeCfg = useMemo(
     () => ({
-      // bật dark/light như bạn có sẵn
       algorithm: isDark ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
-      // Áp dụng size lớn cho toàn app
-      components: {
-        Switch: {
-          handleSize: 20,
-          trackHeight: 28,
-          trackMinWidth: 54,
-          innerMinMargin: 6,
-          innerMaxMargin: 6,
-        },
-        Button: { borderRadius: 14, controlHeight: 44 },
-        Input: { borderRadius: 14, controlHeight: 44 },
-        Select: { borderRadius: 12, controlHeight: 42 },
-        Tabs: { titleFontSize: 16 },
-        Pagination: { itemSize: 40 },
+      token: {
+        // --- ĐỔI MÀU CHỦ ĐẠO TẠI ĐÂY ---
+        colorPrimary: "#22c55e", 
+        colorTextBase: isDark ? "#E4EAF3" : "#1A202C",
+        colorBgBase: isDark ? "#141824" : "#F7F8FA",
+        borderRadius: 12,
+        fontFamily: "'Poppins', sans-serif",
       },
-      token: { fontSize: 16, borderRadius: 14, colorPrimary: "#14B8A6" },
+      components: {
+        Button: { controlHeight: 42 },
+        Input: { controlHeight: 42 },
+        Select: { controlHeight: 42 },
+      },
     }),
     [isDark]
   );
+  
+  const toggleDarkTheme = () => {
+    document.documentElement.classList.add("theme-anim");
+    setIsDark((v) => !v);
+    setTimeout(() => 
+      document.documentElement.classList.remove("theme-anim"), 350
+    );
+  };
 
   return (
-    <ConfigProvider theme={themeCfg} componentSize="large">
-      <App
-        isDark={isDark}
-        onToggleDark={() => {
-          document.documentElement.classList.add("theme-anim"); // <- bật transition mượt
-          setIsDark((v) => !v);
-          // tắt class sau 350ms
-          setTimeout(
-            () => document.documentElement.classList.remove("theme-anim"),
-            350
-          );
-        }}
-      />
+    <ConfigProvider theme={themeCfg}>
+      <App isDark={isDark} onToggleDark={toggleDarkTheme} />
     </ConfigProvider>
   );
 }

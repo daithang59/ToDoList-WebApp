@@ -31,7 +31,7 @@ export default function TodoItem({
   }
 
   return (
-    <div className="w-full card p-4 item-hover">
+    <div className="todo-item mb-3">
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3 min-w-0">
           <Checkbox
@@ -61,7 +61,7 @@ export default function TodoItem({
           ) : (
             <div className="flex items-center gap-2 min-w-0">
               <span
-                className={`text-[15px] truncate ${item.completed ? "line-through text-slate-400" : "text-slate-800"}`}
+                className={`todo-title truncate ${item.completed ? "completed" : ""}`}
               >
                 {item.title}
               </span>
