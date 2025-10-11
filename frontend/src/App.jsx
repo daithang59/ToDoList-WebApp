@@ -2,8 +2,9 @@
 
 import { Layout, message, Spin, Switch } from "antd";
 import { useEffect, useMemo, useState } from "react";
-import logoSvg from "./assets/logo.svg"; // Import logo SVG
+import logoSvg from "./assets/logo.svg";
 import AddTodoForm from "./components/AddTodoForm";
+import Chatbot from "./components/Chatbot/Chatbot"; // 1. IMPORT CHATBOT
 import EditTodoModal from "./components/EditTodoModal";
 import Sidebar from "./components/Sidebar/Sidebar";
 import TodoList from "./components/TodoList";
@@ -18,6 +19,7 @@ import {
 const { Header, Content } = Layout;
 
 export default function App({ isDark, onToggleDark }) {
+  // State quản lý toàn bộ ứng dụng
   const [todos, setTodos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [addLoading, setAddLoading] = useState(false);
@@ -29,11 +31,12 @@ export default function App({ isDark, onToggleDark }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [currentTodo, setCurrentTodo] = useState(null);
 
-  // --- CẬP NHẬT TITLE CỦA TAB TRÌNH DUYỆT ---
+  // Cập nhật title của tab trình duyệt
   useEffect(() => {
     document.title = "TodoList App";
-  }, []); // Mảng rỗng đảm bảo useEffect chỉ chạy 1 lần
+  }, []);
 
+  // Lấy dữ liệu khi component được mount
   useEffect(() => {
     (async () => {
       try {
@@ -48,6 +51,7 @@ export default function App({ isDark, onToggleDark }) {
     })();
   }, []);
 
+  // Lọc và sắp xếp danh sách công việc
   const filteredSorted = useMemo(() => {
     let list = [...todos];
     if (filter === "active") list = list.filter((t) => !t.completed);
@@ -60,11 +64,13 @@ export default function App({ isDark, onToggleDark }) {
     return list;
   }, [todos, filter, sort]);
 
+  // Phân trang cho danh sách đã lọc
   const paged = filteredSorted.slice(
     (page - 1) * pageSize,
     (page - 1) * pageSize + pageSize
   );
 
+  // Các hàm xử lý CRUD (Create, Read, Update, Delete)
   async function handleAdd() {
     const t = newTodoTitle.trim();
     if (!t) return message.warning("Vui lòng nhập tiêu đề công việc");
@@ -122,7 +128,6 @@ export default function App({ isDark, onToggleDark }) {
       <Header className="app-header">
         <div className="header-title">
           <img src={logoSvg} alt="To-do List Logo" className="app-logo-svg" />
-          {/* --- THÊM CHỮ TODOLIST VÀO HEADER --- */}
           <h1>TodoList</h1>
         </div>
         <Switch
@@ -186,6 +191,9 @@ export default function App({ isDark, onToggleDark }) {
         todo={currentTodo}
         onSave={saveModal}
       />
+
+      {/* 2. THÊM COMPONENT CHATBOT VÀO CUỐI */}
+      <Chatbot />
     </Layout>
   );
 }

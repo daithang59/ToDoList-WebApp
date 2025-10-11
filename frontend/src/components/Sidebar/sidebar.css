@@ -28,6 +28,13 @@
 
 .sidebar-menu .ant-menu-item {
   border-radius: 8px !important;
+  transition: all 0.2s ease-out !important;
+}
+
+.sidebar-menu .ant-menu-item:not(.ant-menu-item-selected):hover {
+  background-color: hsla(var(--glow-color), 0.05) !important;
+  color: var(--ac-primary) !important;
+  transform: translateX(5px);
 }
 
 .sidebar-menu .ant-menu-item-selected {
@@ -35,16 +42,21 @@
   color: var(--ac-primary) !important;
 }
 
-/* --- STYLE CHO FOOTER CỦA SIDEBAR --- */
+/* --- STYLE VÀ HIỆU ỨNG HOVER CHO FOOTER --- */
 .sidebar-footer {
-  /* Thuộc tính này sẽ tự động đẩy phần footer xuống dưới cùng */
   margin-top: auto;
-  
-  padding-top: 1.5rem;
+  padding: 0.75rem; /* Thêm padding xung quanh */
   border-top: 1px solid var(--border);
   display: flex;
   align-items: center;
-  gap: 0.75rem; /* 12px */
+  gap: 0.75rem;
+  border-radius: 12px; /* Bo góc để nền hover đẹp hơn */
+  transition: background-color 0.2s ease-out; /* Thêm transition */
+}
+
+.sidebar-footer:hover {
+  background-color: hsla(var(--glow-color), 0.05); /* Màu nền khi hover */
+  cursor: pointer; /* Đổi con trỏ chuột */
 }
 
 .author-avatar {

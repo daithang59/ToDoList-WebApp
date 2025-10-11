@@ -1,4 +1,7 @@
-import { Empty, List } from "antd";
+// src/components/TodoList.jsx
+
+import { Button, Checkbox, List, Pagination } from "antd";
+import { Edit, Trash2 } from "lucide-react"; // Import icon Lucide
 
 export default function TodoList({
   items,
@@ -11,31 +14,55 @@ export default function TodoList({
   onEditTitle,
   onOpenModal,
 }) {
-  if (total === 0) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <Empty description="Chưa có công việc nào" />
-      </div>
-    );
-  }
   return (
-    <div className="flex items-center justify-center h-[60vh]">
+    <div className="todo-list-wrapper card">
       <List
-        split={false}
-        className="!w-full"
+        locale={{ emptyText: "Chưa có công việc nào" }}
         dataSource={items}
-        renderItem={(t) => (
-          <List.Item className="!border-none !px-0 !py-0">
-            <TodoItem
-              item={t}
-              onToggle={(completed) => onToggle(t._id, completed)}
-              onDelete={() => onDelete(t._id)}
-              onEditTitle={(newTitle) => onEditTitle(t._id, newTitle)}
-              onOpenModal={() => onOpenModal(t)}
+        renderItem={(todo) => (
+          <List.Item
+            className="todo-item"
+            actions={[
+              <Button
+                type="text"
+                icon={<Edit size={18} />}
+                onClick={() => onOpenModal(todo)}
+                key="edit"
+                className="edit-btn" // Thêm class cho nút sửa
+              />,
+              <Button
+                type="text"
+                danger
+                icon={<Trash2 size={18} />}
+                onClick={() => onDelete(todo._id)}
+                key="delete"
+                className="delete-btn" // Thêm class cho nút xóa
+              />,
+            ]}
+          >
+            <Checkbox
+              checked={todo.completed}
+              onChange={() => onToggle(todo._id, !todo.completed)}
             />
+            <span
+              className={`todo-title ${todo.completed ? "completed" : ""}`}
+              style={{ flexGrow: 1, marginLeft: "10px" }}
+            >
+              {todo.title}
+            </span>
           </List.Item>
         )}
       />
+      {total > 0 && (
+        <Pagination
+          current={page}
+          pageSize={pageSize}
+          total={total}
+          onChange={onPageChange}
+          showSizeChanger={false}
+          style={{ textAlign: "right", marginTop: "1rem" }}
+        />
+      )}
     </div>
   );
 }

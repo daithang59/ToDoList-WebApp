@@ -9,12 +9,10 @@ import {
 import { Avatar, Menu } from "antd";
 import "./sidebar.css";
 
-// Hàm helper để tạo item cho Menu
 function getItem(label, key, icon, children, type) {
   return { key, icon, children, label, type };
 }
 
-// Dữ liệu mẫu cho các danh mục
 const projectItems = [
   getItem("Việc cá nhân", "proj-1"),
   getItem("Dự án công ty", "proj-2"),
@@ -40,16 +38,24 @@ export default function Sidebar() {
         <Menu
           mode="inline"
           defaultOpenKeys={["projects"]}
-          items={[getItem("Dự án", "projects", <ProjectOutlined />, projectItems)]}
+          items={[
+            getItem("Dự án", "projects", <ProjectOutlined />, projectItems),
+          ]}
           className="sidebar-menu"
         />
       </div>
 
-      {/* --- PHẦN THÔNG TIN TÁC GIẢ --- */}
       <div className="sidebar-footer">
-        <Avatar size="large" className="author-avatar">
-          T
-        </Avatar>
+        {/* --- BỌC AVATAR TRONG THẺ <a> ĐỂ GẮN LINK --- */}
+        <a
+          href="https://www.facebook.com/hldaithangg"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <Avatar size="large" className="author-avatar">
+            T
+          </Avatar>
+        </a>
         <div className="author-details">
           <span className="author-name">Huỳnh Lê Đại Thắng</span>
           <span className="author-meta">23521422 - UIT</span>
