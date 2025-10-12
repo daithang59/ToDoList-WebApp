@@ -126,20 +126,12 @@ html[data-theme="light"] .app-logo-svg text {
   padding: 1.5rem;
   margin-bottom: 1.5rem;
 }
-.toolbar-layout {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-.toolbar-actions {
-  display: flex;
-  gap: 0.75rem;
-}
+
 .segmented-label {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 5px; /* Tăng khoảng cách cho dễ nhìn */
 }
 .todo-item {
   padding: 1rem;
@@ -201,4 +193,163 @@ html[data-theme="light"] .app-logo-svg text {
   transition: color 0.3s ease;
 }
 
-/* Các style của chatbot đã được chuyển sang file chatbot.css */
+/* --- [BỔ SUNG] STYLING CHO TOOLBAR --- */
+.toolbar-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+.toolbar-search {
+  flex-grow: 1;
+  max-width: 450px;
+}
+.toolbar-options {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+/* --- [BỔ SUNG] RESPONSIVE CHO TOOLBAR --- */
+@media (max-width: 768px) {
+  .toolbar-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .toolbar-search {
+    max-width: 100%;
+  }
+}
+@media (max-width: 640px) {
+  .segmented-label > span {
+    display: none;
+  }
+  .segmented-label {
+    padding: 0 4px;
+  }
+  .toolbar-options {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .toolbar-options > * {
+    flex-grow: 1;
+  }
+}
+
+/* --- [CẬP NHẬT] GIAO DIỆN CHO TODOLIST --- */
+
+/* Bỏ padding mặc định của Ant Design List Item */
+.todo-item.ant-list-item {
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background-color: var(--bg-elev-1);
+  transition: all 0.2s ease-out;
+  margin-bottom: 1rem; /* Khoảng cách giữa các item */
+}
+
+.todo-item.ant-list-item:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 10px 15px -3px hsla(var(--shadow-color), 0.1),
+    0 4px 6px -4px hsla(var(--shadow-color), 0.1);
+  border-color: var(--ac-primary);
+}
+
+/* Layout chính cho mỗi mục todo (3 cột) */
+.todo-item-layout {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* Nút toggle check hoàn thành (Cột 1) */
+.todo-toggle {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background-color: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  transition: all 0.2s ease;
+}
+
+.todo-toggle:hover {
+  border-color: var(--ac-primary);
+}
+
+.todo-item.completed .todo-toggle {
+  background: var(--gradient-primary);
+  border-color: var(--ac-primary);
+}
+
+/* Nội dung chính (Cột 2) */
+.todo-content {
+  flex-grow: 1;
+  min-width: 0; /* Fix lỗi chữ dài không xuống hàng */
+}
+
+.todo-title {
+  color: var(--text-1);
+  transition: color 0.2s ease;
+}
+
+.todo-item.completed .todo-title {
+  color: var(--text-2);
+  text-decoration: line-through;
+}
+
+/* Các nút hành động (Cột 3) */
+.todo-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Tag "Đã xong" được làm nổi bật */
+.todo-status-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: hsla(var(--glow-color), 0.1);
+  color: var(--ac-primary);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.sub-line {
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+.deadline-chip.overdue {
+  color: #ef4444;
+  font-weight: 500;
+}
+.list-footer {
+  padding-top: 1rem;
+  text-align: right;
+  border-top: 1px solid var(--border);
+}
+
+/* Bỏ đường gạch chân giữa các List Item */
+.ant-list-split .ant-list-item {
+  border-block-end: none;
+}

@@ -1,0 +1,420 @@
+openapi: 3.0.3
+info:
+  title: To-Do List API
+  description: |
+    API cho ứng dụng quản lý công việc (To-Do List) được xây dựng bằng Node.js, Express và MongoDB.
+    
+    ## Tính năng chính
+    - Tạo, đọc, cập nhật, xóa todo
+    - Tìm kiếm todo theo tiêu đề và mô tả
+    - Lọc todo theo trạng thái hoàn thành
+    - Toggle trạng thái hoàn thành
+    - Xóa tất cả todo đã hoàn thành
+    - Lọc todo theo deadline
+    
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@todoapp.com
+servers:
+  - url: http://localhost:4000/api
+    description: Development server
+  - url: https://your-production-domain.com/api
+    description: Production server
+
+paths:
+  /health:
+    get:
+      tags:
+        - Health Check
+      summary: Kiểm tra trạng thái server
+      description: Endpoint để kiểm tra server có đang hoạt động không
+      responses:
+        '200':
+          description: Server hoạt động bình thường
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "OK"
+                  message:
+                    type: string
+                    example: "Server is healthy"
+
+  /todos:
+    get:
+      tags:
+        - Todos
+      summary: Lấy danh sách tất cả todos
+      description: Trả về danh sách tất cả todos được sắp xếp theo thời gian tạo (mới nhất trước)
+      responses:
+        '200':
+          description: Danh sách todos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Todo'
+        '500':
+          description: Lỗi server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      tags:
+        - Todos
+      summary: Tạo todo mới
+      description: Tạo một todo mới với title và description (optional)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+              properties:
+                title:
+                  type: string
+                  description: Tiêu đề todo
+                  example: "Học React.js"
+                description:
+                  type: string
+                  description: Mô tả chi tiết (không bắt buộc)
+                  example: "Hoàn thành khóa học React.js cơ bản"
+                deadline:
+                  type: string
+                  format: date-time
+                  description: Hạn chót (không bắt buộc)
+                  example: "2025-12-31T23:59:59.000Z"
+      responses:
+        '201':
+          description: Todo được tạo thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Todo'
+        '400':
+          description: Dữ liệu không hợp lệ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Lỗi server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /todos/{id}:
+    patch:
+      tags:
+        - Todos
+      summary: Cập nhật todo
+      description: Cập nhật thông tin todo (title, description, completed, deadline)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: ID của todo
+          example: "60f7b1b9b9b9b9b9b9b9b9b9"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: Tiêu đề mới
+                  example: "Học Node.js"
+                description:
+                  type: string
+                  description: Mô tả mới
+                  example: "Hoàn thành khóa học Node.js nâng cao"
+                completed:
+                  type: boolean
+                  description: Trạng thái hoàn thành
+                  example: true
+                deadline:
+                  type: string
+                  format: date-time
+                  description: Hạn chót mới
+                  example: "2026-01-31T23:59:59.000Z"
+      responses:
+        '200':
+          description: Todo được cập nhật thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Todo'
+        '404':
+          description: Không tìm thấy todo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Lỗi server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      tags:
+        - Todos
+      summary: Xóa todo
+      description: Xóa một todo theo ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: ID của todo cần xóa
+          example: "60f7b1b9b9b9b9b9b9b9b9b9"
+      responses:
+        '200':
+          description: Todo được xóa thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Todo deleted successfully"
+        '404':
+          description: Không tìm thấy todo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Lỗi server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /todos/{id}/toggle:
+    patch:
+      tags:
+        - Todos
+      summary: Toggle trạng thái hoàn thành
+      description: Đảo ngược trạng thái completed của todo (true -> false hoặc false -> true)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: ID của todo
+          example: "60f7b1b9b9b9b9b9b9b9b9b9"
+      responses:
+        '200':
+          description: Trạng thái được toggle thành công
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Todo'
+        '404':
+          description: Không tìm thấy todo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Lỗi server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /todos/search:
+    get:
+      tags:
+        - Todos
+      summary: Tìm kiếm todos
+      description: Tìm kiếm todos theo tiêu đề hoặc mô tả (không phân biệt hoa thường)
+      parameters:
+        - in: query
+          name: query
+          required: true
+          schema:
+            type: string
+          description: Từ khóa tìm kiếm
+          example: "React"
+      responses:
+        '200':
+          description: Kết quả tìm kiếm
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Todo'
+        '500':
+          description: Lỗi server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /todos/filter:
+    get:
+      tags:
+        - Todos
+      summary: Lọc todos theo trạng thái
+      description: Lọc todos theo trạng thái hoàn thành (completed = true/false)
+      parameters:
+        - in: query
+          name: completed
+          required: true
+          schema:
+            type: string
+            enum: ['true', 'false']
+          description: Trạng thái hoàn thành
+          example: "true"
+      responses:
+        '200':
+          description: Danh sách todos được lọc
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Todo'
+        '500':
+          description: Lỗi server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /todos/clear/completed:
+    delete:
+      tags:
+        - Todos
+      summary: Xóa tất cả todos đã hoàn thành
+      description: Xóa tất cả todos có trạng thái completed = true
+      responses:
+        '200':
+          description: Xóa thành công
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deletedCount:
+                    type: integer
+                    description: Số lượng todos đã xóa
+                    example: 3
+        '500':
+          description: Lỗi server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /todos/due:
+    get:
+      tags:
+        - Todos
+      summary: Lọc todos theo deadline
+      description: Lấy danh sách todos có deadline trước hoặc bằng ngày chỉ định
+      parameters:
+        - in: query
+          name: before
+          required: true
+          schema:
+            type: string
+            format: date
+          description: Ngày deadline (YYYY-MM-DD)
+          example: "2025-12-31"
+      responses:
+        '200':
+          description: Danh sách todos theo deadline
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Todo'
+        '500':
+          description: Lỗi server
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    Todo:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: ID duy nhất của todo
+          example: "60f7b1b9b9b9b9b9b9b9b9b9"
+        title:
+          type: string
+          description: Tiêu đề todo
+          example: "Học React.js"
+        description:
+          type: string
+          description: Mô tả chi tiết
+          example: "Hoàn thành khóa học React.js cơ bản"
+        completed:
+          type: boolean
+          description: Trạng thái hoàn thành
+          example: false
+        deadline:
+          type: string
+          format: date-time
+          nullable: true
+          description: Hạn chót
+          example: "2025-12-31T23:59:59.000Z"
+        createdAt:
+          type: string
+          format: date-time
+          description: Thời gian tạo
+          example: "2025-10-12T10:30:00.000Z"
+        updatedAt:
+          type: string
+          format: date-time
+          description: Thời gian cập nhật cuối
+          example: "2025-10-12T11:15:00.000Z"
+      required:
+        - _id
+        - title
+        - completed
+        - createdAt
+        - updatedAt
+
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Thông báo lỗi
+          example: "Title is required"
+      required:
+        - message
+
+tags:
+  - name: Health Check
+    description: Kiểm tra trạng thái server
+  - name: Todos
+    description: Quản lý todos (tạo, đọc, cập nhật, xóa, tìm kiếm, lọc)

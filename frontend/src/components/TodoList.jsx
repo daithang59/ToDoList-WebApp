@@ -1,7 +1,6 @@
 // src/components/TodoList.jsx
-
-import { Button, Checkbox, List, Pagination } from "antd";
-import { Edit, Trash2 } from "lucide-react"; // Import icon Lucide
+import { Button, List, Pagination, Tooltip, Typography } from "antd";
+import { Check, Pencil, Trash2 } from "lucide-react"; // Thêm icon Pencil và Check
 
 export default function TodoList({
   items,
@@ -11,57 +10,97 @@ export default function TodoList({
   onPageChange,
   onToggle,
   onDelete,
-  onEditTitle,
-  onOpenModal,
+  onOpenModal, // onEditTitle không còn dùng để sửa inline
 }) {
   return (
-    <div className="todo-list-wrapper card">
+    <div className="todo-list-wrapper">
       <List
-        locale={{ emptyText: "Chưa có công việc nào" }}
         dataSource={items}
+        locale={{ emptyText: "Chưa có công việc nào" }}
         renderItem={(todo) => (
           <List.Item
-            className="todo-item"
-            actions={[
-              <Button
-                type="text"
-                icon={<Edit size={18} />}
-                onClick={() => onOpenModal(todo)}
-                key="edit"
-                className="edit-btn" // Thêm class cho nút sửa
-              />,
-              <Button
-                type="text"
-                danger
-                icon={<Trash2 size={18} />}
-                onClick={() => onDelete(todo._id)}
-                key="delete"
-                className="delete-btn" // Thêm class cho nút xóa
-              />,
-            ]}
+            className={`todo-item ${todo.completed ? "completed" : ""}`}
           >
-            <Checkbox
-              checked={todo.completed}
-              onChange={() => onToggle(todo._id, !todo.completed)}
-            />
-            <span
-              className={`todo-title ${todo.completed ? "completed" : ""}`}
-              style={{ flexGrow: 1, marginLeft: "10px" }}
-            >
-              {todo.title}
-            </span>
+            {/* Cấu trúc layout 3 cột mới cho mỗi todo item */}
+            <div className="todo-item-layout">
+              {/* CỘT 1: Nút Toggle mới, nổi bật hơn */}
+              <Tooltip
+                title={
+                  todo.completed ? "Đánh dấu chưa xong" : "Đánh dấu đã xong"
+                }
+              >
+                <button
+                  className="todo-toggle"
+                  onClick={() => onToggle(todo._id, !todo.completed)}
+                >
+                  {/* Icon check chỉ hiện khi đã completed */}
+                  {todo.completed && <Check size={16} strokeWidth={3} />}
+                </button>
+              </Tooltip>
+
+              {/* CỘT 2: Nội dung chính (Tiêu đề, deadline, tag) */}
+              <div className="todo-content">
+                <Typography.Paragraph
+                  className="todo-title"
+                  style={{ marginBottom: 0 }}
+                  // Tắt chế độ sửa inline, chuyển qua modal
+                  editable={false}
+                >
+                  {todo.title}
+                </Typography.Paragraph>
+
+                <div className="sub-line">
+                  {todo.deadline && (
+                    <span
+                      className={`deadline-chip ${new Date(todo.deadline) < new Date() && !todo.completed ? "overdue" : ""}`}
+                    >
+                      Hạn chót: {new Date(todo.deadline).toLocaleDateString()}
+                    </span>
+                  )}
+                  {/* Tag "Đã xong" được làm nổi bật hơn */}
+                  {todo.completed && (
+                    <div className="todo-status-tag">
+                      <Check size={12} strokeWidth={3} />
+                      <span>Đã xong</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* CỘT 3: Các nút hành động */}
+              <div className="todo-actions">
+                <Tooltip title="Sửa công việc">
+                  <Button
+                    onClick={() => onOpenModal(todo)} // Nút edit sẽ mở modal
+                    size="small"
+                    type="text"
+                    icon={<Pencil size={16} />}
+                  />
+                </Tooltip>
+                <Tooltip title="Xóa">
+                  <Button
+                    danger
+                    onClick={() => onDelete(todo._id)}
+                    size="small"
+                    type="text"
+                    icon={<Trash2 size={16} />}
+                  />
+                </Tooltip>
+              </div>
+            </div>
           </List.Item>
         )}
       />
-      {total > 0 && (
-        <Pagination
-          current={page}
-          pageSize={pageSize}
-          total={total}
-          onChange={onPageChange}
-          showSizeChanger={false}
-          style={{ textAlign: "right", marginTop: "1rem" }}
-        />
+      {total > pageSize && (
+        <div className="list-footer">
+          <Pagination
+            current={page}
+            onChange={onPageChange}
+            pageSize={pageSize}
+            total={total}
+            showSizeChanger={false}
+          />
+        </div>
       )}
     </div>
   );

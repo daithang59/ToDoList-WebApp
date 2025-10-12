@@ -1,7 +1,7 @@
 // src/components/Toolbar/Toolbar.jsx
 
-import { CheckCircle2, History, LayoutGrid } from "lucide-react";
-import { Segmented, Select } from "antd";
+import { Button, Input, Segmented, Select } from "antd";
+import { CheckCircle2, History, LayoutGrid, Trash2 } from "lucide-react";
 
 const sortOptions = [
   { value: "newest", label: "Mới nhất" },
@@ -15,22 +15,24 @@ export default function Toolbar({
   onSortChange,
   pageSize,
   onPageSizeChange,
+  query,
+  onSearch,
+  onClearCompleted,
 }) {
   const iconSize = 16;
   const iconStrokeWidth = 2;
 
   return (
-    // Class mới để quản lý layout dọc
     <div className="toolbar-layout">
+      {/* Hàng 1: Thanh Filter */}
       <Segmented
         block
         size="large"
         value={filter}
-        onChange={(val) => onFilterChange(val)}
+        onChange={onFilterChange}
         options={[
           {
             label: (
-              // Class mới để quản lý khoảng cách giữa icon và chữ
               <div className="segmented-label">
                 <LayoutGrid size={iconSize} strokeWidth={iconStrokeWidth} />
                 <span>Tất cả</span>
@@ -58,24 +60,40 @@ export default function Toolbar({
           },
         ]}
       />
-      
-      {/* Nhóm các ô Select lại */}
+
+      {/* Hàng 2: Thanh Actions (Tìm kiếm, Sắp xếp, Xóa...) */}
       <div className="toolbar-actions">
-        <Select
-          value={sort}
-          onChange={onSortChange}
-          options={sortOptions}
-          style={{ minWidth: 150 }}
+        {/* Khối bên trái: Ô tìm kiếm */}
+        <Input.Search
+          placeholder="Tìm kiếm công việc..."
+          className="toolbar-search"
+          value={query}
+          onChange={(e) => onSearch(e.target.value)}
+          onSearch={onSearch}
+          allowClear
         />
-        <Select
-          value={pageSize}
-          onChange={onPageSizeChange}
-          options={[5, 8, 10, 15].map((n) => ({
-            value: n,
-            label: `${n}/trang`,
-          }))}
-          style={{ minWidth: 130 }}
-        />
+
+        {/* Khối bên phải: Các tùy chọn */}
+        <div className="toolbar-options">
+          <Select
+            value={sort}
+            onChange={onSortChange}
+            options={sortOptions}
+            style={{ minWidth: 120 }}
+          />
+          <Select
+            value={pageSize}
+            onChange={onPageSizeChange}
+            options={[5, 8, 10, 15].map((n) => ({
+              value: n,
+              label: `${n}/trang`,
+            }))}
+            style={{ minWidth: 110 }}
+          />
+          <Button danger icon={<Trash2 size={16} />} onClick={onClearCompleted}>
+            Xoá đã hoàn thành
+          </Button>
+        </div>
       </div>
     </div>
   );

@@ -20,17 +20,20 @@ function Root() {
 
   useEffect(() => {
     localStorage.setItem("theme:dark", isDark ? "1" : "0");
-    document.documentElement.setAttribute("data-theme", isDark ? "dark" : "light");
+    document.documentElement.setAttribute(
+      "data-theme",
+      isDark ? "dark" : "light"
+    );
   }, [isDark]);
 
   const themeCfg = useMemo(
     () => ({
       algorithm: isDark ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
       token: {
-        // --- ĐỔI MÀU CHỦ ĐẠO TẠI ĐÂY ---
-        colorPrimary: "#22c55e", 
-        colorTextBase: isDark ? "#E4EAF3" : "#1A202C",
-        colorBgBase: isDark ? "#141824" : "#F7F8FA",
+        // --- CÁC MÀU SẮC NÀY ĐÃ KHỚP VỚI index.css ---
+        colorPrimary: "#22c55e", // Màu xanh lá cây chủ đạo
+        colorTextBase: isDark ? "#E4EAF3" : "#1A202C", // Màu chữ chính
+        colorBgBase: isDark ? "#141824" : "#F7F8FA", // Màu nền chính
         borderRadius: 12,
         fontFamily: "'Poppins', sans-serif",
       },
@@ -42,12 +45,13 @@ function Root() {
     }),
     [isDark]
   );
-  
+
   const toggleDarkTheme = () => {
     document.documentElement.classList.add("theme-anim");
     setIsDark((v) => !v);
-    setTimeout(() => 
-      document.documentElement.classList.remove("theme-anim"), 350
+    setTimeout(
+      () => document.documentElement.classList.remove("theme-anim"),
+      350
     );
   };
 
