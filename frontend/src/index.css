@@ -249,6 +249,8 @@ body {
 .todo-title {
   color: var(--text-1);
   transition: color 0.2s ease;
+  font-size: 15px;
+  font-weight: 400;
 }
 .todo-item.completed .todo-title {
   color: var(--text-2);
@@ -340,4 +342,13 @@ body {
     opacity: 1;
     pointer-events: auto;
   }
+}
+
+.todo-description {
+  color: var(--text-2);
+  font-size: 13px;
+  margin-top: 4px !important;
+  margin-bottom: 8px !important;
+  padding-left: 2px; /* Căn lề với title */
+  line-height: 1.5;
 }

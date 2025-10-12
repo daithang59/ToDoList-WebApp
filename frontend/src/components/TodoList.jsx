@@ -48,7 +48,11 @@ export default function TodoList({
                 >
                   {todo.title}
                 </Typography.Paragraph>
-
+                {todo.description && (
+                  <Typography.Paragraph className="todo-description">
+                    {todo.description}
+                  </Typography.Paragraph>
+                )}
                 <div className="sub-line">
                   {todo.deadline && (
                     <span
