@@ -7,7 +7,7 @@ import "./chatbot.css";
 
 const initialMessage = {
   id: 1,
-  text: "Chào bạn! Tôi có thể giúp gì cho bạn hôm nay?",
+  text: "Hello! How can I help you today?",
   sender: "ai",
 };
 
@@ -42,7 +42,7 @@ export default function Chatbot() {
     setTimeout(() => {
       const aiResponse = {
         id: Date.now() + 1,
-        text: "Cảm ơn bạn đã nhắn tin! Tính năng này đang được phát triển và sẽ sớm ra mắt.",
+        text: "Thank you for your message! This feature is under development and will be available soon.",
         sender: "ai",
       };
       setMessages((prev) => [...prev, aiResponse]);
@@ -91,7 +91,7 @@ export default function Chatbot() {
 
           <div className="chat-footer">
             <Input
-              placeholder="Nhập tin nhắn của bạn..."
+              placeholder="Type your message..."
               size="large"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}

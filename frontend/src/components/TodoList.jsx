@@ -17,7 +17,7 @@ export default function TodoList({
     <div className="todo-list-wrapper">
       <List
         dataSource={items}
-        locale={{ emptyText: "Chưa có công việc nào" }}
+        locale={{ emptyText: "No todos yet" }}
         renderItem={(todo) => (
           <List.Item
             className={`todo-item ${todo.completed ? "completed" : ""} ${todo.important ? "important" : ""}`}
@@ -25,7 +25,7 @@ export default function TodoList({
             <div className="todo-item-layout">
               <Tooltip
                 title={
-                  todo.completed ? "Đánh dấu chưa xong" : "Đánh dấu đã xong"
+                  todo.completed ? "Mark as incomplete" : "Mark as complete"
                 }
               >
                 <button
@@ -55,13 +55,13 @@ export default function TodoList({
                     <span
                       className={`deadline-chip ${new Date(todo.deadline) < new Date() && !todo.completed ? "overdue" : ""}`}
                     >
-                      Hạn chót: {new Date(todo.deadline).toLocaleDateString()}
+                      Deadline: {new Date(todo.deadline).toLocaleDateString()}
                     </span>
                   )}
                   {todo.completed && (
                     <div className="todo-status-tag">
                       <Check size={12} strokeWidth={3} />
-                      <span>Đã xong</span>
+                      <span>Done</span>
                     </div>
                   )}
                 </div>
@@ -72,8 +72,8 @@ export default function TodoList({
                 <Tooltip
                   title={
                     todo.important
-                      ? "Bỏ đánh dấu quan trọng"
-                      : "Đánh dấu quan trọng"
+                      ? "Remove from important"
+                      : "Mark as important"
                   }
                 >
                   <Button
@@ -84,7 +84,7 @@ export default function TodoList({
                     icon={<Star size={16} />}
                   />
                 </Tooltip>
-                <Tooltip title="Sửa công việc">
+                <Tooltip title="Edit todo">
                   <Button
                     onClick={() => onOpenModal(todo)}
                     size="small"
@@ -92,7 +92,7 @@ export default function TodoList({
                     icon={<Pencil size={16} />}
                   />
                 </Tooltip>
-                <Tooltip title="Xóa">
+                <Tooltip title="Delete">
                   <Button
                     danger
                     onClick={() => onDelete(todo._id)}

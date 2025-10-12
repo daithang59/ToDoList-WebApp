@@ -14,15 +14,15 @@ function getItem(label, key, icon, children, type) {
 }
 
 const projectItems = [
-  getItem("Việc cá nhân", "proj-1"),
-  getItem("Dự án công ty", "proj-2"),
-  getItem("Kế hoạch mua nhà", "proj-3"),
+  getItem("Personal Tasks", "proj-1"),
+  getItem("Work Project", "proj-2"),
+  getItem("House Buying Plan", "proj-3"),
 ];
 
 const quickFilterItems = [
-  getItem("Tất cả", "filter-all", <AppstoreOutlined />),
-  getItem("Hôm nay", "filter-today", <CalendarOutlined />),
-  getItem("Quan trọng", "filter-important", <StarOutlined />),
+  getItem("All", "filter-all", <AppstoreOutlined />),
+  getItem("Today", "filter-today", <CalendarOutlined />),
+  getItem("Important", "filter-important", <StarOutlined />),
 ];
 
 export default function Sidebar({ onMenuItemClick }) {
@@ -40,7 +40,7 @@ export default function Sidebar({ onMenuItemClick }) {
           mode="inline"
           defaultOpenKeys={["projects"]}
           items={[
-            getItem("Dự án", "projects", <ProjectOutlined />, projectItems),
+            getItem("Projects", "projects", <ProjectOutlined />, projectItems),
           ]}
           className="sidebar-menu"
           onClick={onMenuItemClick}
@@ -59,7 +59,7 @@ export default function Sidebar({ onMenuItemClick }) {
           </Avatar>
         </a>
         <div className="author-details">
-          <span className="author-name">Huỳnh Lê Đại Thắng</span>
+          <span className="author-name">Huynh Le Dai Thang</span>
           <span className="author-meta">23521422 - UIT</span>
         </div>
       </div>

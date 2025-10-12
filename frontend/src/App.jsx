@@ -63,14 +63,14 @@ export default function MainApp({ isDark, onToggleDark }) {
             break;
           }
         } catch (error) {
-          console.error(`Lần thử ${i + 1} thất bại:`, error);
+          console.error(`Attempt ${i + 1} failed:`, error);
           if (i < maxRetries - 1) {
             await sleep(2000);
           }
         }
       }
       if (!success) {
-        message.error("Không tải được danh sách công việc sau nhiều lần thử.");
+        message.error("Unable to load todo list after multiple attempts.");
         setTodos([]);
       }
       setLoading(false);
@@ -83,9 +83,9 @@ export default function MainApp({ isDark, onToggleDark }) {
     try {
       const updated = await updateTodo(id, { important });
       setTodos((prev) => prev.map((x) => (x._id === id ? updated : x)));
-      message.success(`Đã cập nhật mức độ quan trọng!`);
+      message.success(`Updated importance level!`);
     } catch {
-      message.error("Không thể cập nhật mức độ quan trọng");
+      message.error("Unable to update importance level");
     }
   }
 
@@ -136,15 +136,15 @@ export default function MainApp({ isDark, onToggleDark }) {
 
   async function handleAdd() {
     const t = newTitle.trim();
-    if (!t) return message.warning("Vui lòng nhập tiêu đề công việc");
+    if (!t) return message.warning("Please enter a todo title");
     try {
       setAddLoading(true);
       const created = await createTodo({ title: t });
       setTodos((prev) => [created, ...prev]);
       setNewTitle("");
-      message.success("Đã thêm công việc thành công!");
+      message.success("Todo added successfully!");
     } catch (e) {
-      message.error(e?.response?.data?.message || "Không thể thêm công việc");
+      message.error(e?.response?.data?.message || "Unable to add todo");
     } finally {
       setAddLoading(false);
     }
@@ -153,18 +153,18 @@ export default function MainApp({ isDark, onToggleDark }) {
     try {
       const updated = await updateTodo(id, { completed });
       setTodos((prev) => prev.map((x) => (x._id === id ? updated : x)));
-      message.success(`Đã cập nhật trạng thái công việc!`);
+      message.success(`Todo status updated!`);
     } catch {
-      message.error("Không thể cập nhật trạng thái");
+      message.error("Unable to update status");
     }
   }
   async function handleDelete(id) {
     try {
       await deleteTodo(id);
       setTodos((prev) => prev.filter((x) => x._id !== id));
-      message.success("Đã xóa công việc thành công!");
+      message.success("Todo deleted successfully!");
     } catch {
-      message.error("Không thể xóa công việc");
+      message.error("Unable to delete todo");
     }
   }
   function openModal(todo) {
@@ -183,9 +183,9 @@ export default function MainApp({ isDark, onToggleDark }) {
         prev.map((x) => (x._id === currentTodo._id ? updated : x))
       );
       closeModal();
-      message.success("Đã cập nhật công việc thành công!");
+      message.success("Todo updated successfully!");
     } catch {
-      message.error("Không thể cập nhật công việc");
+      message.error("Unable to update todo");
     }
   }
   async function handleFilterChange(val) {
@@ -196,9 +196,9 @@ export default function MainApp({ isDark, onToggleDark }) {
     try {
       await clearCompleted();
       setTodos((prev) => prev.filter((t) => !t.completed));
-      message.success("Đã dọn dẹp các công việc hoàn thành!");
+      message.success("Completed todos cleared!");
     } catch {
-      message.error("Thao tác dọn dẹp thất bại");
+      message.error("Clear operation failed");
     }
   }
 
@@ -219,8 +219,8 @@ export default function MainApp({ isDark, onToggleDark }) {
           <Switch
             checked={isDark}
             onChange={onToggleDark}
-            checkedChildren="TỐI"
-            unCheckedChildren="SÁNG"
+            checkedChildren="DARK"
+            unCheckedChildren="LIGHT"
           />
         </div>
       </Header>

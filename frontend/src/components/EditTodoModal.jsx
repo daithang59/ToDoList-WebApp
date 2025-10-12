@@ -1,7 +1,7 @@
 // src/components/EditTodoModal.jsx
-import { Modal, Input, DatePicker } from "antd";
-import { useState, useEffect } from "react";
+import { DatePicker, Input, Modal } from "antd";
 import dayjs from "dayjs";
+import { useEffect, useState } from "react";
 
 const { TextArea } = Input;
 
@@ -16,7 +16,7 @@ export default function EditTodoModal({ open, onClose, todo, onSave }) {
 
   return (
     <Modal
-      title="Chỉnh sửa công việc"
+      title="Edit Todo"
       open={open}
       onOk={() =>
         onSave({
@@ -25,8 +25,8 @@ export default function EditTodoModal({ open, onClose, todo, onSave }) {
         })
       }
       onCancel={onClose}
-      okText="Lưu"
-      cancelText="Hủy"
+      okText="Save"
+      cancelText="Cancel"
       destroyOnClose
     >
       <DatePicker
@@ -39,7 +39,7 @@ export default function EditTodoModal({ open, onClose, todo, onSave }) {
         value={desc}
         onChange={(e) => setDesc(e.target.value)}
         autoSize={{ minRows: 4 }}
-        placeholder="Thêm mô tả/ghi chú..."
+        placeholder="Add description/notes..."
       />
     </Modal>
   );

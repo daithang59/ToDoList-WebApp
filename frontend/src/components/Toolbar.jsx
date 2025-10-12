@@ -1,11 +1,11 @@
 // src/components/Toolbar/Toolbar.jsx
 
 import { Button, Input, Segmented, Select } from "antd";
-import { CheckCircle2, History, LayoutGrid, Trash2 } from "lucide-react";
+import { CheckCircle2, History, LayoutGrid, Star, Trash2 } from "lucide-react";
 
 const sortOptions = [
-  { value: "newest", label: "Mới nhất" },
-  { value: "oldest", label: "Cũ nhất" },
+  { value: "newest", label: "Newest" },
+  { value: "oldest", label: "Oldest" },
 ];
 
 export default function Toolbar({
@@ -35,7 +35,7 @@ export default function Toolbar({
             label: (
               <div className="segmented-label">
                 <LayoutGrid size={iconSize} strokeWidth={iconStrokeWidth} />
-                <span>Tất cả</span>
+                <span>All</span>
               </div>
             ),
             value: "all",
@@ -44,7 +44,7 @@ export default function Toolbar({
             label: (
               <div className="segmented-label">
                 <History size={iconSize} strokeWidth={iconStrokeWidth} />
-                <span>Đang làm</span>
+                <span>Active</span>
               </div>
             ),
             value: "active",
@@ -53,10 +53,19 @@ export default function Toolbar({
             label: (
               <div className="segmented-label">
                 <CheckCircle2 size={iconSize} strokeWidth={iconStrokeWidth} />
-                <span>Hoàn thành</span>
+                <span>Completed</span>
               </div>
             ),
             value: "completed",
+          },
+          {
+            label: (
+              <div className="segmented-label">
+                <Star size={iconSize} strokeWidth={iconStrokeWidth} />
+                <span>Important</span>
+              </div>
+            ),
+            value: "important",
           },
         ]}
       />
@@ -65,7 +74,7 @@ export default function Toolbar({
       <div className="toolbar-actions">
         {/* Khối bên trái: Ô tìm kiếm */}
         <Input.Search
-          placeholder="Tìm kiếm công việc..."
+          placeholder="Search todos..."
           className="toolbar-search"
           value={query}
           onChange={(e) => onSearch(e.target.value)}
@@ -86,12 +95,12 @@ export default function Toolbar({
             onChange={onPageSizeChange}
             options={[5, 8, 10, 15].map((n) => ({
               value: n,
-              label: `${n}/trang`,
+              label: `${n}/page`,
             }))}
             style={{ minWidth: 110 }}
           />
           <Button danger icon={<Trash2 size={16} />} onClick={onClearCompleted}>
-            Xoá đã hoàn thành
+            Clear Completed
           </Button>
         </div>
       </div>

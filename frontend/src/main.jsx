@@ -1,10 +1,10 @@
 // src/main.jsx
 
-import { theme as antdTheme, App, ConfigProvider, message } from "antd"; // [THAY ĐỔI] Import thêm 'App'
+import { theme as antdTheme, App, ConfigProvider, message } from "antd"; // [CHANGED] Import additional 'App'
 import "antd/dist/reset.css";
 import React, { useEffect, useMemo, useState } from "react";
 import ReactDOM from "react-dom/client";
-import MainApp from "./App.jsx"; // [THAY ĐỔI] Đổi tên import App thành MainApp để tránh trùng lặp
+import MainApp from "./App.jsx"; // [CHANGED] Rename import App to MainApp to avoid conflicts
 import "./index.css";
 import "./styles/custom-antd.css";
 
@@ -63,7 +63,7 @@ function Root() {
 
   return (
     <ConfigProvider theme={themeCfg}>
-      {/* [THAY ĐỔI] Bọc ứng dụng của bạn trong <App> của Ant Design */}
+      {/* [CHANGED] Wrap your application in Ant Design's <App> */}
       <App>
         <MainApp isDark={isDark} onToggleDark={toggleDarkTheme} />
       </App>
