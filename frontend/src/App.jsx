@@ -5,6 +5,7 @@ import { Menu } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import logo from "./assets/logo.svg";
 import AddTodoForm from "./components/AddTodoForm.jsx";
+import Chatbot from "./components/Chatbot/Chatbot.jsx";
 import EditTodoModal from "./components/EditTodoModal.jsx";
 import Sidebar from "./components/Sidebar/Sidebar.jsx";
 import TodoList from "./components/TodoList.jsx";
@@ -19,6 +20,7 @@ import {
 
 const { Header, Content } = Layout;
 
+// Hàm delay để chờ giữa các lần thử lại
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export default function MainApp({ isDark, onToggleDark }) {
@@ -37,6 +39,7 @@ export default function MainApp({ isDark, onToggleDark }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [currentTodo, setCurrentTodo] = useState(null);
 
+  // useEffect để xử lý responsive cho sidebar
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth > 992) {
@@ -45,11 +48,12 @@ export default function MainApp({ isDark, onToggleDark }) {
         setSidebarVisible(false);
       }
     };
-    handleResize();
+    handleResize(); // Chạy lần đầu
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // useEffect fetch dữ liệu với cơ chế tự động thử lại
   useEffect(() => {
     const fetchWithRetry = async () => {
       let success = false;
@@ -63,14 +67,14 @@ export default function MainApp({ isDark, onToggleDark }) {
             break;
           }
         } catch (error) {
-          console.error(`Attempt ${i + 1} failed:`, error);
+          console.error(`Lần thử ${i + 1} thất bại:`, error);
           if (i < maxRetries - 1) {
             await sleep(2000);
           }
         }
       }
       if (!success) {
-        message.error("Unable to load todo list after multiple attempts.");
+        message.error("Không tải được danh sách công việc sau nhiều lần thử.");
         setTodos([]);
       }
       setLoading(false);
@@ -78,17 +82,18 @@ export default function MainApp({ isDark, onToggleDark }) {
     fetchWithRetry();
   }, []);
 
-  // [THÊM MỚI] Hàm để xử lý bật/tắt trạng thái "quan trọng"
+  // Hàm để xử lý bật/tắt trạng thái "quan trọng"
   async function handleToggleImportant(id, important) {
     try {
       const updated = await updateTodo(id, { important });
       setTodos((prev) => prev.map((x) => (x._id === id ? updated : x)));
-      message.success(`Updated importance level!`);
+      message.success(`Đã cập nhật mức độ quan trọng!`);
     } catch {
-      message.error("Unable to update importance level");
+      message.error("Không thể cập nhật mức độ quan trọng");
     }
   }
 
+  // Hàm xử lý khi click vào một mục trong sidebar
   const handleMenuItemClick = (menuInfo) => {
     const key = menuInfo.key;
     if (key.startsWith("filter-")) {
@@ -101,11 +106,11 @@ export default function MainApp({ isDark, onToggleDark }) {
     }
   };
 
+  // Logic lọc công việc
   const filteredTodos = useMemo(() => {
     let data = [...todos];
     if (filter === "active") data = data.filter((t) => !t.completed);
     if (filter === "completed") data = data.filter((t) => t.completed);
-    // [THÊM MỚI] Logic lọc công việc quan trọng
     if (filter === "important") data = data.filter((t) => t.important);
     if (query) {
       data = data.filter((t) =>
@@ -115,6 +120,7 @@ export default function MainApp({ isDark, onToggleDark }) {
     return data;
   }, [todos, filter, query]);
 
+  // Logic sắp xếp công việc
   const sortedTodos = useMemo(() => {
     let data = [...filteredTodos];
     switch (sort) {
@@ -129,52 +135,59 @@ export default function MainApp({ isDark, onToggleDark }) {
     }
   }, [filteredTodos, sort]);
 
+  // Logic phân trang
   const pagedTodos = useMemo(() => {
     const start = (page - 1) * pageSize;
     return sortedTodos.slice(start, start + pageSize);
   }, [sortedTodos, page, pageSize]);
 
+  // Các hàm xử lý CRUD
   async function handleAdd() {
     const t = newTitle.trim();
-    if (!t) return message.warning("Please enter a todo title");
+    if (!t) return message.warning("Vui lòng nhập tiêu đề công việc");
     try {
       setAddLoading(true);
       const created = await createTodo({ title: t });
       setTodos((prev) => [created, ...prev]);
       setNewTitle("");
-      message.success("Todo added successfully!");
+      message.success("Đã thêm công việc thành công!");
     } catch (e) {
-      message.error(e?.response?.data?.message || "Unable to add todo");
+      message.error(e?.response?.data?.message || "Không thể thêm công việc");
     } finally {
       setAddLoading(false);
     }
   }
+
   async function handleToggle(id, completed) {
     try {
       const updated = await updateTodo(id, { completed });
       setTodos((prev) => prev.map((x) => (x._id === id ? updated : x)));
-      message.success(`Todo status updated!`);
+      message.success(`Đã cập nhật trạng thái công việc!`);
     } catch {
-      message.error("Unable to update status");
+      message.error("Không thể cập nhật trạng thái");
     }
   }
+
   async function handleDelete(id) {
     try {
       await deleteTodo(id);
       setTodos((prev) => prev.filter((x) => x._id !== id));
-      message.success("Todo deleted successfully!");
+      message.success("Đã xóa công việc thành công!");
     } catch {
-      message.error("Unable to delete todo");
+      message.error("Không thể xóa công việc");
     }
   }
+
   function openModal(todo) {
     setCurrentTodo(todo);
     setModalOpen(true);
   }
+
   function closeModal() {
     setModalOpen(false);
     setCurrentTodo(null);
   }
+
   async function saveModal(changes) {
     if (!currentTodo) return;
     try {
@@ -183,22 +196,24 @@ export default function MainApp({ isDark, onToggleDark }) {
         prev.map((x) => (x._id === currentTodo._id ? updated : x))
       );
       closeModal();
-      message.success("Todo updated successfully!");
+      message.success("Đã cập nhật công việc thành công!");
     } catch {
-      message.error("Unable to update todo");
+      message.error("Không thể cập nhật công việc");
     }
   }
+
   async function handleFilterChange(val) {
     setFilter(val);
     setPage(1);
   }
+
   async function handleClearCompleted() {
     try {
       await clearCompleted();
       setTodos((prev) => prev.filter((t) => !t.completed));
-      message.success("Completed todos cleared!");
+      message.success("Đã dọn dẹp các công việc hoàn thành!");
     } catch {
-      message.error("Clear operation failed");
+      message.error("Thao tác dọn dẹp thất bại");
     }
   }
 
@@ -270,7 +285,6 @@ export default function MainApp({ isDark, onToggleDark }) {
                   pageSize={pageSize}
                   onPageChange={setPage}
                   onToggle={handleToggle}
-                  // [THÊM MỚI] Truyền hàm xử lý vào TodoList
                   onToggleImportant={handleToggleImportant}
                   onDelete={handleDelete}
                   onOpenModal={openModal}
@@ -287,6 +301,8 @@ export default function MainApp({ isDark, onToggleDark }) {
         todo={currentTodo}
         onSave={saveModal}
       />
+
+      <Chatbot />
     </Layout>
   );
 }
