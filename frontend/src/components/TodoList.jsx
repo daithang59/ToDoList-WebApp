@@ -34,7 +34,7 @@ export default function TodoList({
                   onClick={() => onToggle(todo._id, !todo.completed)}
                 >
                   {/* Icon check chỉ hiện khi đã completed */}
-                  {todo.completed && <Check size={16} strokeWidth={3} />}
+                  {todo.completed && <Check size={18} strokeWidth={3} />}
                 </button>
               </Tooltip>
 

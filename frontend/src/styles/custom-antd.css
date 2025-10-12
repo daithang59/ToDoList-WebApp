@@ -1,0 +1,41 @@
+/* src/styles/custom-antd.css */
+
+/* Ghi đè container chính của Ant Design Message */
+.ant-message {
+  /* Bỏ các thuộc tính căn giữa mặc định */
+  left: auto !important;
+  transform: none !important;
+
+  /* Đặt vị trí ở góc trên bên phải */
+  top: 80px !important; /* Khoảng cách từ đỉnh, tính cả header */
+  right: 24px;
+
+  /* Giới hạn chiều rộng để không quá dài */
+  max-width: 384px;
+}
+
+/* Style cho mỗi thông báo con để chúng xếp chồng lên nhau đúng cách 
+  và có khoảng cách hợp lý.
+*/
+.ant-message-notice {
+  display: flex;
+  justify-content: flex-end; /* Đẩy nội dung sang phải */
+  margin-bottom: 12px !important;
+  padding: 0 !important;
+  text-align: right;
+}
+
+/* src/styles/custom-antd.css */
+
+/* Thêm hiệu ứng đổ bóng và bo góc cho đẹp hơn */
+.ant-message-notice-content {
+  /* [THÊM MỚI] Tăng padding để toast cao hơn và cỡ chữ lớn hơn một chút */
+  padding: 12px 20px !important;
+  font-size: 15px !important;
+
+  border-radius: 8px !important;
+  box-shadow:
+    0 6px 16px 0 rgba(0, 0, 0, 0.08),
+    0 3px 6px -4px rgba(0, 0, 0, 0.12),
+    0 9px 28px 8px rgba(0, 0, 0, 0.05) !important;
+}

@@ -3,6 +3,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
 
 :root {
+  --sidebar-width: 280px;
   --ac-primary: #22c55e;
   --ac-secondary: #14b8a6;
   --gradient-primary: linear-gradient(
@@ -10,6 +11,9 @@
     var(--ac-primary),
     var(--ac-secondary)
   );
+
+  /* [XÓA] Bỏ các biến màu tô đậm cũ */
+
   --glow-color: 150, 60%, 50%;
   --bg-base: #f7f8fa;
   --bg-elev-1: #ffffff;
@@ -26,22 +30,17 @@ html[data-theme="dark"] {
   --text-2: #94a3b8;
   --border: #323c52;
   --shadow-color: 220, 50%, 2%;
+
+  /* [XÓA] Bỏ các biến màu tô đậm cũ cho dark mode */
 }
 
+/* --- (Các style cơ bản và layout giữ nguyên) --- */
 body {
   color: var(--text-1);
   background-color: var(--bg-base);
   font-family: "Poppins", sans-serif;
+  overflow: hidden;
 }
-.theme-anim,
-.theme-anim * {
-  transition:
-    background-color 0.3s ease,
-    color 0.3s ease,
-    border-color 0.3s ease !important;
-}
-
-/* --- LAYOUT STYLES --- */
 .app-header {
   display: flex;
   justify-content: space-between;
@@ -52,13 +51,12 @@ body {
   border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
-  z-index: 50;
+  z-index: 1001;
   box-shadow: 0 2px 8px hsla(var(--shadow-color), 0.1);
 }
 .header-title {
   display: flex;
   align-items: center;
-  height: 100%;
   gap: 0.75rem;
 }
 .header-title h1 {
@@ -69,32 +67,23 @@ body {
 }
 .app-logo-svg {
   height: 36px;
-  width: auto;
-  object-fit: contain;
 }
-html[data-theme="dark"] .app-logo-svg text {
-  fill: var(--text-1) !important;
-}
-html[data-theme="light"] .app-logo-svg text {
-  fill: var(--text-1) !important;
-}
-
 .app-layout {
-  display: grid;
-  grid-template-columns: 280px 1fr;
+  display: flex;
   height: calc(100vh - 64px);
 }
 .app-sidebar {
+  width: var(--sidebar-width);
   background-color: var(--bg-elev-1);
   border-right: 1px solid var(--border);
-  padding: 1.5rem;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
   overflow-y: auto;
-  transition:
-    background-color 0.3s ease,
-    border-color 0.3s ease;
 }
 .main-content {
+  flex-grow: 1;
   overflow-y: auto;
+  height: 100%;
 }
 .container {
   width: 100%;
@@ -102,8 +91,6 @@ html[data-theme="light"] .app-logo-svg text {
   margin: 0 auto;
   padding: 2rem;
 }
-
-/* --- COMPONENT STYLES --- */
 .card {
   background-color: var(--bg-elev-1);
   border: 1px solid var(--border);
@@ -112,6 +99,8 @@ html[data-theme="light"] .app-logo-svg text {
     0 4px 6px -1px hsla(var(--shadow-color), 0.07),
     0 2px 4px -2px hsla(var(--shadow-color), 0.07);
 }
+
+/* --- [CẬP NHẬT] LAYOUT VÀ KHOẢNG CÁCH CHO TOOLBAR --- */
 .add-todo-form {
   display: flex;
   gap: 0.75rem;
@@ -126,78 +115,10 @@ html[data-theme="light"] .app-logo-svg text {
   padding: 1.5rem;
   margin-bottom: 1.5rem;
 }
-
-.segmented-label {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px; /* Tăng khoảng cách cho dễ nhìn */
-}
-.todo-item {
-  padding: 1rem;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  background-color: var(--bg-elev-1);
-  transition: all 0.2s ease-out;
-}
-.todo-item:hover {
-  transform: translateY(-3px);
-  box-shadow:
-    0 10px 15px -3px hsla(var(--shadow-color), 0.1),
-    0 4px 6px -4px hsla(var(--shadow-color), 0.1);
-  border-color: var(--ac-primary);
-}
-.todo-title.completed {
-  color: var(--text-2);
-  text-decoration: line-through;
-}
-
-/* --- ANT DESIGN OVERRIDES --- */
-.ant-btn-primary {
-  background: var(--gradient-primary) !important;
-}
-.ant-segmented {
-  background-color: var(--bg-base) !important;
-  padding: 4px !important;
-  border-radius: 12px !important;
-}
-.ant-segmented .ant-segmented-item-selected {
-  background: var(--gradient-primary) !important;
-  border-radius: 8px !important;
-}
-.ant-segmented .ant-segmented-thumb {
-  background: var(--gradient-primary) !important;
-  border-radius: 8px !important;
-  box-shadow: 0 4px 12px hsla(var(--glow-color), 0.4);
-}
-.ant-segmented .ant-segmented-item-selected .ant-segmented-item-label {
-  color: white !important;
-}
-.ant-input-affix-wrapper:not(.ant-input-affix-wrapper-disabled):focus-within {
-  box-shadow: 0 0 0 3px hsla(var(--glow-color), 0.3) !important;
-  border-color: var(--ac-primary) !important;
-}
-.ant-empty-description {
-  color: var(--text-2) !important;
-}
-
-/* --- STYLE TINH CHỈNH CHO ICON LUCIDE --- */
-.ant-segmented-item-label .lucide {
-  vertical-align: -0.15em;
-}
-.ant-segmented-item-selected .ant-segmented-item-label .lucide {
-  color: white !important;
-}
-.ant-segmented-item-label .lucide {
-  color: var(--text-2);
-  transition: color 0.3s ease;
-}
-
-/* --- [BỔ SUNG] STYLING CHO TOOLBAR --- */
 .toolbar-layout {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.25rem;
 }
 .toolbar-actions {
   display: flex;
@@ -217,44 +138,76 @@ html[data-theme="light"] .app-logo-svg text {
   gap: 0.75rem;
 }
 
-/* --- [BỔ SUNG] RESPONSIVE CHO TOOLBAR --- */
-@media (max-width: 768px) {
-  .toolbar-actions {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  .toolbar-search {
-    max-width: 100%;
-  }
-}
-@media (max-width: 640px) {
-  .segmented-label > span {
-    display: none;
-  }
-  .segmented-label {
-    padding: 0 4px;
-  }
-  .toolbar-options {
-    width: 100%;
-    justify-content: space-between;
-  }
-  .toolbar-options > * {
-    flex-grow: 1;
-  }
+/* --- [SỬA] MÀU TÔ ĐẬM KHI CLICK TRONG TOOLBAR --- */
+.ant-segmented {
+  background-color: var(--bg-base) !important;
+  padding: 4px !important;
+  border-radius: 12px !important;
 }
 
-/* --- [CẬP NHẬT] GIAO DIỆN CHO TODOLIST --- */
+/* Sử dụng lại màu gradient xanh lá cây */
+.ant-segmented .ant-segmented-item-selected {
+  background: var(--gradient-primary) !important;
+  border-radius: 8px !important;
+}
+.ant-segmented .ant-segmented-thumb {
+  background: var(--gradient-primary) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 12px hsla(var(--glow-color), 0.4) !important;
+}
+.ant-segmented .ant-segmented-item-selected .segmented-label,
+.ant-segmented .ant-segmented-item-selected .segmented-label .lucide {
+  color: white !important; /* Chữ màu trắng trên nền gradient */
+  font-weight: 600;
+}
 
-/* Bỏ padding mặc định của Ant Design List Item */
+/* --- HIỆU ỨNG LOADING CHO NÚT "THÊM" --- */
+.ant-btn-primary {
+  background: var(--gradient-primary) !important;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.ant-btn-primary.ant-btn-loading:not(.ant-btn-disabled) {
+  position: relative;
+  background: var(--gradient-primary) !important;
+  color: transparent !important;
+}
+.ant-btn-primary.ant-btn-loading:not(.ant-btn-disabled)::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin-top: -10px;
+  margin-left: -10px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+.ant-btn .ant-btn-loading-icon {
+  display: none !important;
+}
+
+/* --- (Các CSS khác cho TodoList, Responsive Sidebar, Antd Overrides...) --- */
+.segmented-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
 .todo-item.ant-list-item {
   padding: 1rem 1.5rem;
   border-radius: 12px;
   border: 1px solid var(--border);
   background-color: var(--bg-elev-1);
   transition: all 0.2s ease-out;
-  margin-bottom: 1rem; /* Khoảng cách giữa các item */
+  margin-bottom: 1rem;
 }
-
 .todo-item.ant-list-item:hover {
   transform: translateY(-3px);
   box-shadow:
@@ -262,16 +215,12 @@ html[data-theme="light"] .app-logo-svg text {
     0 4px 6px -4px hsla(var(--shadow-color), 0.1);
   border-color: var(--ac-primary);
 }
-
-/* Layout chính cho mỗi mục todo (3 cột) */
 .todo-item-layout {
   width: 100%;
   display: flex;
   align-items: center;
   gap: 1rem;
 }
-
-/* Nút toggle check hoàn thành (Cột 1) */
 .todo-toggle {
   flex-shrink: 0;
   width: 30px;
@@ -286,40 +235,30 @@ html[data-theme="light"] .app-logo-svg text {
   color: white;
   transition: all 0.2s ease;
 }
-
 .todo-toggle:hover {
   border-color: var(--ac-primary);
 }
-
 .todo-item.completed .todo-toggle {
   background: var(--gradient-primary);
   border-color: var(--ac-primary);
 }
-
-/* Nội dung chính (Cột 2) */
 .todo-content {
   flex-grow: 1;
-  min-width: 0; /* Fix lỗi chữ dài không xuống hàng */
+  min-width: 0;
 }
-
 .todo-title {
   color: var(--text-1);
   transition: color 0.2s ease;
 }
-
 .todo-item.completed .todo-title {
   color: var(--text-2);
   text-decoration: line-through;
 }
-
-/* Các nút hành động (Cột 3) */
 .todo-actions {
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
-
-/* Tag "Đã xong" được làm nổi bật */
 .todo-status-tag {
   display: inline-flex;
   align-items: center;
@@ -331,7 +270,6 @@ html[data-theme="light"] .app-logo-svg text {
   font-size: 12px;
   font-weight: 500;
 }
-
 .sub-line {
   margin-top: 4px;
   display: flex;
@@ -348,8 +286,58 @@ html[data-theme="light"] .app-logo-svg text {
   text-align: right;
   border-top: 1px solid var(--border);
 }
-
-/* Bỏ đường gạch chân giữa các List Item */
 .ant-list-split .ant-list-item {
   border-block-end: none;
+}
+.sidebar-toggle-btn {
+  color: var(--text-2);
+  z-index: 101;
+}
+.sidebar-toggle-btn:hover {
+  color: var(--text-1) !important;
+  background-color: hsla(var(--glow-color), 0.05) !important;
+}
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+@media (min-width: 992px) {
+  .app-layout.sidebar-collapsed .app-sidebar {
+    width: 0;
+    padding: 0;
+    overflow: hidden;
+    border-right-color: transparent;
+  }
+}
+
+@media (max-width: 991.98px) {
+  .app-sidebar {
+    position: fixed;
+    top: 64px;
+    left: 0;
+    height: calc(100vh - 64px);
+    z-index: 1000;
+    box-shadow: 0 10px 15px -3px hsla(var(--shadow-color), 0.1);
+    padding: 1.5rem;
+    width: 280px;
+  }
+  .app-layout:not(.sidebar-collapsed) .app-sidebar {
+    transform: translateX(0);
+  }
+  .app-layout.sidebar-collapsed .app-sidebar {
+    transform: translateX(-100%);
+  }
+  .app-layout:not(.sidebar-collapsed) .sidebar-overlay {
+    opacity: 1;
+    pointer-events: auto;
+  }
 }

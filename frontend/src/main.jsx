@@ -1,11 +1,18 @@
 // src/main.jsx
 
-import { ConfigProvider, theme as antdTheme } from "antd";
+import { App, ConfigProvider, message, theme as antdTheme } from "antd"; // [THAY ĐỔI] Import thêm 'App'
 import "antd/dist/reset.css";
 import React, { useEffect, useMemo, useState } from "react";
 import ReactDOM from "react-dom/client";
-import App from "./App.jsx";
+import MainApp from "./App.jsx"; // [THAY ĐỔI] Đổi tên import App thành MainApp để tránh trùng lặp
 import "./index.css";
+import "./styles/custom-antd.css";
+
+message.config({
+  top: 80,
+  duration: 2.5,
+  maxCount: 3,
+});
 
 function Root() {
   const getInitial = () => {
@@ -30,10 +37,9 @@ function Root() {
     () => ({
       algorithm: isDark ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
       token: {
-        // --- CÁC MÀU SẮC NÀY ĐÃ KHỚP VỚI index.css ---
-        colorPrimary: "#22c55e", // Màu xanh lá cây chủ đạo
-        colorTextBase: isDark ? "#E4EAF3" : "#1A202C", // Màu chữ chính
-        colorBgBase: isDark ? "#141824" : "#F7F8FA", // Màu nền chính
+        colorPrimary: "#22c55e",
+        colorTextBase: isDark ? "#E4EAF3" : "#1A202C",
+        colorBgBase: isDark ? "#141824" : "#F7F8FA",
         borderRadius: 12,
         fontFamily: "'Poppins', sans-serif",
       },
@@ -57,7 +63,10 @@ function Root() {
 
   return (
     <ConfigProvider theme={themeCfg}>
-      <App isDark={isDark} onToggleDark={toggleDarkTheme} />
+      {/* [THAY ĐỔI] Bọc ứng dụng của bạn trong <App> của Ant Design */}
+      <App>
+        <MainApp isDark={isDark} onToggleDark={toggleDarkTheme} />
+      </App>
     </ConfigProvider>
   );
 }

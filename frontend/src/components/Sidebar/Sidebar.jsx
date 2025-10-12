@@ -25,7 +25,7 @@ const quickFilterItems = [
   getItem("Quan trọng", "filter-important", <StarOutlined />),
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ onMenuItemClick }) {
   return (
     <div className="sidebar-container">
       <div className="sidebar-menus">
@@ -34,6 +34,7 @@ export default function Sidebar() {
           defaultSelectedKeys={["filter-all"]}
           items={quickFilterItems}
           className="sidebar-menu"
+          onClick={onMenuItemClick}
         />
         <Menu
           mode="inline"
@@ -42,6 +43,7 @@ export default function Sidebar() {
             getItem("Dự án", "projects", <ProjectOutlined />, projectItems),
           ]}
           className="sidebar-menu"
+          onClick={onMenuItemClick}
         />
       </div>
 
