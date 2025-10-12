@@ -1,6 +1,6 @@
 // src/main.jsx
 
-import { App, ConfigProvider, message, theme as antdTheme } from "antd"; // [THAY ĐỔI] Import thêm 'App'
+import { theme as antdTheme, App, ConfigProvider, message } from "antd"; // [THAY ĐỔI] Import thêm 'App'
 import "antd/dist/reset.css";
 import React, { useEffect, useMemo, useState } from "react";
 import ReactDOM from "react-dom/client";

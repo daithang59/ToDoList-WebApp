@@ -1,6 +1,6 @@
 // src/components/TodoList.jsx
 import { Button, List, Pagination, Tooltip, Typography } from "antd";
-import { Check, Pencil, Trash2 } from "lucide-react"; // Thêm icon Pencil và Check
+import { Check, Pencil, Star, Trash2 } from "lucide-react";
 
 export default function TodoList({
   items,
@@ -9,8 +9,9 @@ export default function TodoList({
   pageSize,
   onPageChange,
   onToggle,
+  onToggleImportant, // Nhận prop mới
   onDelete,
-  onOpenModal, // onEditTitle không còn dùng để sửa inline
+  onOpenModal,
 }) {
   return (
     <div className="todo-list-wrapper">
@@ -19,11 +20,9 @@ export default function TodoList({
         locale={{ emptyText: "Chưa có công việc nào" }}
         renderItem={(todo) => (
           <List.Item
-            className={`todo-item ${todo.completed ? "completed" : ""}`}
+            className={`todo-item ${todo.completed ? "completed" : ""} ${todo.important ? "important" : ""}`}
           >
-            {/* Cấu trúc layout 3 cột mới cho mỗi todo item */}
             <div className="todo-item-layout">
-              {/* CỘT 1: Nút Toggle mới, nổi bật hơn */}
               <Tooltip
                 title={
                   todo.completed ? "Đánh dấu chưa xong" : "Đánh dấu đã xong"
@@ -33,26 +32,24 @@ export default function TodoList({
                   className="todo-toggle"
                   onClick={() => onToggle(todo._id, !todo.completed)}
                 >
-                  {/* Icon check chỉ hiện khi đã completed */}
                   {todo.completed && <Check size={18} strokeWidth={3} />}
                 </button>
               </Tooltip>
 
-              {/* CỘT 2: Nội dung chính (Tiêu đề, deadline, tag) */}
               <div className="todo-content">
                 <Typography.Paragraph
                   className="todo-title"
                   style={{ marginBottom: 0 }}
-                  // Tắt chế độ sửa inline, chuyển qua modal
-                  editable={false}
                 >
                   {todo.title}
                 </Typography.Paragraph>
+
                 {todo.description && (
                   <Typography.Paragraph className="todo-description">
                     {todo.description}
                   </Typography.Paragraph>
                 )}
+
                 <div className="sub-line">
                   {todo.deadline && (
                     <span
@@ -61,7 +58,6 @@ export default function TodoList({
                       Hạn chót: {new Date(todo.deadline).toLocaleDateString()}
                     </span>
                   )}
-                  {/* Tag "Đã xong" được làm nổi bật hơn */}
                   {todo.completed && (
                     <div className="todo-status-tag">
                       <Check size={12} strokeWidth={3} />
@@ -71,11 +67,26 @@ export default function TodoList({
                 </div>
               </div>
 
-              {/* CỘT 3: Các nút hành động */}
               <div className="todo-actions">
+                {/* [THÊM MỚI] Nút ngôi sao */}
+                <Tooltip
+                  title={
+                    todo.important
+                      ? "Bỏ đánh dấu quan trọng"
+                      : "Đánh dấu quan trọng"
+                  }
+                >
+                  <Button
+                    onClick={() => onToggleImportant(todo._id, !todo.important)}
+                    size="small"
+                    type="text"
+                    className="important-btn"
+                    icon={<Star size={16} />}
+                  />
+                </Tooltip>
                 <Tooltip title="Sửa công việc">
                   <Button
-                    onClick={() => onOpenModal(todo)} // Nút edit sẽ mở modal
+                    onClick={() => onOpenModal(todo)}
                     size="small"
                     type="text"
                     icon={<Pencil size={16} />}

@@ -352,3 +352,45 @@ body {
   padding-left: 2px; /* Căn lề với title */
   line-height: 1.5;
 }
+
+/* src/index.css */
+
+/* --- [THÊM MỚI] STYLE CHO TÍNH NĂNG QUAN TRỌNG --- */
+
+/* Style cho nút ngôi sao */
+.important-btn .lucide-star {
+  color: var(--text-2);
+  transition: all 0.2s ease;
+}
+
+/* Khi một item được đánh dấu là quan trọng */
+.todo-item.important .important-btn .lucide-star {
+  fill: #fadb14; /* Màu vàng cho ngôi sao */
+  color: #fadb14;
+}
+
+/* Thêm một đường viền để làm nổi bật card quan trọng */
+.todo-item.important {
+  border-left: 4px solid #fadb14;
+}
+
+/* src/index.css */
+
+/* --- [THÊM MỚI] STYLE CHO TÍNH NĂNG QUAN TRỌNG --- */
+
+/* Style cho nút ngôi sao */
+.important-btn .lucide-star {
+  color: var(--text-2);
+  transition: all 0.2s ease;
+}
+
+/* Khi một item được đánh dấu là quan trọng, tô màu vàng cho ngôi sao */
+.todo-item.important .important-btn .lucide-star {
+  fill: #fadb14;
+  color: #fadb14;
+}
+
+/* Thêm một đường viền để làm nổi bật card quan trọng */
+.todo-item.important {
+  border-left: 4px solid #fadb14;
+}
