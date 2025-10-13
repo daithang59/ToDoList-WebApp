@@ -6,10 +6,12 @@ import { useEffect, useState } from "react";
 const { TextArea } = Input;
 
 export default function EditTodoModal({ open, onClose, todo, onSave }) {
+  const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
   const [deadline, setDeadline] = useState(null);
 
   useEffect(() => {
+    setTitle(todo?.title || "");
     setDesc(todo?.description || "");
     setDeadline(todo?.deadline ? dayjs(todo.deadline) : null);
   }, [todo]);
@@ -18,17 +20,27 @@ export default function EditTodoModal({ open, onClose, todo, onSave }) {
     <Modal
       title="Edit Todo"
       open={open}
-      onOk={() =>
-        onSave({
-          description: desc,
-          deadline: deadline ? deadline.toDate() : null,
-        })
-      }
+      onOk={() => {
+        if (title.trim()) {
+          onSave({
+            title: title.trim(),
+            description: desc,
+            deadline: deadline ? deadline.toDate() : null,
+          });
+        }
+      }}
       onCancel={onClose}
       okText="Save"
       cancelText="Cancel"
       destroyOnClose
+      okButtonProps={{ disabled: !title.trim() }}
     >
+      <Input
+        style={{ width: "100%", marginBottom: 12 }}
+        placeholder="Todo title"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+      />
       <DatePicker
         style={{ width: "100%", marginBottom: 12 }}
         placeholder="Deadline"
