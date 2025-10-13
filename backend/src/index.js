@@ -41,6 +41,12 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 4000;
 
+// Debug environment variables
+console.log('🔍 Environment variables:');
+console.log('   NODE_ENV:', process.env.NODE_ENV);
+console.log('   PORT:', process.env.PORT);
+console.log('   MONGODB_URI:', process.env.MONGODB_URI?.replace(/\/\/.*:.*@/, '//***:***@'));
+
 // Kết nối DB rồi mới start server (có catch lỗi)
 connectDB(process.env.MONGODB_URI)
   .then(() => {
