@@ -4,14 +4,30 @@ import process from "process";
 export async function connectDB(uri) {
   try {
     console.log(`🔗 Attempting to connect to MongoDB...`);
-    console.log(`📍 URI: ${uri?.replace(/\/\/.*:.*@/, '//***:***@')}`); // Ẩn password trong log
     
-    await mongoose.connect(uri, { 
+    // Kiểm tra môi trường
+    const isAtlas = uri.includes('mongodb+srv://') || uri.includes('.mongodb.net');
+    const isLocal = uri.includes('localhost') || uri.includes('mongo:27017');
+    
+    if (isAtlas) {
+      console.log(`📍 Connecting to MongoDB Atlas (Production)`);
+    } else if (isLocal) {
+      console.log(`📍 URI: ${uri?.replace(/\/\/.*:.*@/, '//***:***@')}`);
+    }
+    
+    // Cấu hình connection options dựa trên môi trường
+    const options = {
       dbName: "todolist",
       serverSelectionTimeoutMS: 30000,
       socketTimeoutMS: 45000,
-      authSource: "todolist" // Chỉ định database để xác thực
-    });
+    };
+    
+    // Chỉ thêm authSource cho MongoDB local (không dùng cho Atlas)
+    if (isLocal && !isAtlas) {
+      options.authSource = "todolist";
+    }
+    
+    await mongoose.connect(uri, options);
     
     console.log("✅ MongoDB connected successfully");
   } catch (err) {
