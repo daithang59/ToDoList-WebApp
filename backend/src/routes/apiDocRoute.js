@@ -9,8 +9,9 @@ const __dirname = dirname(__filename);
 
 const router = Router();
 
-// Load YAML file and convert to JSON
-const swaggerDocument = YAML.load(join(__dirname, '../docs/swagger.yaml'));
+// Đường dẫn chính xác đến thư mục gốc của dự án khi đã deploy
+const swaggerFilePath = join(process.cwd(), 'src', 'docs', 'swagger.yaml');
+const swaggerDocument = YAML.load(swaggerFilePath);
 
 // Trả về file OpenAPI dạng JSON (hữu ích cho CI hoặc tool khác)
 router.get("/", (req, res) => {

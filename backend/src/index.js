@@ -2,6 +2,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
 import morgan from "morgan";
+import { join } from "path"; // Thêm import 'join'
 import swaggerUi from "swagger-ui-express";
 import YAML from "yamljs";
 import { connectDB } from "./config/db.js";
@@ -9,7 +10,7 @@ import { errorHandler, notFound } from "./middlewares/error.js";
 import apiDocRoute from "./routes/apiDocRoute.js"; // <-- file vừa tạo
 import todoRouter from "./routes/todoRoutes.js";
 
-const swaggerDocument = YAML.load("./src/docs/swagger.yaml");
+const swaggerDocument = YAML.load(join(process.cwd(), "src", "docs", "swagger.yaml"));
 
 dotenv.config();
 
