@@ -10,8 +10,7 @@ const __dirname = dirname(__filename);
 const router = Router();
 
 // Đường dẫn chính xác đến thư mục gốc của dự án khi đã deploy
-const swaggerFilePath = join(process.cwd(), 'src', 'docs', 'swagger.yaml');
-const swaggerDocument = YAML.load(swaggerFilePath);
+const swaggerDocument = YAML.load(join(__dirname, '../docs/swagger.yaml'));
 
 // Trả về file OpenAPI dạng JSON (hữu ích cho CI hoặc tool khác)
 router.get("/", (req, res) => {
