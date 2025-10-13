@@ -2,8 +2,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
 import morgan from "morgan";
-import { join } from "path"; // Thêm import 'join'
-import swaggerUi from "swagger-ui-express";
+import { dirname, join } from "path"; // Sửa dòng nàyimport swaggerUi from "swagger-ui-express";
 import { fileURLToPath } from "url";
 import YAML from "yamljs";
 import { connectDB } from "./config/db.js";
