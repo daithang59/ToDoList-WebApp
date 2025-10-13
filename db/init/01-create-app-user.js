@@ -44,6 +44,8 @@ db.todos.insertOne({
   _id: ObjectId(),
   title: "Welcome to TodoList App",
   completed: false,
+  important: false,
+  description: "This is a sample todo item. You can delete it.",
   createdAt: new Date(),
 });
 

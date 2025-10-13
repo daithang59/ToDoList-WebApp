@@ -78,17 +78,19 @@ frontend/public/static/
 # =========================================
 # 🐳 DOCKER / DEPLOYMENT
 # =========================================
-# Docker
-Dockerfile
-Dockerfile.*
-docker-compose.yml
-docker-compose.*.yml
+# Docker runtime data (keep Docker config files)
+docker-compose.override.yml
+.docker/
+mongo_data/
 
 # Build cache / runtime data
 *.tar
 *.tgz
 *.zip
 *.gz
+
+# Docker volumes and temporary containers
+.dockerignore.local
 
 # =========================================
 # 🧪 MISC
