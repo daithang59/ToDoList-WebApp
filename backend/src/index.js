@@ -2,17 +2,17 @@ import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
 import morgan from "morgan";
-import { dirname, join } from "path"; // Sửa dòng nàyimport swaggerUi from "swagger-ui-express";
+import { dirname, join } from "path";
+import process from "process";
 import swaggerUi from "swagger-ui-express";
 import { fileURLToPath } from "url";
 import YAML from "yamljs";
 import { connectDB } from "./config/db.js";
-import { errorHandler, notFound } from "./middlewares/error.js";
-import apiDocRoute from "./routes/apiDocRoute.js"; // <-- file vừa tạo
-import todoRouter from "./routes/todoRoutes.js";
+import AppController from "./controllers/AppController.js";
+import { errorHandler } from "./middlewares/error.js";
+import apiRoutes from "./routes/index.js";
 
-
-// THÊM 2 DÒNG NÀY ĐỂ TẠO ĐƯỜNG DẪN TUYỆT ĐỐI
+// Tạo đường dẫn tuyệt đối
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
@@ -22,24 +22,21 @@ dotenv.config();
 
 const app = express();
 
+// Middlewares
 app.use(cors({ origin: "*" }));
 app.use(express.json());
 app.use(morgan("dev"));
 
-app.get("/api/health", (req, res) => {
-  res.json({ status: "OK", message: "Server is healthy" });
-});
-
-// API chính
-app.use("/api/todos", todoRouter);
-
-// Xuất JSON spec (tuỳ chọn)
-app.use("/api-docs.json", apiDocRoute);
+// API Routes
+app.use("/api", apiRoutes);
 
 // Swagger UI
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
-app.use(notFound);
+// 404 handler cho routes không tồn tại
+app.use(AppController.notFound);
+
+// Error handling middleware
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 4000;

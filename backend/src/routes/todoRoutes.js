@@ -1,126 +1,47 @@
 import { Router } from "express";
-import Todo from "../models/Todo.js";
+import TodoController from "../controllers/TodoController.js";
+import TodoValidation from "../middlewares/validation.js";
 
 const router = Router();
 
+// GET /api/todos - Lấy tất cả todos
+router.get("/", TodoController.getAllTodos);
 
-// GET all
-router.get("/", async (req, res, next) => {
-  try {
-    const todos = await Todo.find().sort({ createdAt: -1 });
-    res.json(todos);
-  } catch (e) {
-    next(e);
-  }
-});
+// POST /api/todos - Tạo todo mới
+router.post("/", TodoValidation.validateCreateTodo, TodoController.createTodo);
 
-// POST create
-router.post("/", async (req, res, next) => {
-  try {
-    const { title, description } = req.body;
-    if (!title?.trim())
-      return res.status(400).json({ message: "Title is required" });
-    const todo = await Todo.create({
-      title: title.trim(),
-      description: description || "",
-    });
-    res.status(201).json(todo);
-  } catch (e) {
-    next(e);
-  }
-});
+// GET /api/todos/search - Tìm kiếm todos (phải đặt trước /:id)
+router.get("/search", TodoValidation.validateSearchQuery, TodoController.searchTodos);
 
-// PATCH update (title/desc/completed)
-router.patch("/:id", async (req, res, next) => {
-  try {
-    const todo = await Todo.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
-    });
-    if (!todo) return res.status(404).json({ message: "Not found" });
-    res.json(todo);
-  } catch (e) {
-    next(e);
-  }
-});
+// GET /api/todos/filter - Lọc todos theo trạng thái
+router.get("/filter", TodoController.filterTodos);
 
-// DELETE
-router.delete("/:id", async (req, res, next) => {
-  try {
-    const todo = await Todo.findByIdAndDelete(req.params.id);
-    if (!todo) return res.status(404).json({ message: "Not found" });
-    res.json({ ok: true });
-  } catch (e) {
-    next(e);
-  }
-});
+// GET /api/todos/due - Lấy todos sắp đến hạn
+router.get("/due", TodoController.getDueTodos);
 
+// GET /api/todos/overdue - Lấy todos quá hạn
+router.get("/overdue", TodoController.getOverdueTodos);
 
-// PATCH /:id/toggle
-router.patch("/:id/toggle", async (req, res, next) => {
-  try {
-    const todo = await Todo.findById(req.params.id);
-    if (!todo) return res.status(404).json({ message: "Not found" });
-    todo.completed = !todo.completed;
-    await todo.save();
-    res.json(todo);
-  } catch (e) {
-    next(e);
-  }
-});
+// GET /api/todos/stats - Thống kê todos
+router.get("/stats", TodoController.getTodoStats);
 
+// DELETE /api/todos/clear/completed - Xóa tất cả todos đã hoàn thành
+router.delete("/clear/completed", TodoController.clearCompletedTodos);
 
-// GET /search?query=abc
-router.get("/search", async (req, res, next) => {
-  try {
-    const q = req.query.query?.trim();
-    if (!q) return res.json([]);
-    const todos = await Todo.find({
-      $or: [
-        { title: { $regex: q, $options: "i" } },
-        { description: { $regex: q, $options: "i" } },
-      ],
-    }).sort({ createdAt: -1 });
-    res.json(todos);
-  } catch (e) {
-    next(e);
-  }
-});
+// GET /api/todos/:id - Lấy todo theo ID
+router.get("/:id", TodoValidation.validateObjectId, TodoController.getTodoById);
 
+// PATCH /api/todos/:id - Cập nhật todo
+router.patch("/:id", TodoValidation.validateObjectId, TodoValidation.validateUpdateTodo, TodoController.updateTodo);
 
-// GET /filter?completed=true
-router.get("/filter", async (req, res, next) => {
-  try {
-    const completed = req.query.completed === "true";
-    const todos = await Todo.find({ completed }).sort({ createdAt: -1 });
-    res.json(todos);
-  } catch (e) {
-    next(e);
-  }
-});
+// DELETE /api/todos/:id - Xóa todo
+router.delete("/:id", TodoValidation.validateObjectId, TodoController.deleteTodo);
 
+// PATCH /api/todos/:id/toggle - Toggle trạng thái completed
+router.patch("/:id/toggle", TodoValidation.validateObjectId, TodoController.toggleTodo);
 
-// DELETE /clear/completed
-router.delete("/clear/completed", async (req, res, next) => {
-  try {
-    const result = await Todo.deleteMany({ completed: true });
-    res.json({ deletedCount: result.deletedCount });
-  } catch (e) {
-    next(e);
-  }
-});
-
-
-// GET /due?before=2025-12-31
-router.get("/due", async (req, res, next) => {
-  try {
-    const before = new Date(req.query.before);
-    const todos = await Todo.find({ deadline: { $lte: before } });
-    res.json(todos);
-  } catch (e) {
-    next(e);
-  }
-});
+// PATCH /api/todos/:id/important - Toggle trạng thái important
+router.patch("/:id/important", TodoValidation.validateObjectId, TodoController.toggleImportant);
 
 
 export default router;
