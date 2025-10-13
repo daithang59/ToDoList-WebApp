@@ -1,5 +1,7 @@
 // src/main.jsx
 
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 import { theme as antdTheme, App, ConfigProvider, message } from "antd"; // [CHANGED] Import additional 'App'
 import "antd/dist/reset.css";
 import React, { useEffect, useMemo, useState } from "react";
@@ -66,6 +68,8 @@ function Root() {
       {/* [CHANGED] Wrap your application in Ant Design's <App> */}
       <App>
         <MainApp isDark={isDark} onToggleDark={toggleDarkTheme} />
+        <SpeedInsights />
+        <Analytics />
       </App>
     </ConfigProvider>
   );
