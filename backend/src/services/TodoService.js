@@ -125,6 +125,17 @@ class TodoService {
   }
 
   /**
+   * Lấy todo theo ID
+   */
+  static async getTodoById(id) {
+    const todo = await Todo.findById(id);
+    if (!todo) {
+      throw new Error("Todo not found");
+    }
+    return todo;
+  }
+
+  /**
    * Xóa todo
    */
   static async deleteTodo(id) {
@@ -136,31 +147,36 @@ class TodoService {
   }
 
   /**
-   * Toggle trạng thái completed
+   * Toggle trạng thái của một field (completed, important, v.v.)
    */
-  static async toggleCompleted(id) {
+  static async toggleField(id, fieldName) {
     const todo = await Todo.findById(id);
     if (!todo) {
       throw new Error("Todo not found");
     }
 
-    todo.completed = !todo.completed;
+    // Kiểm tra field có tồn tại trong schema không
+    if (!(fieldName in todo.toObject())) {
+      throw new Error(`Invalid field: ${fieldName}`);
+    }
+
+    todo[fieldName] = !todo[fieldName];
     await todo.save();
     return todo;
+  }
+
+  /**
+   * Toggle trạng thái completed
+   */
+  static async toggleCompleted(id) {
+    return this.toggleField(id, 'completed');
   }
 
   /**
    * Toggle trạng thái important
    */
   static async toggleImportant(id) {
-    const todo = await Todo.findById(id);
-    if (!todo) {
-      throw new Error("Todo not found");
-    }
-
-    todo.important = !todo.important;
-    await todo.save();
-    return todo;
+    return this.toggleField(id, 'important');
   }
 
   /**

@@ -5,11 +5,15 @@ import todoRoutes from "./todoRoutes.js";
 
 const router = Router();
 
-// API Routes
+// =================== MAIN API ROUTES ===================
+// Todo resources - /api/todos/*
 router.use("/todos", todoRoutes);
+
+// Application routes - /api/health, /api/info
 router.use("/", appRoutes);
 
-// API Documentation Routes
-router.use("/", apiDocRoutes);
+// =================== API DOCUMENTATION ===================
+// Swagger documentation - /api-docs
+router.use("/api-docs", apiDocRoutes);
 
 export default router;

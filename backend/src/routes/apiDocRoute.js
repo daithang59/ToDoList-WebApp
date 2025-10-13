@@ -12,9 +12,16 @@ const router = Router();
 // Đường dẫn chính xác đến thư mục gốc của dự án khi đã deploy
 const swaggerDocument = YAML.load(join(__dirname, '../docs/swagger.yaml'));
 
-// Trả về file OpenAPI dạng JSON (hữu ích cho CI hoặc tool khác)
+// GET /api-docs - Trả về OpenAPI specification dạng JSON
 router.get("/", (req, res) => {
-  res.json(swaggerDocument);
+  res.json({
+    message: "Todo API Documentation",
+    openapi: swaggerDocument,
+    endpoints: {
+      json: "/api-docs",
+      ui: "/api-docs/ui" // Có thể thêm Swagger UI sau này
+    }
+  });
 });
 
 export default router;
