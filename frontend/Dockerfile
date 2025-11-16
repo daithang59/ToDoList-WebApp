@@ -1,15 +1,19 @@
 # ---------- Build stage (Node >= 22.12, glibc) ----------
 FROM node:22.12.0-bookworm-slim AS build
+
+# Thiết lập thư mục làm việc
 WORKDIR /app
 
 # Cài deps trước để tận dụng cache
 COPY package*.json ./
-# Frontend cần devDependencies để build -> KHÔNG dùng --omit=dev / --production
+
+# Cài đặt dependencies
 RUN npm ci
 
-# Copy source & build
+# Sao chép toàn bộ mã nguồn vào container
 COPY . .
-# Nếu dùng biến Vite, docker-compose đã set VITE_API_BASE=/api
+
+# Xây dựng ứng dụng
 RUN npm run build
 
 # ---------- Serve stage (Nginx) ----------

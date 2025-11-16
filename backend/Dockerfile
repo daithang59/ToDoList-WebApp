@@ -1,9 +1,9 @@
-# Multi-stage build for production optimization
+# ---------- Base stage ----------
 FROM node:18-alpine AS base
 WORKDIR /app
 RUN apk add --no-cache wget curl
 
-# Dependencies stage
+# Cài đặt dependencies stage
 FROM base AS dependencies
 COPY package*.json ./
 RUN npm ci --only=production && npm cache clean --force
@@ -13,14 +13,13 @@ FROM base AS build
 COPY package*.json ./
 RUN npm ci
 COPY . .
-# Add any build steps here if needed (like TypeScript compilation)
 
 # Production stage
 FROM base AS production
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nodejs -u 1001
 
-# Copy production dependencies
+# Copy dependencies
 COPY --from=dependencies --chown=nodejs:nodejs /app/node_modules ./node_modules
 
 # Copy application code
