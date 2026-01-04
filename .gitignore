@@ -92,13 +92,26 @@ mongo_data/
 # Docker volumes and temporary containers
 .dockerignore.local
 
+# Vercel
+.vercel
+
 # =========================================
 # 🧪 MISC
 # =========================================
 # TypeScript build artifacts
 *.tsbuildinfo
 
+# Test coverage
+coverage/
+.nyc_output/
+
 # Optional lock files (chọn giữ lại 1 loại)
-package-lock.json
+# package-lock.json
 # yarn.lock
 # pnpm-lock.yaml
+
+# Prettier cache
+.prettierignore
+
+# ESLint cache
+.eslintcache
