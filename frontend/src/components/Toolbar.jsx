@@ -5,8 +5,10 @@ import {
   AlertTriangle,
   Calendar,
   CheckCircle2,
+  Columns,
   History,
   LayoutGrid,
+  List,
   Star,
   Trash2,
 } from "lucide-react";
@@ -27,6 +29,8 @@ export default function Toolbar({
   onSearch,
   onClearCompleted,
   clearDisabled,
+  viewMode,
+  onViewModeChange,
 }) {
   const iconSize = 16;
   const iconStrokeWidth = 2;
@@ -111,6 +115,40 @@ export default function Toolbar({
 
         {/* Khối bên phải: Các tùy chọn */}
         <div className="toolbar-options">
+          <Segmented
+            value={viewMode}
+            onChange={onViewModeChange}
+            className="view-toggle"
+            options={[
+              {
+                label: (
+                  <div className="segmented-label">
+                    <List size={iconSize} strokeWidth={iconStrokeWidth} />
+                    <span>List</span>
+                  </div>
+                ),
+                value: "list",
+              },
+              {
+                label: (
+                  <div className="segmented-label">
+                    <Columns size={iconSize} strokeWidth={iconStrokeWidth} />
+                    <span>Kanban</span>
+                  </div>
+                ),
+                value: "kanban",
+              },
+              {
+                label: (
+                  <div className="segmented-label">
+                    <Calendar size={iconSize} strokeWidth={iconStrokeWidth} />
+                    <span>Calendar</span>
+                  </div>
+                ),
+                value: "calendar",
+              },
+            ]}
+          />
           <Select
             value={sort}
             onChange={onSortChange}

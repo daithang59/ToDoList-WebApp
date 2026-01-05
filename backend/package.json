@@ -18,8 +18,11 @@
     "express": "^5.1.0",
     "mongoose": "^8.19.1",
     "morgan": "^1.10.1",
+    "node-cron": "^3.0.3",
+    "nodemailer": "^6.10.1",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
+    "web-push": "^3.6.7",
     "yamljs": "^0.3.0"
   },
   "devDependencies": {

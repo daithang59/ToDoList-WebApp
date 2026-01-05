@@ -59,6 +59,11 @@ body {
   align-items: center;
   gap: 0.75rem;
 }
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
 .header-title h1 {
   font-size: 20px;
   font-weight: 600;
@@ -116,6 +121,9 @@ body {
 .add-tags-select {
   width: 100%;
 }
+.add-project-select {
+  width: 100%;
+}
 .control-panel {
   display: flex;
   flex-direction: column;
@@ -144,6 +152,9 @@ body {
   align-items: center;
   flex-wrap: wrap;
   gap: 0.75rem;
+}
+.view-toggle {
+  border-radius: 10px !important;
 }
 
 /* --- [SỬA] MÀU TÔ ĐẬM KHI CLICK TRONG TOOLBAR --- */
@@ -295,6 +306,18 @@ body {
   color: #ef4444;
   font-weight: 500;
 }
+.todo-status-chip {
+  border-radius: 999px;
+  border: none;
+  background-color: hsla(var(--glow-color), 0.12);
+  color: var(--text-2);
+}
+.todo-subtask-chip {
+  border-radius: 999px;
+  border: none;
+  background-color: hsla(var(--glow-color), 0.16);
+  color: var(--text-2);
+}
 .list-footer {
   padding-top: 1rem;
   text-align: right;
@@ -400,6 +423,125 @@ body {
   color: var(--text-2);
   font-size: 12px;
   margin: 0 !important;
+}
+
+.subtask-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.kanban-board {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.kanban-column {
+  background-color: var(--bg-elev-1);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  min-height: 320px;
+}
+
+.kanban-column-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+.kanban-column-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.kanban-card {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.75rem;
+  background-color: var(--bg-base);
+  box-shadow: 0 6px 12px -8px hsla(var(--shadow-color), 0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  cursor: grab;
+}
+
+.kanban-card.dragging {
+  opacity: 0.6;
+}
+
+.kanban-card-title {
+  font-weight: 600;
+  color: var(--text-1);
+}
+
+.kanban-card-meta {
+  font-size: 12px;
+  color: var(--text-2);
+}
+
+.kanban-card-tags,
+.kanban-card-flags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.kanban-card-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.calendar-view {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 1.5rem;
+}
+
+.calendar-panel {
+  padding: 1rem;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.calendar-panel h3 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+.calendar-cell {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.calendar-cell li {
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.calendar-more {
+  color: var(--text-2);
+  font-size: 11px;
+}
+
+.calendar-item {
+  cursor: pointer;
+}
+
+@media (max-width: 991.98px) {
+  .calendar-view {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* src/index.css */

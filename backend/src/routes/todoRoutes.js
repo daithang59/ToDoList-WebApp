@@ -4,61 +4,51 @@ import TodoValidation from "../middlewares/validation.js";
 
 const router = Router();
 
-// =================== COLLECTION ROUTES (không cần ID) ===================
-
-// GET /api/todos - Lấy tất cả todos với phân trang
+// Collection routes
 router.get("/", TodoController.getAllTodos);
-
-// POST /api/todos - Tạo todo mới
 router.post("/", TodoValidation.validateCreateTodo, TodoController.createTodo);
 
-// =================== QUERY ROUTES (các route đặc biệt) ===================
-
-// GET /api/todos/search - Tìm kiếm todos (phải đặt trước /:id)
-router.get("/search", TodoValidation.validateSearchQuery, TodoController.searchTodos);
-
-// GET /api/todos/filter - Lọc todos theo trạng thái
+// Query routes
+router.get(
+  "/search",
+  TodoValidation.validateSearchQuery,
+  TodoController.searchTodos
+);
 router.get("/filter", TodoController.filterTodos);
-
-// GET /api/todos/stats - Thống kê todos
 router.get("/stats", TodoController.getTodoStats);
 
-// =================== DEADLINE RELATED ROUTES ===================
-
-// GET /api/todos/due - Lấy todos sắp đến hạn
+// Deadline routes
 router.get("/due", TodoController.getDueTodos);
-
-// GET /api/todos/overdue - Lấy todos quá hạn
 router.get("/overdue", TodoController.getOverdueTodos);
 
-// =================== BULK OPERATIONS ===================
-
-// DELETE /api/todos/clear/completed - Xóa tất cả todos đã hoàn thành
+// Bulk operations
 router.delete("/clear/completed", TodoController.clearCompletedTodos);
+router.patch("/reorder", TodoController.reorderTodos);
 
-// =================== SINGLE RESOURCE ROUTES (cần ID) ===================
-
-// GET /api/todos/:id - Lấy todo theo ID
+// Single resource routes
 router.get("/:id", TodoValidation.validateObjectId, TodoController.getTodoById);
-
-// PATCH /api/todos/:id - Cập nhật todo
-router.patch("/:id", 
-  TodoValidation.validateObjectId, 
-  TodoValidation.validateUpdateTodo, 
+router.patch(
+  "/:id",
+  TodoValidation.validateObjectId,
+  TodoValidation.validateUpdateTodo,
   TodoController.updateTodo
 );
+router.delete(
+  "/:id",
+  TodoValidation.validateObjectId,
+  TodoController.deleteTodo
+);
 
-// DELETE /api/todos/:id - Xóa todo
-router.delete("/:id", TodoValidation.validateObjectId, TodoController.deleteTodo);
-
-// =================== TOGGLE OPERATIONS ===================
-
-// PATCH /api/todos/:id/toggle - Toggle trạng thái completed
-router.patch("/:id/toggle", TodoValidation.validateObjectId, TodoController.toggleTodo);
-
-// PATCH /api/todos/:id/important - Toggle trạng thái important
-router.patch("/:id/important", TodoValidation.validateObjectId, TodoController.toggleImportant);
+// Toggle operations
+router.patch(
+  "/:id/toggle",
+  TodoValidation.validateObjectId,
+  TodoController.toggleTodo
+);
+router.patch(
+  "/:id/important",
+  TodoValidation.validateObjectId,
+  TodoController.toggleImportant
+);
 
 export default router;
-
-

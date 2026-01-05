@@ -9,7 +9,17 @@ export default function AddTodoForm({
   loading,
   tags,
   onTagsChange,
+  projects,
+  projectId,
+  onProjectChange,
 }) {
+  const projectOptions = Array.isArray(projects)
+    ? projects.map((project) => ({
+        value: project._id,
+        label: project.name,
+      }))
+    : [];
+
   return (
     <div className="add-todo-form">
       <div className="add-todo-row">
@@ -34,6 +44,16 @@ export default function AddTodoForm({
         className="add-tags-select"
         maxTagCount="responsive"
         allowClear
+      />
+      <Select
+        value={projectId || ""}
+        onChange={(value) => onProjectChange(value || null)}
+        options={[
+          { value: "", label: "No project" },
+          ...projectOptions,
+        ]}
+        placeholder="Project"
+        className="add-project-select"
       />
     </div>
   );

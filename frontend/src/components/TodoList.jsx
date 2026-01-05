@@ -1,4 +1,3 @@
-// src/components/TodoList.jsx
 import { Button, List, Pagination, Tag, Tooltip, Typography } from "antd";
 import { Check, Pencil, Star, Trash2 } from "lucide-react";
 
@@ -9,112 +8,135 @@ export default function TodoList({
   pageSize,
   onPageChange,
   onToggle,
-  onToggleImportant, // Nhận prop mới
+  onToggleImportant,
   onDelete,
   onOpenModal,
+  dependencyMap,
 }) {
   return (
     <div className="todo-list-wrapper">
       <List
         dataSource={items}
         locale={{ emptyText: "No todos yet" }}
-        renderItem={(todo) => (
-          <List.Item
-            className={`todo-item ${todo.completed ? "completed" : ""} ${todo.important ? "important" : ""}`}
-          >
-            <div className="todo-item-layout">
-              <Tooltip
-                title={
-                  todo.completed ? "Mark as incomplete" : "Mark as complete"
-                }
-              >
-                <button
-                  className="todo-toggle"
-                  onClick={() => onToggle(todo._id, !todo.completed)}
-                >
-                  {todo.completed && <Check size={18} strokeWidth={3} />}
-                </button>
-              </Tooltip>
+        renderItem={(todo) => {
+          const isBlocked =
+            Array.isArray(todo.dependencies) &&
+            todo.dependencies.length > 0 &&
+            dependencyMap &&
+            todo.dependencies.some((id) => dependencyMap.get(id) === false);
+          const totalSubtasks = Array.isArray(todo.subtasks)
+            ? todo.subtasks.length
+            : 0;
+          const doneSubtasks = Array.isArray(todo.subtasks)
+            ? todo.subtasks.filter((subtask) => subtask.completed).length
+            : 0;
 
-              <div className="todo-content">
-                <Typography.Paragraph
-                  className="todo-title"
-                  style={{ marginBottom: 0 }}
-                >
-                  {todo.title}
-                </Typography.Paragraph>
-
-                {todo.description && (
-                  <Typography.Paragraph className="todo-description">
-                    {todo.description}
-                  </Typography.Paragraph>
-                )}
-
-                {Array.isArray(todo.tags) && todo.tags.length > 0 && (
-                  <div className="todo-tags">
-                    {todo.tags.map((tag, index) => (
-                      <Tag key={`${tag}-${index}`} className="todo-tag">
-                        {tag}
-                      </Tag>
-                    ))}
-                  </div>
-                )}
-
-                <div className="sub-line">
-                  {todo.deadline && (
-                    <span
-                      className={`deadline-chip ${new Date(todo.deadline) < new Date() && !todo.completed ? "overdue" : ""}`}
-                    >
-                      Deadline: {new Date(todo.deadline).toLocaleDateString()}
-                    </span>
-                  )}
-                  {todo.completed && (
-                    <div className="todo-status-tag">
-                      <Check size={12} strokeWidth={3} />
-                      <span>Done</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="todo-actions">
-                {/* [THÊM MỚI] Nút ngôi sao */}
+          return (
+            <List.Item
+              className={`todo-item ${todo.completed ? "completed" : ""} ${todo.important ? "important" : ""}`}
+            >
+              <div className="todo-item-layout">
                 <Tooltip
                   title={
-                    todo.important
-                      ? "Remove from important"
-                      : "Mark as important"
+                    todo.completed ? "Mark as incomplete" : "Mark as complete"
                   }
                 >
-                  <Button
-                    onClick={() => onToggleImportant(todo._id, !todo.important)}
-                    size="small"
-                    type="text"
-                    className="important-btn"
-                    icon={<Star size={16} />}
-                  />
+                  <button
+                    className="todo-toggle"
+                    onClick={() => onToggle(todo._id, !todo.completed)}
+                  >
+                    {todo.completed && <Check size={18} strokeWidth={3} />}
+                  </button>
                 </Tooltip>
-                <Tooltip title="Edit todo">
-                  <Button
-                    onClick={() => onOpenModal(todo)}
-                    size="small"
-                    type="text"
-                    icon={<Pencil size={16} />}
-                  />
-                </Tooltip>
-                <Tooltip title="Delete">
-                  <Button
-                    danger
-                    onClick={() => onDelete(todo._id)}
-                    size="small"
-                    type="text"
-                    icon={<Trash2 size={16} />}
-                  />
-                </Tooltip>
+
+                <div className="todo-content">
+                  <Typography.Paragraph
+                    className="todo-title"
+                    style={{ marginBottom: 0 }}
+                  >
+                    {todo.title}
+                  </Typography.Paragraph>
+
+                  {todo.description && (
+                    <Typography.Paragraph className="todo-description">
+                      {todo.description}
+                    </Typography.Paragraph>
+                  )}
+
+                  {Array.isArray(todo.tags) && todo.tags.length > 0 && (
+                    <div className="todo-tags">
+                      {todo.tags.map((tag, index) => (
+                        <Tag key={`${tag}-${index}`} className="todo-tag">
+                          {tag}
+                        </Tag>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="sub-line">
+                    {todo.deadline && (
+                      <span
+                        className={`deadline-chip ${new Date(todo.deadline) < new Date() && !todo.completed ? "overdue" : ""}`}
+                      >
+                        Deadline: {new Date(todo.deadline).toLocaleDateString()}
+                      </span>
+                    )}
+                    {todo.status === "in_progress" && (
+                      <Tag className="todo-status-chip">In Progress</Tag>
+                    )}
+                    {isBlocked && <Tag color="warning">Blocked</Tag>}
+                    {totalSubtasks > 0 && (
+                      <Tag className="todo-subtask-chip">
+                        Subtasks: {doneSubtasks}/{totalSubtasks}
+                      </Tag>
+                    )}
+                    {todo.completed && (
+                      <div className="todo-status-tag">
+                        <Check size={12} strokeWidth={3} />
+                        <span>Done</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="todo-actions">
+                  <Tooltip
+                    title={
+                      todo.important
+                        ? "Remove from important"
+                        : "Mark as important"
+                    }
+                  >
+                    <Button
+                      onClick={() => onToggleImportant(todo._id, !todo.important)}
+                      size="small"
+                      type="text"
+                      className="important-btn"
+                      icon={<Star size={16} />}
+                    />
+                  </Tooltip>
+                  <Tooltip title="Edit todo">
+                    <Button
+                      onClick={() => onOpenModal(todo)}
+                      size="small"
+                      type="text"
+                      icon={<Pencil size={16} />}
+                    />
+                  </Tooltip>
+                  <Tooltip title="Delete">
+                    <Button
+                      danger
+                      onClick={() => onDelete(todo._id)}
+                      size="small"
+                      type="text"
+                      icon={<Trash2 size={16} />}
+                    />
+                  </Tooltip>
+                </div>
               </div>
-            </div>
-          </List.Item>
-        )}
+            </List.Item>
+          );
+        }}
       />
       {total > pageSize && (
         <div className="list-footer">
