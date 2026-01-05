@@ -20,22 +20,78 @@ import {
 
 const { Header, Content } = Layout;
 
+const STORAGE_KEYS = {
+  filter: "todo:filter",
+  sort: "todo:sort",
+  pageSize: "todo:pageSize",
+  query: "todo:query",
+};
+
+const VALID_FILTERS = new Set([
+  "all",
+  "active",
+  "completed",
+  "important",
+  "today",
+  "overdue",
+]);
+
+const VALID_PAGE_SIZES = new Set([5, 8, 10, 15]);
+
+const getStoredString = (key, fallback) => {
+  if (typeof window === "undefined") return fallback;
+  const stored = localStorage.getItem(key);
+  return stored === null ? fallback : stored;
+};
+
+const getStoredNumber = (key, fallback) => {
+  if (typeof window === "undefined") return fallback;
+  const stored = localStorage.getItem(key);
+  const parsed = Number.parseInt(stored, 10);
+  return Number.isFinite(parsed) ? parsed : fallback;
+};
+
+const normalizeTags = (tags = []) => {
+  const seen = new Set();
+  return tags
+    .map((tag) => (typeof tag === "string" ? tag.trim() : ""))
+    .filter(Boolean)
+    .filter((tag) => {
+      const key = tag.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+};
+
 // Hàm delay để chờ giữa các lần thử lại
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export default function MainApp({ isDark, onToggleDark }) {
-  const { message } = App.useApp();
+  const { message, modal } = App.useApp();
 
   const [isSidebarVisible, setSidebarVisible] = useState(true);
   const [todos, setTodos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [addLoading, setAddLoading] = useState(false);
   const [newTitle, setNewTitle] = useState("");
-  const [filter, setFilter] = useState("all");
-  const [sort, setSort] = useState("newest");
+  const [newTags, setNewTags] = useState([]);
+  const [filter, setFilter] = useState(() => {
+    const stored = getStoredString(STORAGE_KEYS.filter, "all");
+    return VALID_FILTERS.has(stored) ? stored : "all";
+  });
+  const [sort, setSort] = useState(() => {
+    const stored = getStoredString(STORAGE_KEYS.sort, "newest");
+    return stored === "oldest" ? "oldest" : "newest";
+  });
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(8);
-  const [query, setQuery] = useState("");
+  const [pageSize, setPageSize] = useState(() => {
+    const stored = getStoredNumber(STORAGE_KEYS.pageSize, 8);
+    return VALID_PAGE_SIZES.has(stored) ? stored : 8;
+  });
+  const [query, setQuery] = useState(() =>
+    getStoredString(STORAGE_KEYS.query, "")
+  );
   const [modalOpen, setModalOpen] = useState(false);
   const [currentTodo, setCurrentTodo] = useState(null);
 
@@ -52,6 +108,18 @@ export default function MainApp({ isDark, onToggleDark }) {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.filter, filter);
+    localStorage.setItem(STORAGE_KEYS.sort, sort);
+    localStorage.setItem(STORAGE_KEYS.pageSize, String(pageSize));
+    localStorage.setItem(STORAGE_KEYS.query, query);
+  }, [filter, sort, pageSize, query]);
+
+  const hasCompleted = useMemo(
+    () => todos.some((todo) => todo.completed),
+    [todos]
+  );
 
   // useEffect fetch dữ liệu với cơ chế tự động thử lại
   useEffect(() => {
@@ -109,13 +177,45 @@ export default function MainApp({ isDark, onToggleDark }) {
   // Logic lọc công việc
   const filteredTodos = useMemo(() => {
     let data = [...todos];
+    const now = new Date();
+    const startOfToday = new Date(now);
+    startOfToday.setHours(0, 0, 0, 0);
+    const endOfToday = new Date(now);
+    endOfToday.setHours(23, 59, 59, 999);
+
     if (filter === "active") data = data.filter((t) => !t.completed);
     if (filter === "completed") data = data.filter((t) => t.completed);
     if (filter === "important") data = data.filter((t) => t.important);
-    if (query) {
-      data = data.filter((t) =>
-        t.title.toLowerCase().includes(query.toLowerCase())
-      );
+    if (filter === "today") {
+      data = data.filter((t) => {
+        if (!t.deadline) return false;
+        const deadline = new Date(t.deadline);
+        return deadline >= startOfToday && deadline <= endOfToday;
+      });
+    }
+    if (filter === "overdue") {
+      data = data.filter((t) => {
+        if (!t.deadline) return false;
+        const deadline = new Date(t.deadline);
+        return !t.completed && deadline < now;
+      });
+    }
+
+    const normalizedQuery = query.trim().toLowerCase();
+    if (normalizedQuery) {
+      data = data.filter((t) => {
+        const title = t.title?.toLowerCase() || "";
+        const description = t.description?.toLowerCase() || "";
+        const tags = Array.isArray(t.tags)
+          ? t.tags.map((tag) => tag.toLowerCase())
+          : [];
+
+        return (
+          title.includes(normalizedQuery) ||
+          description.includes(normalizedQuery) ||
+          tags.some((tag) => tag.includes(normalizedQuery))
+        );
+      });
     }
     return data;
   }, [todos, filter, query]);
@@ -141,15 +241,28 @@ export default function MainApp({ isDark, onToggleDark }) {
     return sortedTodos.slice(start, start + pageSize);
   }, [sortedTodos, page, pageSize]);
 
+  useEffect(() => {
+    const totalPages = Math.max(1, Math.ceil(sortedTodos.length / pageSize));
+    if (page > totalPages) {
+      setPage(totalPages);
+    }
+  }, [page, pageSize, sortedTodos.length]);
+
   // Các hàm xử lý CRUD
   async function handleAdd() {
     const t = newTitle.trim();
     if (!t) return message.warning("Please enter the task title");
     try {
       setAddLoading(true);
-      const created = await createTodo({ title: t });
+      const tags = normalizeTags(newTags);
+      const payload = { title: t };
+      if (tags.length) {
+        payload.tags = tags;
+      }
+      const created = await createTodo(payload);
       setTodos((prev) => [created, ...prev]);
       setNewTitle("");
+      setNewTags([]);
       message.success("Task added successfully!");
     } catch (e) {
       message.error(e?.response?.data?.message || "Unable to add task");
@@ -191,7 +304,11 @@ export default function MainApp({ isDark, onToggleDark }) {
   async function saveModal(changes) {
     if (!currentTodo) return;
     try {
-      const updated = await updateTodo(currentTodo._id, changes);
+      const normalized = { ...changes };
+      if (normalized.tags) {
+        normalized.tags = normalizeTags(normalized.tags);
+      }
+      const updated = await updateTodo(currentTodo._id, normalized);
       setTodos((prev) =>
         prev.map((x) => (x._id === currentTodo._id ? updated : x))
       );
@@ -207,14 +324,37 @@ export default function MainApp({ isDark, onToggleDark }) {
     setPage(1);
   }
 
+  function handleSearchChange(val) {
+    setQuery(val);
+    setPage(1);
+  }
+
+  function handlePageSizeChange(val) {
+    setPageSize(val);
+    setPage(1);
+  }
+
   async function handleClearCompleted() {
-    try {
-      await clearCompleted();
-      setTodos((prev) => prev.filter((t) => !t.completed));
-      message.success("Completed tasks cleared!");
-    } catch {
-      message.error("Cleanup operation failed");
+    if (!hasCompleted) {
+      message.info("No completed tasks to clear.");
+      return;
     }
+    modal.confirm({
+      title: "Clear completed tasks?",
+      content: "This action permanently deletes all completed tasks.",
+      okText: "Clear",
+      okButtonProps: { danger: true },
+      cancelText: "Cancel",
+      onOk: async () => {
+        try {
+          await clearCompleted();
+          setTodos((prev) => prev.filter((t) => !t.completed));
+          message.success("Completed tasks cleared!");
+        } catch {
+          message.error("Cleanup operation failed");
+        }
+      },
+    });
   }
 
   return (
@@ -249,7 +389,10 @@ export default function MainApp({ isDark, onToggleDark }) {
         ></div>
 
         <aside className="app-sidebar">
-          <Sidebar onMenuItemClick={handleMenuItemClick} />
+          <Sidebar
+            onMenuItemClick={handleMenuItemClick}
+            activeFilter={filter}
+          />
         </aside>
 
         <Content className="main-content">
@@ -258,6 +401,8 @@ export default function MainApp({ isDark, onToggleDark }) {
               <AddTodoForm
                 value={newTitle}
                 onChange={setNewTitle}
+                tags={newTags}
+                onTagsChange={setNewTags}
                 onAdd={handleAdd}
                 loading={addLoading}
               />
@@ -267,10 +412,11 @@ export default function MainApp({ isDark, onToggleDark }) {
                 sort={sort}
                 onSortChange={setSort}
                 pageSize={pageSize}
-                onPageSizeChange={setPageSize}
+                onPageSizeChange={handlePageSizeChange}
                 query={query}
-                onSearch={setQuery}
+                onSearch={handleSearchChange}
                 onClearCompleted={handleClearCompleted}
+                clearDisabled={!hasCompleted}
               />
             </div>
 

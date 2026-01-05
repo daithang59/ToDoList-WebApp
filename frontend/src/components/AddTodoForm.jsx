@@ -1,21 +1,40 @@
 // src/components/AddTodoForm.jsx
 
-import { Button, Input } from "antd";
+import { Button, Input, Select } from "antd";
 
-export default function AddTodoForm({ value, onChange, onAdd, loading }) {
+export default function AddTodoForm({
+  value,
+  onChange,
+  onAdd,
+  loading,
+  tags,
+  onTagsChange,
+}) {
   return (
     <div className="add-todo-form">
-      <Input
-        placeholder="Add a new todo..."
-        size="large"
+      <div className="add-todo-row">
+        <Input
+          placeholder="Add a new todo..."
+          size="large"
+          allowClear
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          onPressEnter={onAdd}
+        />
+        <Button type="primary" size="large" onClick={onAdd} loading={loading}>
+          Add
+        </Button>
+      </div>
+      <Select
+        mode="tags"
+        value={tags}
+        onChange={(next) => onTagsChange(next || [])}
+        tokenSeparators={[","]}
+        placeholder="Tags (comma-separated)"
+        className="add-tags-select"
+        maxTagCount="responsive"
         allowClear
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        onPressEnter={onAdd}
       />
-      <Button type="primary" size="large" onClick={onAdd} loading={loading}>
-        Add
-      </Button>
     </div>
   );
 }

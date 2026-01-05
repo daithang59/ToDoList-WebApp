@@ -1,7 +1,15 @@
 // src/components/Toolbar/Toolbar.jsx
 
 import { Button, Input, Segmented, Select } from "antd";
-import { CheckCircle2, History, LayoutGrid, Star, Trash2 } from "lucide-react";
+import {
+  AlertTriangle,
+  Calendar,
+  CheckCircle2,
+  History,
+  LayoutGrid,
+  Star,
+  Trash2,
+} from "lucide-react";
 
 const sortOptions = [
   { value: "newest", label: "Newest" },
@@ -18,6 +26,7 @@ export default function Toolbar({
   query,
   onSearch,
   onClearCompleted,
+  clearDisabled,
 }) {
   const iconSize = 16;
   const iconStrokeWidth = 2;
@@ -39,6 +48,15 @@ export default function Toolbar({
               </div>
             ),
             value: "all",
+          },
+          {
+            label: (
+              <div className="segmented-label">
+                <Calendar size={iconSize} strokeWidth={iconStrokeWidth} />
+                <span>Today</span>
+              </div>
+            ),
+            value: "today",
           },
           {
             label: (
@@ -66,6 +84,15 @@ export default function Toolbar({
               </div>
             ),
             value: "important",
+          },
+          {
+            label: (
+              <div className="segmented-label">
+                <AlertTriangle size={iconSize} strokeWidth={iconStrokeWidth} />
+                <span>Overdue</span>
+              </div>
+            ),
+            value: "overdue",
           },
         ]}
       />
@@ -99,7 +126,12 @@ export default function Toolbar({
             }))}
             style={{ minWidth: 110 }}
           />
-          <Button danger icon={<Trash2 size={16} />} onClick={onClearCompleted}>
+          <Button
+            danger
+            icon={<Trash2 size={16} />}
+            onClick={onClearCompleted}
+            disabled={clearDisabled}
+          >
             Clear Completed
           </Button>
         </div>

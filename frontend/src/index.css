@@ -103,10 +103,18 @@ body {
 /* --- [CẬP NHẬT] LAYOUT VÀ KHOẢNG CÁCH CHO TOOLBAR --- */
 .add-todo-form {
   display: flex;
+  flex-direction: column;
   gap: 0.75rem;
 }
-.add-todo-form .ant-input-wrapper {
+.add-todo-row {
+  display: flex;
+  gap: 0.75rem;
+}
+.add-todo-row .ant-input-wrapper {
   flex-grow: 1;
+}
+.add-tags-select {
+  width: 100%;
 }
 .control-panel {
   display: flex;
@@ -143,6 +151,10 @@ body {
   background-color: var(--bg-base) !important;
   padding: 4px !important;
   border-radius: 12px !important;
+}
+.ant-segmented-group {
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
 /* Sử dụng lại màu gradient xanh lá cây */
@@ -372,6 +384,22 @@ body {
 /* Thêm một đường viền để làm nổi bật card quan trọng */
 .todo-item.important {
   border-left: 4px solid #fadb14;
+}
+
+.todo-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.todo-tag {
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background-color: hsla(var(--glow-color), 0.08);
+  color: var(--text-2);
+  font-size: 12px;
+  margin: 0 !important;
 }
 
 /* src/index.css */

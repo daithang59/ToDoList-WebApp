@@ -1,5 +1,5 @@
 // src/components/TodoList.jsx
-import { Button, List, Pagination, Tooltip, Typography } from "antd";
+import { Button, List, Pagination, Tag, Tooltip, Typography } from "antd";
 import { Check, Pencil, Star, Trash2 } from "lucide-react";
 
 export default function TodoList({
@@ -48,6 +48,16 @@ export default function TodoList({
                   <Typography.Paragraph className="todo-description">
                     {todo.description}
                   </Typography.Paragraph>
+                )}
+
+                {Array.isArray(todo.tags) && todo.tags.length > 0 && (
+                  <div className="todo-tags">
+                    {todo.tags.map((tag, index) => (
+                      <Tag key={`${tag}-${index}`} className="todo-tag">
+                        {tag}
+                      </Tag>
+                    ))}
+                  </div>
                 )}
 
                 <div className="sub-line">

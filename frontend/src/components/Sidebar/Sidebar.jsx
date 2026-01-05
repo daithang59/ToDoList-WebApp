@@ -3,6 +3,9 @@
 import {
   AppstoreOutlined,
   CalendarOutlined,
+  CheckCircleOutlined,
+  ClockCircleOutlined,
+  ExclamationCircleOutlined,
   ProjectOutlined,
   StarOutlined,
 } from "@ant-design/icons";
@@ -22,16 +25,21 @@ const projectItems = [
 const quickFilterItems = [
   getItem("All", "filter-all", <AppstoreOutlined />),
   getItem("Today", "filter-today", <CalendarOutlined />),
+  getItem("Active", "filter-active", <ClockCircleOutlined />),
+  getItem("Completed", "filter-completed", <CheckCircleOutlined />),
   getItem("Important", "filter-important", <StarOutlined />),
+  getItem("Overdue", "filter-overdue", <ExclamationCircleOutlined />),
 ];
 
-export default function Sidebar({ onMenuItemClick }) {
+export default function Sidebar({ onMenuItemClick, activeFilter }) {
+  const selectedKey = activeFilter ? `filter-${activeFilter}` : "filter-all";
+
   return (
     <div className="sidebar-container">
       <div className="sidebar-menus">
         <Menu
           mode="inline"
-          defaultSelectedKeys={["filter-all"]}
+          selectedKeys={[selectedKey]}
           items={quickFilterItems}
           className="sidebar-menu"
           onClick={onMenuItemClick}
