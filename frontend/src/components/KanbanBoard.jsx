@@ -15,6 +15,7 @@ export default function KanbanBoard({
   onDelete,
   onOpenModal,
   dependencyMap,
+  projectMap,
 }) {
   const [draggingId, setDraggingId] = useState(null);
 
@@ -91,6 +92,7 @@ export default function KanbanBoard({
                 const doneSubtasks = Array.isArray(todo.subtasks)
                   ? todo.subtasks.filter((subtask) => subtask.completed).length
                   : 0;
+                const project = projectMap?.get(todo.projectId);
 
                 return (
                   <div
@@ -118,15 +120,19 @@ export default function KanbanBoard({
                       </div>
                     )}
 
+                    {project && (
+                      <Tag color={project.color || "default"}>{project.name}</Tag>
+                    )}
+
                     <div className="kanban-card-flags">
-                      {isBlocked && <Tag color="warning">Blocked</Tag>}
+                      {isBlocked && <Tag color="orange">Blocked</Tag>}
                       {totalSubtasks > 0 && (
                         <Tag>
                           Subtasks: {doneSubtasks}/{totalSubtasks}
                         </Tag>
                       )}
                       {todo.completed && (
-                        <Tag color="success">
+                        <Tag color="green">
                           <Check size={12} /> Done
                         </Tag>
                       )}

@@ -205,7 +205,7 @@ export default function MainApp({ isDark, onToggleDark }) {
     const maxRetries = 3;
     for (let i = 0; i < maxRetries; i += 1) {
       try {
-        const data = await fetchTodos();
+        const data = await fetchTodos({ memberId: clientId });
         if (Array.isArray(data)) {
           const normalized = normalizeTodos(data);
           setTodos(normalized);
@@ -228,7 +228,10 @@ export default function MainApp({ isDark, onToggleDark }) {
 
   const loadProjects = async () => {
     try {
-      const data = await fetchProjects();
+      const data = await fetchProjects({
+        ownerId: clientId,
+        sharedWith: clientId,
+      });
       setProjects(Array.isArray(data) ? data : []);
     } catch {
       setProjects([]);
@@ -279,6 +282,11 @@ export default function MainApp({ isDark, onToggleDark }) {
   const dependencyMap = useMemo(
     () => new Map(todos.map((todo) => [todo._id, Boolean(todo.completed)])),
     [todos]
+  );
+
+  const projectMap = useMemo(
+    () => new Map(projects.map((project) => [project._id, project])),
+    [projects]
   );
 
   const isBlocked = (todo) =>
@@ -956,9 +964,9 @@ export default function MainApp({ isDark, onToggleDark }) {
           <h1>To-Do List</h1>
         </div>
         <div className="header-actions">
-          {!isOnline && <Tag color="warning">Offline</Tag>}
-          {queueCount > 0 && <Tag color="processing">Sync pending: {queueCount}</Tag>}
-          {syncing && <Tag color="processing">Syncing...</Tag>}
+          {!isOnline && <Tag color="volcano">Offline</Tag>}
+          {queueCount > 0 && <Tag color="blue">Sync pending: {queueCount}</Tag>}
+          {syncing && <Tag color="cyan">Syncing...</Tag>}
           <Switch
             checked={isDark}
             onChange={onToggleDark}
@@ -1031,6 +1039,7 @@ export default function MainApp({ isDark, onToggleDark }) {
                   onDelete={handleDelete}
                   onOpenModal={openModal}
                   dependencyMap={dependencyMap}
+                  projectMap={projectMap}
                 />
               ) : viewMode === "calendar" ? (
                 <CalendarView items={sortedTodos} onOpenModal={openModal} />
@@ -1046,6 +1055,7 @@ export default function MainApp({ isDark, onToggleDark }) {
                   onDelete={handleDelete}
                   onOpenModal={openModal}
                   dependencyMap={dependencyMap}
+                  projectMap={projectMap}
                 />
               )}
             </div>

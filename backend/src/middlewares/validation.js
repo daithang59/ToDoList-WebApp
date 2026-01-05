@@ -26,6 +26,7 @@ class TodoValidation {
       reminder,
       sharedWith,
       order,
+      ownerId,
     } = req.body;
     const errors = [];
 
@@ -226,6 +227,15 @@ class TodoValidation {
       }
     }
 
+    if (ownerId !== undefined) {
+      if (typeof ownerId !== "string" || !ownerId.trim()) {
+        errors.push({
+          field: "ownerId",
+          message: "OwnerId must be a non-empty string",
+        });
+      }
+    }
+
     if (errors.length > 0) {
       return res.status(400).json({
         message: 'Validation failed',
@@ -253,6 +263,7 @@ class TodoValidation {
       reminder,
       sharedWith,
       order,
+      ownerId,
     } = req.body;
     const errors = [];
 
@@ -466,6 +477,15 @@ class TodoValidation {
         errors.push({
           field: "sharedWith",
           message: "SharedWith must contain valid emails",
+        });
+      }
+    }
+
+    if (ownerId !== undefined) {
+      if (typeof ownerId !== "string" || !ownerId.trim()) {
+        errors.push({
+          field: "ownerId",
+          message: "OwnerId must be a non-empty string",
         });
       }
     }

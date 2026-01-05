@@ -12,6 +12,7 @@ export default function TodoList({
   onDelete,
   onOpenModal,
   dependencyMap,
+  projectMap,
 }) {
   return (
     <div className="todo-list-wrapper">
@@ -30,6 +31,7 @@ export default function TodoList({
           const doneSubtasks = Array.isArray(todo.subtasks)
             ? todo.subtasks.filter((subtask) => subtask.completed).length
             : 0;
+          const project = projectMap?.get(todo.projectId);
 
           return (
             <List.Item
@@ -81,10 +83,15 @@ export default function TodoList({
                         Deadline: {new Date(todo.deadline).toLocaleDateString()}
                       </span>
                     )}
+                    {project && (
+                      <Tag color={project.color || "default"}>
+                        {project.name}
+                      </Tag>
+                    )}
                     {todo.status === "in_progress" && (
                       <Tag className="todo-status-chip">In Progress</Tag>
                     )}
-                    {isBlocked && <Tag color="warning">Blocked</Tag>}
+                    {isBlocked && <Tag color="orange">Blocked</Tag>}
                     {totalSubtasks > 0 && (
                       <Tag className="todo-subtask-chip">
                         Subtasks: {doneSubtasks}/{totalSubtasks}

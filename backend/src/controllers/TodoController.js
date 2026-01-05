@@ -19,6 +19,7 @@ class TodoController extends BaseController {
       completed,
       tags,
       sharedWith,
+      memberId,
     } = req.query;
 
     const options = {
@@ -43,6 +44,15 @@ class TodoController extends BaseController {
     }
     if (sharedWith) {
       options.filter.sharedWith = sharedWith;
+    }
+    if (memberId) {
+      const memberFilter = {
+        $or: [{ ownerId: memberId }, { sharedWith: memberId }],
+      };
+      const hasFilters = Object.keys(options.filter).length > 0;
+      options.filter = hasFilters
+        ? { $and: [options.filter, memberFilter] }
+        : memberFilter;
     }
 
     const result = await TodoService.getTodos(options);
@@ -108,8 +118,16 @@ class TodoController extends BaseController {
 
   // GET /api/todos/filter - Filter todos
   static filterTodos = BaseController.asyncHandler(async (req, res) => {
-    const { completed, important, status, tags, projectId, ownerId, sharedWith } =
-      req.query;
+    const {
+      completed,
+      important,
+      status,
+      tags,
+      projectId,
+      ownerId,
+      sharedWith,
+      memberId,
+    } = req.query;
     const filterOptions = {
       completed: completed !== undefined ? completed === "true" : undefined,
       important: important !== undefined ? important === "true" : undefined,
@@ -118,6 +136,7 @@ class TodoController extends BaseController {
       projectId,
       ownerId,
       sharedWith,
+      memberId,
     };
 
     const result = await TodoService.filterTodos(filterOptions);

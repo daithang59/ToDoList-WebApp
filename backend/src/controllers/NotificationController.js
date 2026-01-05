@@ -12,7 +12,8 @@ class NotificationController extends BaseController {
   });
 
   static unsubscribe = BaseController.asyncHandler(async (req, res) => {
-    const { ownerId, endpoint } = req.body;
+    const ownerId = req.body?.ownerId || req.query?.ownerId;
+    const endpoint = req.body?.endpoint || req.query?.endpoint;
     await NotificationService.unsubscribe(ownerId, endpoint);
     res.json({ message: "Unsubscribed" });
   });

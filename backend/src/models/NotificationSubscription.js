@@ -9,6 +9,10 @@ const notificationSubscriptionSchema = new mongoose.Schema(
 );
 
 notificationSubscriptionSchema.index({ ownerId: 1 });
+notificationSubscriptionSchema.index(
+  { ownerId: 1, "subscription.endpoint": 1 },
+  { unique: true }
+);
 
 export default mongoose.model(
   "NotificationSubscription",

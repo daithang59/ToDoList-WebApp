@@ -268,8 +268,11 @@ class TodoService {
       await this.ensureDependenciesExist(processedDependencies);
     }
 
-    const resolvedStatus = status || (completed ? "done" : "todo");
-    const resolvedCompleted = resolvedStatus === "done" || Boolean(completed);
+    let resolvedStatus = status || (completed ? "done" : "todo");
+    let resolvedCompleted = resolvedStatus === "done" || Boolean(completed);
+    if (resolvedCompleted) {
+      resolvedStatus = "done";
+    }
 
     if (resolvedCompleted) {
       await this.ensureDependenciesCompleted(processedDependencies);
@@ -502,6 +505,7 @@ class TodoService {
       projectId,
       ownerId,
       sharedWith,
+      memberId,
     } = filterOptions;
     const filter = {};
 
@@ -560,6 +564,13 @@ class TodoService {
 
     if (sharedWith) {
       filter.sharedWith = sharedWith;
+    }
+
+    if (memberId) {
+      const memberFilter = { $or: [{ ownerId: memberId }, { sharedWith: memberId }] };
+      const hasFilters = Object.keys(filter).length > 0;
+      const finalFilter = hasFilters ? { $and: [filter, memberFilter] } : memberFilter;
+      return this.getTodos({ ...paginationOptions, filter: finalFilter });
     }
 
     return this.getTodos({ ...paginationOptions, filter });
@@ -648,6 +659,7 @@ class TodoService {
 
     const todos = await Todo.find({ _id: { $in: ids } });
     const todoMap = new Map(todos.map((todo) => [String(todo._id), todo]));
+    const recurringCandidates = [];
 
     for (const item of items) {
       const todo = todoMap.get(String(item.id));
@@ -657,6 +669,9 @@ class TodoService {
       }
       if (item.status === "done") {
         await this.ensureDependenciesCompleted(todo.dependencies || []);
+      }
+      if (item.status === "done" && !todo.completed && todo.recurrence?.enabled) {
+        recurringCandidates.push(todo);
       }
     }
 
@@ -684,6 +699,10 @@ class TodoService {
 
     if (bulkOps.length > 0) {
       await Todo.bulkWrite(bulkOps);
+    }
+
+    for (const todo of recurringCandidates) {
+      await this.createNextRecurringTodo(todo);
     }
 
     return Todo.find({ _id: { $in: ids } });
