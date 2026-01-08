@@ -1,6 +1,6 @@
 import { App, Button, Layout, Spin, Switch, Tag } from "antd";
 import { Menu } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import logo from "./assets/logo.svg";
 import AddTodoForm from "./components/AddTodoForm.jsx";
 import CalendarView from "./components/CalendarView.jsx";
@@ -20,6 +20,7 @@ import {
   deleteTodo,
   enqueueAction,
   fetchProjects,
+  fetchStats,
   fetchTodos,
   getCachedTodos,
   getClientId,
@@ -31,6 +32,7 @@ import {
   updateProject,
   updateTodo,
 } from "./services/todoService";
+import { ensureAuthToken } from "./services/authService";
 import { registerPushSubscription } from "./services/notificationService";
 
 const { Header, Content } = Layout;
@@ -56,6 +58,7 @@ const VALID_FILTERS = new Set([
 const VALID_PAGE_SIZES = new Set([5, 8, 10, 15]);
 const VALID_VIEW_MODES = new Set(["list", "kanban", "calendar"]);
 const OBJECT_ID_REGEX = /^[0-9a-fA-F]{24}$/;
+const MAX_VIEW_LIMIT = 200;
 
 const getStoredString = (key, fallback) => {
   if (typeof window === "undefined") return fallback;
@@ -134,10 +137,11 @@ export default function MainApp({ isDark, onToggleDark }) {
     return stored === "oldest" ? "oldest" : "newest";
   });
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(() => {
+  const initialPageSize = (() => {
     const stored = getStoredNumber(STORAGE_KEYS.pageSize, 8);
     return VALID_PAGE_SIZES.has(stored) ? stored : 8;
-  });
+  })();
+  const [pageSize, setPageSize] = useState(initialPageSize);
   const [query, setQuery] = useState(() =>
     getStoredString(STORAGE_KEYS.query, "")
   );
@@ -157,6 +161,14 @@ export default function MainApp({ isDark, onToggleDark }) {
   );
   const [queueCount, setQueueCount] = useState(() => getQueue().length);
   const [syncing, setSyncing] = useState(false);
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: initialPageSize,
+    total: 0,
+    pages: 0,
+  });
+  const [hasCompleted, setHasCompleted] = useState(false);
+  const paramsRef = useRef(null);
 
   useEffect(() => {
     const handleResize = () => {
@@ -181,10 +193,6 @@ export default function MainApp({ isDark, onToggleDark }) {
   }, [filter, sort, pageSize, query, viewMode, activeProjectId]);
 
   useEffect(() => {
-    setCachedTodos(todos);
-  }, [todos]);
-
-  useEffect(() => {
     if (activeProjectId && activeProjectId !== "all") {
       setNewProjectId(activeProjectId);
     } else {
@@ -192,68 +200,184 @@ export default function MainApp({ isDark, onToggleDark }) {
     }
   }, [activeProjectId]);
 
-  const loadTodos = async () => {
+  const todoParams = useMemo(() => {
+    const isListView = viewMode === "list";
+    const params = {
+      page: isListView ? page : 1,
+      limit: isListView ? pageSize : MAX_VIEW_LIMIT,
+      sortBy: "createdAt",
+      sortOrder: sort === "oldest" ? "asc" : "desc",
+    };
+    if (filter && filter !== "all") params.filter = filter;
+    if (query.trim()) params.query = query.trim();
+    if (activeProjectId && activeProjectId !== "all") {
+      params.projectId = activeProjectId;
+    }
+    return params;
+  }, [viewMode, page, pageSize, sort, filter, query, activeProjectId]);
+
+  const ensureAuth = useCallback(async () => {
+    if (!navigator.onLine) return true;
+    try {
+      await ensureAuthToken(clientId);
+      return true;
+    } catch {
+      message.error("Authentication failed.");
+      return false;
+    }
+  }, [clientId, message]);
+
+  const loadTodos = useCallback(async () => {
     setLoading(true);
+    const params = todoParams;
+    paramsRef.current = params;
+    const cacheKey = JSON.stringify(params);
+
+    const buildPaginationFallback = (items) => ({
+      page: params.page || 1,
+      limit: params.limit || pageSize,
+      total: items.length,
+      pages: items.length > 0 ? 1 : 0,
+    });
+
     if (!navigator.onLine) {
       const cached = getCachedTodos();
-      setTodos(normalizeTodos(cached));
+      const cachedItems = Array.isArray(cached)
+        ? cached
+        : Array.isArray(cached?.items)
+          ? cached.items
+          : [];
+      const cachedPagination =
+        !Array.isArray(cached) && cached?.pagination
+          ? cached.pagination
+          : buildPaginationFallback(cachedItems);
+      setTodos(normalizeTodos(cachedItems));
+      setPagination(cachedPagination);
+      setHasCompleted(cachedItems.some((todo) => todo.completed));
+      setLoading(false);
+      return;
+    }
+
+    const authOk = await ensureAuth();
+    if (!authOk) {
       setLoading(false);
       return;
     }
 
     let success = false;
+    let latestItems = [];
+    let latestPagination = buildPaginationFallback([]);
     const maxRetries = 3;
     for (let i = 0; i < maxRetries; i += 1) {
       try {
-        const data = await fetchTodos({ memberId: clientId });
-        if (Array.isArray(data)) {
-          const normalized = normalizeTodos(data);
-          setTodos(normalized);
-          success = true;
-          break;
-        }
+        const data = await fetchTodos(params);
+        const payload = Array.isArray(data)
+          ? { todos: data, pagination: buildPaginationFallback(data) }
+          : data;
+        const items = Array.isArray(payload?.todos) ? payload.todos : [];
+        const nextPagination =
+          payload?.pagination || buildPaginationFallback(items);
+        latestItems = items;
+        latestPagination = nextPagination;
+        setTodos(normalizeTodos(items));
+        setPagination(nextPagination);
+        setCachedTodos({
+          key: cacheKey,
+          params,
+          items,
+          pagination: nextPagination,
+          updatedAt: new Date().toISOString(),
+        });
+        success = true;
+        break;
       } catch (error) {
         if (i < maxRetries - 1) {
           await sleep(1500);
         }
       }
     }
+
     if (!success) {
       message.error("Failed to load the task list.");
       const cached = getCachedTodos();
-      setTodos(normalizeTodos(cached));
+      const cachedItems = Array.isArray(cached)
+        ? cached
+        : Array.isArray(cached?.items)
+          ? cached.items
+          : [];
+      const cachedPagination =
+        !Array.isArray(cached) && cached?.pagination
+          ? cached.pagination
+          : buildPaginationFallback(cachedItems);
+      setTodos(normalizeTodos(cachedItems));
+      setPagination(cachedPagination);
+      setHasCompleted(cachedItems.some((todo) => todo.completed));
+      setLoading(false);
+      return;
     }
-    setLoading(false);
-  };
 
-  const loadProjects = async () => {
     try {
-      const data = await fetchProjects({
-        ownerId: clientId,
-        sharedWith: clientId,
-      });
+      const stats = await fetchStats();
+      setHasCompleted(Boolean(stats?.completed));
+    } catch {
+      setHasCompleted(latestItems.some((todo) => todo.completed));
+    }
+
+    setLoading(false);
+  }, [todoParams, pageSize, ensureAuth, message]);
+
+  const loadProjects = useCallback(async () => {
+    if (!navigator.onLine) {
+      setProjects([]);
+      return;
+    }
+    const authOk = await ensureAuth();
+    if (!authOk) {
+      setProjects([]);
+      return;
+    }
+    try {
+      const data = await fetchProjects();
       setProjects(Array.isArray(data) ? data : []);
     } catch {
       setProjects([]);
     }
-  };
+  }, [ensureAuth]);
 
-  const syncQueueAndRefresh = async () => {
+  const syncQueueAndRefresh = useCallback(async () => {
     if (!navigator.onLine) return;
+    const authOk = await ensureAuth();
+    if (!authOk) return;
     setSyncing(true);
     const result = await processQueue();
     setQueueCount(result.remaining);
     await loadTodos();
     setSyncing(false);
-  };
+  }, [ensureAuth, loadTodos]);
 
   useEffect(() => {
     loadTodos();
-    loadProjects();
-    if (navigator.onLine && getQueue().length > 0) {
-      syncQueueAndRefresh();
+  }, [loadTodos]);
+
+  useEffect(() => {
+    if (isOnline) {
+      loadProjects();
+      if (getQueue().length > 0) {
+        syncQueueAndRefresh();
+      }
     }
-  }, []);
+  }, [isOnline, loadProjects, syncQueueAndRefresh]);
+
+  useEffect(() => {
+    if (!paramsRef.current) return;
+    setCachedTodos({
+      key: JSON.stringify(paramsRef.current),
+      params: paramsRef.current,
+      items: todos,
+      pagination,
+      updatedAt: new Date().toISOString(),
+    });
+  }, [todos, pagination]);
 
   useEffect(() => {
     const handleOnline = () => {
@@ -272,12 +396,13 @@ export default function MainApp({ isDark, onToggleDark }) {
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
     };
-  }, []);
+  }, [message, syncQueueAndRefresh]);
 
-  const hasCompleted = useMemo(
-    () => todos.some((todo) => todo.completed),
-    [todos]
-  );
+  useEffect(() => {
+    if (!isOnline) {
+      refreshHasCompleted(todos);
+    }
+  }, [isOnline, todos]);
 
   const dependencyMap = useMemo(
     () => new Map(todos.map((todo) => [todo._id, Boolean(todo.completed)])),
@@ -296,7 +421,7 @@ export default function MainApp({ isDark, onToggleDark }) {
 
   const handleEnablePush = async () => {
     try {
-      const result = await registerPushSubscription(clientId);
+      const result = await registerPushSubscription();
       if (result.enabled) {
         message.success("Push notifications enabled.");
       } else if (result.reason === "permission_denied") {
@@ -329,86 +454,32 @@ export default function MainApp({ isDark, onToggleDark }) {
     }
   };
 
-  const filteredTodos = useMemo(() => {
-    let data = [...todos];
-    const now = new Date();
-    const startOfToday = new Date(now);
-    startOfToday.setHours(0, 0, 0, 0);
-    const endOfToday = new Date(now);
-    endOfToday.setHours(23, 59, 59, 999);
-
-    if (activeProjectId && activeProjectId !== "all") {
-      data = data.filter((todo) => todo.projectId === activeProjectId);
+  useEffect(() => {
+    if (viewMode !== "list" && page !== 1) {
+      setPage(1);
     }
-    if (filter === "active") data = data.filter((todo) => !todo.completed);
-    if (filter === "completed") data = data.filter((todo) => todo.completed);
-    if (filter === "important") data = data.filter((todo) => todo.important);
-    if (filter === "today") {
-      data = data.filter((todo) => {
-        if (!todo.deadline) return false;
-        const deadline = new Date(todo.deadline);
-        return deadline >= startOfToday && deadline <= endOfToday;
-      });
-    }
-    if (filter === "overdue") {
-      data = data.filter((todo) => {
-        if (!todo.deadline) return false;
-        const deadline = new Date(todo.deadline);
-        return !todo.completed && deadline < now;
-      });
-    }
-
-    const normalizedQuery = query.trim().toLowerCase();
-    if (normalizedQuery) {
-      data = data.filter((todo) => {
-        const title = todo.title?.toLowerCase() || "";
-        const description = todo.description?.toLowerCase() || "";
-        const tags = Array.isArray(todo.tags)
-          ? todo.tags.map((tag) => tag.toLowerCase())
-          : [];
-        const subtaskTitles = Array.isArray(todo.subtasks)
-          ? todo.subtasks.map((subtask) => subtask.title?.toLowerCase() || "")
-          : [];
-
-        return (
-          title.includes(normalizedQuery) ||
-          description.includes(normalizedQuery) ||
-          tags.some((tag) => tag.includes(normalizedQuery)) ||
-          subtaskTitles.some((subtask) => subtask.includes(normalizedQuery))
-        );
-      });
-    }
-    return data;
-  }, [todos, filter, query, activeProjectId]);
-
-  const sortedTodos = useMemo(() => {
-    let data = [...filteredTodos];
-    switch (sort) {
-      case "oldest":
-        return data.sort(
-          (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
-        );
-      default:
-        return data.sort(
-          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-        );
-    }
-  }, [filteredTodos, sort]);
-
-  const pagedTodos = useMemo(() => {
-    const start = (page - 1) * pageSize;
-    return sortedTodos.slice(start, start + pageSize);
-  }, [sortedTodos, page, pageSize]);
+  }, [viewMode, page]);
 
   useEffect(() => {
-    const totalPages = Math.max(1, Math.ceil(sortedTodos.length / pageSize));
-    if (page > totalPages) {
-      setPage(totalPages);
+    if (pagination.pages && page > pagination.pages) {
+      setPage(pagination.pages);
     }
-  }, [page, pageSize, sortedTodos.length]);
+  }, [page, pagination.pages]);
 
   const updateQueueCount = () => {
     setQueueCount(getQueue().length);
+  };
+
+  const adjustPaginationTotal = (delta) => {
+    setPagination((prev) => {
+      const total = Math.max(0, prev.total + delta);
+      const pages = Math.max(1, Math.ceil(total / prev.limit));
+      return { ...prev, total, pages };
+    });
+  };
+
+  const refreshHasCompleted = (items) => {
+    setHasCompleted(items.some((todo) => todo.completed));
   };
 
   const mergeQueuedCreate = (tempId, changes) => {
@@ -461,7 +532,12 @@ export default function MainApp({ isDark, onToggleDark }) {
       syncStatus: isOnline ? "syncing" : "pending",
     });
 
-    setTodos((prev) => [localTodo, ...prev]);
+    setTodos((prev) => {
+      const next = [localTodo, ...prev];
+      refreshHasCompleted(next);
+      return next;
+    });
+    adjustPaginationTotal(1);
     setNewTitle("");
     setNewTags([]);
 
@@ -469,10 +545,18 @@ export default function MainApp({ isDark, onToggleDark }) {
       title,
       tags,
       projectId: newProjectId || undefined,
-      ownerId: clientId,
     };
 
     if (!navigator.onLine) {
+      enqueueAction({ type: QUEUE_ACTIONS.CREATE, tempId, payload });
+      updateQueueCount();
+      setAddLoading(false);
+      message.info("Saved offline. Will sync later.");
+      return;
+    }
+
+    const authOk = await ensureAuth();
+    if (!authOk) {
       enqueueAction({ type: QUEUE_ACTIONS.CREATE, tempId, payload });
       updateQueueCount();
       setAddLoading(false);
@@ -494,7 +578,12 @@ export default function MainApp({ isDark, onToggleDark }) {
         updateQueueCount();
         message.info("Saved offline. Will sync later.");
       } else {
-        setTodos((prev) => prev.filter((todo) => todo._id !== tempId));
+        setTodos((prev) => {
+          const next = prev.filter((todo) => todo._id !== tempId);
+          refreshHasCompleted(next);
+          return next;
+        });
+        adjustPaginationTotal(-1);
         message.error(error?.response?.data?.message || "Unable to add task");
       }
     } finally {
@@ -521,11 +610,13 @@ export default function MainApp({ isDark, onToggleDark }) {
       completedAt: completed ? new Date().toISOString() : null,
     };
 
-    setTodos((prev) =>
-      prev.map((todo) =>
+    setTodos((prev) => {
+      const next = prev.map((todo) =>
         todo._id === id ? normalizeTodo({ ...todo, ...updates }) : todo
-      )
-    );
+      );
+      refreshHasCompleted(next);
+      return next;
+    });
 
     if (!navigator.onLine) {
       if (!OBJECT_ID_REGEX.test(id)) {
@@ -538,13 +629,27 @@ export default function MainApp({ isDark, onToggleDark }) {
       return;
     }
 
+    const authOk = await ensureAuth();
+    if (!authOk) {
+      if (!OBJECT_ID_REGEX.test(id)) {
+        mergeQueuedCreate(id, updates);
+      } else {
+        enqueueAction({ type: QUEUE_ACTIONS.UPDATE, id, payload: updates });
+        updateQueueCount();
+      }
+      message.info("Update saved offline.");
+      return;
+    }
+
     try {
       const updated = await updateTodo(id, updates);
-      setTodos((prev) =>
-        prev.map((todo) =>
+      setTodos((prev) => {
+        const next = prev.map((todo) =>
           todo._id === id ? normalizeTodo(updated) : todo
-        )
-      );
+        );
+        refreshHasCompleted(next);
+        return next;
+      });
       message.success("Task status updated!");
       if (target.recurrence?.enabled && completed) {
         await loadTodos();
@@ -559,9 +664,11 @@ export default function MainApp({ isDark, onToggleDark }) {
         }
         message.info("Update saved offline.");
       } else {
-        setTodos((prev) =>
-          prev.map((todo) => (todo._id === id ? target : todo))
-        );
+        setTodos((prev) => {
+          const next = prev.map((todo) => (todo._id === id ? target : todo));
+          refreshHasCompleted(next);
+          return next;
+        });
         message.error(error?.response?.data?.message || "Unable to update status");
       }
     }
@@ -578,6 +685,18 @@ export default function MainApp({ isDark, onToggleDark }) {
     );
 
     if (!navigator.onLine) {
+      if (!OBJECT_ID_REGEX.test(id)) {
+        mergeQueuedCreate(id, { important });
+      } else {
+        enqueueAction({ type: QUEUE_ACTIONS.UPDATE, id, payload: { important } });
+        updateQueueCount();
+      }
+      message.info("Update saved offline.");
+      return;
+    }
+
+    const authOk = await ensureAuth();
+    if (!authOk) {
       if (!OBJECT_ID_REGEX.test(id)) {
         mergeQueuedCreate(id, { important });
       } else {
@@ -618,9 +737,26 @@ export default function MainApp({ isDark, onToggleDark }) {
 
   async function handleDelete(id) {
     const previous = todos;
-    setTodos((prev) => prev.filter((todo) => todo._id !== id));
+    setTodos((prev) => {
+      const next = prev.filter((todo) => todo._id !== id);
+      refreshHasCompleted(next);
+      return next;
+    });
+    adjustPaginationTotal(-1);
 
     if (!navigator.onLine) {
+      if (!OBJECT_ID_REGEX.test(id)) {
+        removeQueuedCreate(id);
+      } else {
+        enqueueAction({ type: QUEUE_ACTIONS.DELETE, id });
+        updateQueueCount();
+      }
+      message.info("Delete queued for sync.");
+      return;
+    }
+
+    const authOk = await ensureAuth();
+    if (!authOk) {
       if (!OBJECT_ID_REGEX.test(id)) {
         removeQueuedCreate(id);
       } else {
@@ -645,6 +781,8 @@ export default function MainApp({ isDark, onToggleDark }) {
         message.info("Delete queued for sync.");
       } else {
         setTodos(previous);
+        refreshHasCompleted(previous);
+        adjustPaginationTotal(1);
         message.error("Unable to delete task");
       }
     }
@@ -690,13 +828,15 @@ export default function MainApp({ isDark, onToggleDark }) {
     }
 
     const previous = currentTodo;
-    setTodos((prev) =>
-      prev.map((todo) =>
+    setTodos((prev) => {
+      const next = prev.map((todo) =>
         todo._id === currentTodo._id
           ? normalizeTodo({ ...todo, ...normalizedChanges })
           : todo
-      )
-    );
+      );
+      refreshHasCompleted(next);
+      return next;
+    });
     closeModal();
 
     if (!navigator.onLine) {
@@ -714,13 +854,31 @@ export default function MainApp({ isDark, onToggleDark }) {
       return;
     }
 
+    const authOk = await ensureAuth();
+    if (!authOk) {
+      if (!OBJECT_ID_REGEX.test(currentTodo._id)) {
+        mergeQueuedCreate(currentTodo._id, normalizedChanges);
+      } else {
+        enqueueAction({
+          type: QUEUE_ACTIONS.UPDATE,
+          id: currentTodo._id,
+          payload: normalizedChanges,
+        });
+        updateQueueCount();
+      }
+      message.info("Update saved offline.");
+      return;
+    }
+
     try {
       const updated = await updateTodo(currentTodo._id, normalizedChanges);
-      setTodos((prev) =>
-        prev.map((todo) =>
+      setTodos((prev) => {
+        const next = prev.map((todo) =>
           todo._id === currentTodo._id ? normalizeTodo(updated) : todo
-        )
-      );
+        );
+        refreshHasCompleted(next);
+        return next;
+      });
       message.success("Task updated successfully!");
       if (previous.recurrence?.enabled && normalizedChanges.status === "done") {
         await loadTodos();
@@ -739,9 +897,13 @@ export default function MainApp({ isDark, onToggleDark }) {
         }
         message.info("Update saved offline.");
       } else {
-        setTodos((prev) =>
-          prev.map((todo) => (todo._id === previous._id ? previous : todo))
-        );
+        setTodos((prev) => {
+          const next = prev.map((todo) =>
+            todo._id === previous._id ? previous : todo
+          );
+          refreshHasCompleted(next);
+          return next;
+        });
         message.error(error?.response?.data?.message || "Unable to update task");
       }
     }
@@ -760,6 +922,10 @@ export default function MainApp({ isDark, onToggleDark }) {
   function handlePageSizeChange(val) {
     setPageSize(val);
     setPage(1);
+    setPagination((prev) => {
+      const pages = Math.max(1, Math.ceil(prev.total / val));
+      return { ...prev, limit: val, pages, page: 1 };
+    });
   }
 
   function handleViewModeChange(val) {
@@ -779,8 +945,21 @@ export default function MainApp({ isDark, onToggleDark }) {
       cancelText: "Cancel",
       onOk: async () => {
         const previous = todos;
-        setTodos((prev) => prev.filter((todo) => !todo.completed));
+        const remaining = previous.filter((todo) => !todo.completed);
+        const removedCount = previous.length - remaining.length;
+        setTodos(remaining);
+        refreshHasCompleted(remaining);
+        if (removedCount > 0) {
+          adjustPaginationTotal(-removedCount);
+        }
         if (!navigator.onLine) {
+          enqueueAction({ type: QUEUE_ACTIONS.CLEAR_COMPLETED });
+          updateQueueCount();
+          message.info("Cleanup queued for sync.");
+          return;
+        }
+        const authOk = await ensureAuth();
+        if (!authOk) {
           enqueueAction({ type: QUEUE_ACTIONS.CLEAR_COMPLETED });
           updateQueueCount();
           message.info("Cleanup queued for sync.");
@@ -796,6 +975,8 @@ export default function MainApp({ isDark, onToggleDark }) {
             message.info("Cleanup queued for sync.");
           } else {
             setTodos(previous);
+            refreshHasCompleted(previous);
+            adjustPaginationTotal(removedCount);
             message.error("Cleanup operation failed");
           }
         }
@@ -863,6 +1044,7 @@ export default function MainApp({ isDark, onToggleDark }) {
     });
 
     setTodos(updatedTodos);
+    refreshHasCompleted(updatedTodos);
 
     const serverUpdates = updates.filter((item) =>
       OBJECT_ID_REGEX.test(item.id)
@@ -873,6 +1055,14 @@ export default function MainApp({ isDark, onToggleDark }) {
     }
 
     if (!navigator.onLine) {
+      enqueueAction({ type: QUEUE_ACTIONS.REORDER, items: serverUpdates });
+      updateQueueCount();
+      message.info("Reorder queued for sync.");
+      return;
+    }
+
+    const authOk = await ensureAuth();
+    if (!authOk) {
       enqueueAction({ type: QUEUE_ACTIONS.REORDER, items: serverUpdates });
       updateQueueCount();
       message.info("Reorder queued for sync.");
@@ -905,6 +1095,10 @@ export default function MainApp({ isDark, onToggleDark }) {
 
   const handleProjectSave = async (values) => {
     try {
+      const authOk = await ensureAuth();
+      if (!authOk) {
+        return;
+      }
       if (projectEditing) {
         const updated = await updateProject(projectEditing._id, values);
         setProjects((prev) =>
@@ -914,7 +1108,7 @@ export default function MainApp({ isDark, onToggleDark }) {
         );
         message.success("Project updated.");
       } else {
-        const created = await createProject({ ...values, ownerId: clientId });
+        const created = await createProject(values);
         setProjects((prev) => [created, ...prev]);
         setActiveProjectId(created._id);
         message.success("Project created.");
@@ -934,6 +1128,10 @@ export default function MainApp({ isDark, onToggleDark }) {
       cancelText: "Cancel",
       onOk: async () => {
         try {
+          const authOk = await ensureAuth();
+          if (!authOk) {
+            return;
+          }
           await deleteProject(projectId);
           setProjects((prev) =>
             prev.filter((project) => project._id !== projectId)
@@ -1033,7 +1231,7 @@ export default function MainApp({ isDark, onToggleDark }) {
                 <Spin />
               ) : viewMode === "kanban" ? (
                 <KanbanBoard
-                  items={sortedTodos}
+                  items={todos}
                   onMove={handleMoveTodo}
                   onToggleImportant={handleToggleImportant}
                   onDelete={handleDelete}
@@ -1042,11 +1240,11 @@ export default function MainApp({ isDark, onToggleDark }) {
                   projectMap={projectMap}
                 />
               ) : viewMode === "calendar" ? (
-                <CalendarView items={sortedTodos} onOpenModal={openModal} />
+                <CalendarView items={todos} onOpenModal={openModal} />
               ) : (
                 <TodoList
-                  items={pagedTodos}
-                  total={sortedTodos.length}
+                  items={todos}
+                  total={pagination.total}
                   page={page}
                   pageSize={pageSize}
                   onPageChange={setPage}

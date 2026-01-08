@@ -28,12 +28,9 @@ export const getExistingSubscription = async () => {
   return registration.pushManager.getSubscription();
 };
 
-export const registerPushSubscription = async (ownerId) => {
+export const registerPushSubscription = async () => {
   if (!canUsePush()) {
     return { enabled: false, reason: "unsupported" };
-  }
-  if (!ownerId) {
-    return { enabled: false, reason: "missing_owner" };
   }
 
   const permission = await Notification.requestPermission();
@@ -53,11 +50,11 @@ export const registerPushSubscription = async (ownerId) => {
       applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
     }));
 
-  await api.post("/notifications/subscribe", { ownerId, subscription });
+  await api.post("/notifications/subscribe", { subscription });
   return { enabled: true, subscription };
 };
 
-export const unregisterPushSubscription = async (ownerId) => {
+export const unregisterPushSubscription = async () => {
   if (!canUsePush()) return false;
   const registration = await navigator.serviceWorker.getRegistration();
   if (!registration) return false;
@@ -65,7 +62,7 @@ export const unregisterPushSubscription = async (ownerId) => {
   if (!subscription) return false;
 
   await api.delete("/notifications/subscribe", {
-    data: { ownerId, endpoint: subscription.endpoint },
+    data: { endpoint: subscription.endpoint },
   });
   await subscription.unsubscribe();
   return true;

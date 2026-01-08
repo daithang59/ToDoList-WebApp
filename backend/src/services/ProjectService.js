@@ -1,5 +1,13 @@
 import Project from "../models/Project.js";
 
+const normalizeMemberId = (value) =>
+  typeof value === "string" ? value.trim() : "";
+
+const buildMemberFilter = (memberId) =>
+  memberId
+    ? { $or: [{ ownerId: memberId }, { sharedWith: memberId }] }
+    : {};
+
 class ProjectService {
   static sanitizeSharedWith(values) {
     if (!Array.isArray(values)) return [];
@@ -15,25 +23,17 @@ class ProjectService {
       });
   }
 
-  static async getProjects({ ownerId, sharedWith } = {}) {
-    const filter = {};
-    const conditions = [];
-
-    if (ownerId) {
-      conditions.push({ ownerId });
-    }
-    if (sharedWith) {
-      conditions.push({ sharedWith });
-    }
-
-    if (conditions.length) {
-      filter.$or = conditions;
-    }
-
+  static async getProjects({ memberId } = {}) {
+    const normalizedMemberId = normalizeMemberId(memberId);
+    const filter = buildMemberFilter(normalizedMemberId);
     return Project.find(filter).sort({ createdAt: -1 });
   }
 
-  static async createProject(data) {
+  static async createProject(data, memberId) {
+    const ownerId = normalizeMemberId(memberId);
+    if (!ownerId) {
+      throw new Error("OwnerId is required");
+    }
     if (!data?.name?.trim()) {
       throw new Error("Project name is required");
     }
@@ -42,22 +42,28 @@ class ProjectService {
       name: data.name.trim(),
       description: data.description?.trim() || "",
       color: data.color || "#22c55e",
-      ownerId: typeof data.ownerId === "string" ? data.ownerId.trim() : undefined,
+      ownerId,
       sharedWith: this.sanitizeSharedWith(data.sharedWith),
     });
 
     return project;
   }
 
-  static async getProjectById(id) {
-    const project = await Project.findById(id);
+  static async getProjectById(id, memberId) {
+    const normalizedMemberId = normalizeMemberId(memberId);
+    const filter = buildMemberFilter(normalizedMemberId);
+    const project = await Project.findOne({ _id: id, ...filter });
     if (!project) {
       throw new Error("Project not found");
     }
     return project;
   }
 
-  static async updateProject(id, data) {
+  static async updateProject(id, data, memberId) {
+    const ownerId = normalizeMemberId(memberId);
+    if (!ownerId) {
+      throw new Error("OwnerId is required");
+    }
     const updates = {};
 
     if (data.name !== undefined) {
@@ -75,19 +81,18 @@ class ProjectService {
       updates.color = data.color || "#22c55e";
     }
 
-    if (data.ownerId !== undefined) {
-      updates.ownerId =
-        typeof data.ownerId === "string" ? data.ownerId.trim() : undefined;
-    }
-
     if (data.sharedWith !== undefined) {
       updates.sharedWith = this.sanitizeSharedWith(data.sharedWith);
     }
 
-    const project = await Project.findByIdAndUpdate(id, updates, {
-      new: true,
-      runValidators: true,
-    });
+    const project = await Project.findOneAndUpdate(
+      { _id: id, ownerId },
+      updates,
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
 
     if (!project) {
       throw new Error("Project not found");
@@ -96,8 +101,13 @@ class ProjectService {
     return project;
   }
 
-  static async deleteProject(id) {
-    const project = await Project.findByIdAndDelete(id);
+  static async deleteProject(id, memberId) {
+    const ownerId = normalizeMemberId(memberId);
+    if (!ownerId) {
+      throw new Error("OwnerId is required");
+    }
+
+    const project = await Project.findOneAndDelete({ _id: id, ownerId });
     if (!project) {
       throw new Error("Project not found");
     }

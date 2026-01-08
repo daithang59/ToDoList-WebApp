@@ -530,6 +530,54 @@ class TodoValidation {
 
     next();
   }
+
+  /**
+   * Validate payload for reorder
+   */
+  static validateReorderPayload(req, res, next) {
+    const { items } = req.body;
+    const errors = [];
+
+    if (!Array.isArray(items) || items.length === 0) {
+      errors.push({
+        field: "items",
+        message: "Items must be a non-empty array",
+      });
+    } else {
+      for (const item of items) {
+        if (!item?.id || typeof item.id !== "string" || !objectIdRegex.test(item.id)) {
+          errors.push({
+            field: "items.id",
+            message: "Each item must include a valid id",
+          });
+          break;
+        }
+        if (item.order !== undefined && !Number.isFinite(Number(item.order))) {
+          errors.push({
+            field: "items.order",
+            message: "Each item order must be a number",
+          });
+          break;
+        }
+        if (item.status !== undefined && !STATUS_VALUES.has(item.status)) {
+          errors.push({
+            field: "items.status",
+            message: "Status must be todo, in_progress, or done",
+          });
+          break;
+        }
+      }
+    }
+
+    if (errors.length > 0) {
+      return res.status(400).json({
+        message: "Validation failed",
+        errors,
+      });
+    }
+
+    next();
+  }
 }
 
 export default TodoValidation;

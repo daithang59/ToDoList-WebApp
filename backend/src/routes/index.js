@@ -1,27 +1,23 @@
 import { Router } from "express";
 import apiDocRoutes from "./apiDocRoute.js";
 import appRoutes from "./appRoutes.js";
+import authRoutes from "./authRoutes.js";
 import notificationRoutes from "./notificationRoutes.js";
 import projectRoutes from "./projectRoutes.js";
 import todoRoutes from "./todoRoutes.js";
+import { authMiddleware } from "../middlewares/auth.js";
 
 const router = Router();
 
-// =================== MAIN API ROUTES ===================
-// Todo resources - /api/todos/*
-router.use("/todos", todoRoutes);
-
-// Project resources - /api/projects/*
-router.use("/projects", projectRoutes);
-
-// Notification resources - /api/notifications/*
-router.use("/notifications", notificationRoutes);
-
-// Application routes - /api/health, /api/info
+// =================== PUBLIC ROUTES ===================
+router.use("/auth", authRoutes);
+router.use("/api-docs", apiDocRoutes);
 router.use("/", appRoutes);
 
-// =================== API DOCUMENTATION ===================
-// Swagger documentation - /api-docs
-router.use("/api-docs", apiDocRoutes);
+// =================== PROTECTED ROUTES ===================
+router.use(authMiddleware);
+router.use("/todos", todoRoutes);
+router.use("/projects", projectRoutes);
+router.use("/notifications", notificationRoutes);
 
 export default router;

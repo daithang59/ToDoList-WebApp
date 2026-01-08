@@ -46,10 +46,10 @@ export const getClientId = () => {
   return clientId;
 };
 
-export const getCachedTodos = () => readStorage(STORAGE_KEYS.cache, []);
+export const getCachedTodos = () => readStorage(STORAGE_KEYS.cache, null);
 
-export const setCachedTodos = (todos) => {
-  writeStorage(STORAGE_KEYS.cache, todos);
+export const setCachedTodos = (cache) => {
+  writeStorage(STORAGE_KEYS.cache, cache);
 };
 
 export const getQueue = () => readStorage(STORAGE_KEYS.queue, []);
@@ -104,6 +104,11 @@ export async function processQueue() {
 
 export async function fetchTodos(params = {}) {
   const { data } = await api.get("/todos", { params });
+  return data;
+}
+
+export async function fetchStats() {
+  const { data } = await api.get("/todos/stats");
   return data;
 }
 

@@ -1,29 +1,35 @@
 import { Router } from "express";
 import TodoController from "../controllers/TodoController.js";
 import TodoValidation from "../middlewares/validation.js";
+import { validatePagination } from "../middlewares/pagination.js";
 
 const router = Router();
 
 // Collection routes
-router.get("/", TodoController.getAllTodos);
+router.get("/", validatePagination, TodoController.getAllTodos);
 router.post("/", TodoValidation.validateCreateTodo, TodoController.createTodo);
 
 // Query routes
 router.get(
   "/search",
+  validatePagination,
   TodoValidation.validateSearchQuery,
   TodoController.searchTodos
 );
-router.get("/filter", TodoController.filterTodos);
+router.get("/filter", validatePagination, TodoController.filterTodos);
 router.get("/stats", TodoController.getTodoStats);
 
 // Deadline routes
-router.get("/due", TodoController.getDueTodos);
-router.get("/overdue", TodoController.getOverdueTodos);
+router.get("/due", validatePagination, TodoController.getDueTodos);
+router.get("/overdue", validatePagination, TodoController.getOverdueTodos);
 
 // Bulk operations
 router.delete("/clear/completed", TodoController.clearCompletedTodos);
-router.patch("/reorder", TodoController.reorderTodos);
+router.patch(
+  "/reorder",
+  TodoValidation.validateReorderPayload,
+  TodoController.reorderTodos
+);
 
 // Single resource routes
 router.get("/:id", TodoValidation.validateObjectId, TodoController.getTodoById);

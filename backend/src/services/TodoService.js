@@ -5,6 +5,20 @@ const STATUS_VALUES = new Set(["todo", "in_progress", "done"]);
 const RECURRENCE_UNITS = new Set(["day", "week", "month"]);
 const REMINDER_CHANNELS = new Set(["email", "push"]);
 
+const normalizeMemberId = (value) =>
+  typeof value === "string" ? value.trim() : "";
+
+const buildMemberFilter = (memberId) =>
+  memberId
+    ? { $or: [{ ownerId: memberId }, { sharedWith: memberId }] }
+    : {};
+
+const mergeFilters = (base, extra) => {
+  if (!extra || Object.keys(extra).length === 0) return base;
+  if (!base || Object.keys(base).length === 0) return extra;
+  return { $and: [base, extra] };
+};
+
 class TodoService {
   static sanitizeTags(tags) {
     if (!Array.isArray(tags)) return [];
@@ -114,20 +128,29 @@ class TodoService {
     return { status, completed };
   }
 
-  static async ensureDependenciesExist(ids) {
+  static async ensureDependenciesExist(ids, memberId) {
     if (!ids.length) return;
-    const count = await Todo.countDocuments({ _id: { $in: ids } });
+    const normalizedMemberId = normalizeMemberId(memberId);
+    const memberFilter = buildMemberFilter(normalizedMemberId);
+    const filter = mergeFilters({ _id: { $in: ids } }, memberFilter);
+    const count = await Todo.countDocuments(filter);
     if (count !== ids.length) {
       throw new Error("One or more dependencies not found");
     }
   }
 
-  static async ensureDependenciesCompleted(ids) {
+  static async ensureDependenciesCompleted(ids, memberId) {
     if (!ids.length) return;
-    const pending = await Todo.countDocuments({
-      _id: { $in: ids },
-      completed: false,
-    });
+    const normalizedMemberId = normalizeMemberId(memberId);
+    const memberFilter = buildMemberFilter(normalizedMemberId);
+    const filter = mergeFilters(
+      {
+        _id: { $in: ids },
+        completed: false,
+      },
+      memberFilter
+    );
+    const pending = await Todo.countDocuments(filter);
     if (pending > 0) {
       throw new Error("Dependencies not completed");
     }
@@ -199,17 +222,21 @@ class TodoService {
       sortBy = "createdAt",
       sortOrder = "desc",
       filter = {},
+      memberId,
     } = options;
 
     const skip = (page - 1) * limit;
     const sort = { [sortBy]: sortOrder === "desc" ? -1 : 1 };
+    const normalizedMemberId = normalizeMemberId(memberId);
+    const memberFilter = buildMemberFilter(normalizedMemberId);
+    const finalFilter = mergeFilters(filter, memberFilter);
 
-    const todos = await Todo.find(filter)
+    const todos = await Todo.find(finalFilter)
       .sort(sort)
       .skip(skip)
       .limit(limit);
 
-    const total = await Todo.countDocuments(filter);
+    const total = await Todo.countDocuments(finalFilter);
 
     return {
       todos,
@@ -222,7 +249,11 @@ class TodoService {
     };
   }
 
-  static async createTodo(todoData) {
+  static async createTodo(todoData, memberId) {
+    const ownerId = normalizeMemberId(memberId);
+    if (!ownerId) {
+      throw new Error("OwnerId is required");
+    }
     const {
       title,
       description,
@@ -236,7 +267,6 @@ class TodoService {
       recurrence,
       reminder,
       projectId,
-      ownerId,
       sharedWith,
       completed,
     } = todoData;
@@ -265,7 +295,7 @@ class TodoService {
     const processedSharedWith = this.sanitizeSharedWith(sharedWith);
 
     if (processedDependencies.length > 0) {
-      await this.ensureDependenciesExist(processedDependencies);
+      await this.ensureDependenciesExist(processedDependencies, ownerId);
     }
 
     let resolvedStatus = status || (completed ? "done" : "todo");
@@ -275,7 +305,7 @@ class TodoService {
     }
 
     if (resolvedCompleted) {
-      await this.ensureDependenciesCompleted(processedDependencies);
+      await this.ensureDependenciesCompleted(processedDependencies, ownerId);
     }
 
     const todo = await Todo.create({
@@ -293,20 +323,26 @@ class TodoService {
       recurrence: processedRecurrence,
       reminder: processedReminder,
       projectId: mongoose.Types.ObjectId.isValid(projectId) ? projectId : null,
-      ownerId: typeof ownerId === "string" ? ownerId.trim() : undefined,
+      ownerId,
       sharedWith: processedSharedWith,
     });
 
     return todo;
   }
 
-  static async updateTodo(id, updateData) {
-    const todo = await Todo.findById(id);
+  static async updateTodo(id, updateData, memberId) {
+    const normalizedMemberId = normalizeMemberId(memberId);
+    const memberFilter = buildMemberFilter(normalizedMemberId);
+    const todo = await Todo.findOne({ _id: id, ...memberFilter });
     if (!todo) {
       throw new Error("Todo not found");
     }
 
     const updates = {};
+    const isOwner =
+      todo.ownerId && normalizedMemberId
+        ? String(todo.ownerId) === normalizedMemberId
+        : false;
 
     if (updateData.title !== undefined) {
       if (!updateData.title?.trim()) {
@@ -342,7 +378,7 @@ class TodoService {
     if (updateData.dependencies !== undefined) {
       const deps = this.normalizeDependencies(updateData.dependencies, id);
       if (deps.length > 0) {
-        await this.ensureDependenciesExist(deps);
+        await this.ensureDependenciesExist(deps, normalizedMemberId);
       }
       updates.dependencies = deps;
     }
@@ -371,14 +407,7 @@ class TodoService {
         : null;
     }
 
-    if (updateData.ownerId !== undefined) {
-      updates.ownerId =
-        typeof updateData.ownerId === "string"
-          ? updateData.ownerId.trim()
-          : undefined;
-    }
-
-    if (updateData.sharedWith !== undefined) {
+    if (updateData.sharedWith !== undefined && isOwner) {
       updates.sharedWith = this.sanitizeSharedWith(updateData.sharedWith);
     }
 
@@ -404,7 +433,10 @@ class TodoService {
     const dependenciesToCheck =
       updates.dependencies !== undefined ? updates.dependencies : todo.dependencies;
     if (completed) {
-      await this.ensureDependenciesCompleted(dependenciesToCheck || []);
+      await this.ensureDependenciesCompleted(
+        dependenciesToCheck || [],
+        normalizedMemberId
+      );
     }
 
     const updatedTodo = await Todo.findByIdAndUpdate(id, updates, {
@@ -419,24 +451,36 @@ class TodoService {
     return updatedTodo;
   }
 
-  static async getTodoById(id) {
-    const todo = await Todo.findById(id);
+  static async getTodoById(id, memberId) {
+    const normalizedMemberId = normalizeMemberId(memberId);
+    const memberFilter = buildMemberFilter(normalizedMemberId);
+    const todo = await Todo.findOne({ _id: id, ...memberFilter });
     if (!todo) {
       throw new Error("Todo not found");
     }
     return todo;
   }
 
-  static async deleteTodo(id) {
-    const todo = await Todo.findByIdAndDelete(id);
+  static async deleteTodo(id, memberId) {
+    const normalizedMemberId = normalizeMemberId(memberId);
+    const memberFilter = buildMemberFilter(normalizedMemberId);
+    const todo = await Todo.findOne({ _id: id, ...memberFilter });
     if (!todo) {
       throw new Error("Todo not found");
     }
+    if (String(todo.ownerId || "") !== normalizedMemberId) {
+      const error = new Error("Not authorized to delete this todo");
+      error.status = 403;
+      throw error;
+    }
+    await Todo.deleteOne({ _id: id });
     return todo;
   }
 
-  static async toggleCompleted(id) {
-    const todo = await Todo.findById(id);
+  static async toggleCompleted(id, memberId) {
+    const normalizedMemberId = normalizeMemberId(memberId);
+    const memberFilter = buildMemberFilter(normalizedMemberId);
+    const todo = await Todo.findOne({ _id: id, ...memberFilter });
     if (!todo) {
       throw new Error("Todo not found");
     }
@@ -444,14 +488,17 @@ class TodoService {
     const nextCompleted = !todo.completed;
     let nextStatus = todo.status || (todo.completed ? "done" : "todo");
     if (nextCompleted) {
-      await this.ensureDependenciesCompleted(todo.dependencies || []);
+      await this.ensureDependenciesCompleted(
+        todo.dependencies || [],
+        normalizedMemberId
+      );
       nextStatus = "done";
     } else if (nextStatus === "done") {
       nextStatus = "todo";
     }
 
-    const updatedTodo = await Todo.findByIdAndUpdate(
-      id,
+    const updatedTodo = await Todo.findOneAndUpdate(
+      { _id: id, ...memberFilter },
       {
         completed: nextCompleted,
         status: nextStatus,
@@ -467,8 +514,10 @@ class TodoService {
     return updatedTodo;
   }
 
-  static async toggleImportant(id) {
-    const todo = await Todo.findById(id);
+  static async toggleImportant(id, memberId) {
+    const normalizedMemberId = normalizeMemberId(memberId);
+    const memberFilter = buildMemberFilter(normalizedMemberId);
+    const todo = await Todo.findOne({ _id: id, ...memberFilter });
     if (!todo) {
       throw new Error("Todo not found");
     }
@@ -480,7 +529,17 @@ class TodoService {
 
   static async searchTodos(query, options = {}) {
     if (!query?.trim()) {
-      return [];
+      const page = options.page || 1;
+      const limit = options.limit || 10;
+      return {
+        todos: [],
+        pagination: {
+          page,
+          limit,
+          total: 0,
+          pages: 0,
+        },
+      };
     }
 
     const searchRegex = new RegExp(query.trim(), "i");
@@ -503,8 +562,6 @@ class TodoService {
       tags,
       deadline,
       projectId,
-      ownerId,
-      sharedWith,
       memberId,
     } = filterOptions;
     const filter = {};
@@ -558,47 +615,41 @@ class TodoService {
       filter.projectId = projectId;
     }
 
-    if (ownerId) {
-      filter.ownerId = ownerId;
-    }
-
-    if (sharedWith) {
-      filter.sharedWith = sharedWith;
-    }
-
-    if (memberId) {
-      const memberFilter = { $or: [{ ownerId: memberId }, { sharedWith: memberId }] };
-      const hasFilters = Object.keys(filter).length > 0;
-      const finalFilter = hasFilters ? { $and: [filter, memberFilter] } : memberFilter;
-      return this.getTodos({ ...paginationOptions, filter: finalFilter });
-    }
-
-    return this.getTodos({ ...paginationOptions, filter });
+    return this.getTodos({ ...paginationOptions, filter, memberId });
   }
 
-  static async clearCompleted() {
-    const result = await Todo.deleteMany({ completed: true });
+  static async clearCompleted(memberId) {
+    const ownerId = normalizeMemberId(memberId);
+    if (!ownerId) {
+      throw new Error("OwnerId is required");
+    }
+    const result = await Todo.deleteMany({ completed: true, ownerId });
     return result.deletedCount;
   }
 
-  static async getStats() {
-    const stats = await Todo.aggregate([
-      {
-        $group: {
-          _id: null,
-          total: { $sum: 1 },
-          completed: { $sum: { $cond: ["$completed", 1, 0] } },
-          important: { $sum: { $cond: ["$important", 1, 0] } },
-          active: { $sum: { $cond: [{ $not: "$completed" }, 1, 0] } },
-          withDeadline: { $sum: { $cond: [{ $ne: ["$deadline", null] }, 1, 0] } },
-          inProgress: {
-            $sum: { $cond: [{ $eq: ["$status", "in_progress"] }, 1, 0] },
-          },
-          todo: { $sum: { $cond: [{ $eq: ["$status", "todo"] }, 1, 0] } },
-          done: { $sum: { $cond: [{ $eq: ["$status", "done"] }, 1, 0] } },
+  static async getStats(memberId) {
+    const normalizedMemberId = normalizeMemberId(memberId);
+    const memberFilter = buildMemberFilter(normalizedMemberId);
+    const pipeline = [];
+    if (Object.keys(memberFilter).length > 0) {
+      pipeline.push({ $match: memberFilter });
+    }
+    pipeline.push({
+      $group: {
+        _id: null,
+        total: { $sum: 1 },
+        completed: { $sum: { $cond: ["$completed", 1, 0] } },
+        important: { $sum: { $cond: ["$important", 1, 0] } },
+        active: { $sum: { $cond: [{ $not: "$completed" }, 1, 0] } },
+        withDeadline: { $sum: { $cond: [{ $ne: ["$deadline", null] }, 1, 0] } },
+        inProgress: {
+          $sum: { $cond: [{ $eq: ["$status", "in_progress"] }, 1, 0] },
         },
+        todo: { $sum: { $cond: [{ $eq: ["$status", "todo"] }, 1, 0] } },
+        done: { $sum: { $cond: [{ $eq: ["$status", "done"] }, 1, 0] } },
       },
-    ]);
+    });
+    const stats = await Todo.aggregate(pipeline);
 
     const result = stats[0] || {
       total: 0,
@@ -617,37 +668,53 @@ class TodoService {
     return result;
   }
 
-  static async getUpcomingTodos(days = 7) {
+  static async getUpcomingTodos(days = 7, memberId) {
     const now = new Date();
     const future = new Date();
     future.setDate(now.getDate() + days);
+    const normalizedMemberId = normalizeMemberId(memberId);
+    const memberFilter = buildMemberFilter(normalizedMemberId);
 
-    const todos = await Todo.find({
-      deadline: {
-        $gte: now,
-        $lte: future,
+    const filter = mergeFilters(
+      {
+        deadline: {
+          $gte: now,
+          $lte: future,
+        },
+        completed: false,
       },
-      completed: false,
-    }).sort({ deadline: 1 });
+      memberFilter
+    );
+
+    const todos = await Todo.find(filter).sort({ deadline: 1 });
 
     return todos;
   }
 
-  static async getOverdueTodos() {
+  static async getOverdueTodos(memberId) {
     const now = new Date();
+    const normalizedMemberId = normalizeMemberId(memberId);
+    const memberFilter = buildMemberFilter(normalizedMemberId);
 
-    const todos = await Todo.find({
-      deadline: { $lt: now },
-      completed: false,
-    }).sort({ deadline: 1 });
+    const filter = mergeFilters(
+      {
+        deadline: { $lt: now },
+        completed: false,
+      },
+      memberFilter
+    );
+
+    const todos = await Todo.find(filter).sort({ deadline: 1 });
 
     return todos;
   }
 
-  static async reorderTodos(items) {
+  static async reorderTodos(items, memberId) {
     if (!Array.isArray(items)) {
       throw new Error("Invalid reorder payload");
     }
+    const normalizedMemberId = normalizeMemberId(memberId);
+    const memberFilter = buildMemberFilter(normalizedMemberId);
 
     const ids = items
       .map((item) => item?.id)
@@ -657,7 +724,7 @@ class TodoService {
       return [];
     }
 
-    const todos = await Todo.find({ _id: { $in: ids } });
+    const todos = await Todo.find({ _id: { $in: ids }, ...memberFilter });
     const todoMap = new Map(todos.map((todo) => [String(todo._id), todo]));
     const recurringCandidates = [];
 
@@ -668,7 +735,10 @@ class TodoService {
         throw new Error("Invalid status value");
       }
       if (item.status === "done") {
-        await this.ensureDependenciesCompleted(todo.dependencies || []);
+        await this.ensureDependenciesCompleted(
+          todo.dependencies || [],
+          normalizedMemberId
+        );
       }
       if (item.status === "done" && !todo.completed && todo.recurrence?.enabled) {
         recurringCandidates.push(todo);
@@ -705,7 +775,7 @@ class TodoService {
       await this.createNextRecurringTodo(todo);
     }
 
-    return Todo.find({ _id: { $in: ids } });
+    return Todo.find({ _id: { $in: ids }, ...memberFilter });
   }
 }
 

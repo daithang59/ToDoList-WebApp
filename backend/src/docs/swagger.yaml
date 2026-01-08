@@ -1,76 +1,29 @@
 openapi: 3.0.3
 info:
-  title: To-Do List API
-  description: |
-    API cho ứng dụng quản lý công việc (To-Do List) được xây dựng bằng Node.js, Express và MongoDB.
-    
-    ## Tính năng chính
-    - Tạo, đọc, cập nhật, xóa todo
-    - Tìm kiếm todo theo tiêu đề và mô tả
-    - Lọc todo theo trạng thái hoàn thành
-    - Toggle trạng thái hoàn thành
-    - Xóa tất cả todo đã hoàn thành
-    - Lọc todo theo deadline
-    
-  version: 1.0.0
-  contact:
-    name: API Support
-    email: support@todoapp.com
+  title: Todo List API
+  description: REST API for the TodoList application.
+  version: 1.1.0
 servers:
   - url: http://localhost:4000/api
     description: Development server
-  - url: https://your-production-domain.com/api
-    description: Production server
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Auth
+  - name: Todos
+  - name: Projects
+  - name: Notifications
+  - name: Health
 
 paths:
-  /health:
-    get:
-      tags:
-        - Health Check
-      summary: Kiểm tra trạng thái server
-      description: Endpoint để kiểm tra server có đang hoạt động không
-      responses:
-        '200':
-          description: Server hoạt động bình thường
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    example: "OK"
-                  message:
-                    type: string
-                    example: "Server is healthy"
-
-  /todos:
-    get:
-      tags:
-        - Todos
-      summary: Lấy danh sách tất cả todos
-      description: Trả về danh sách tất cả todos được sắp xếp theo thời gian tạo (mới nhất trước)
-      responses:
-        '200':
-          description: Danh sách todos
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Todo'
-        '500':
-          description: Lỗi server
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-
+  /auth/guest:
     post:
       tags:
-        - Todos
-      summary: Tạo todo mới
-      description: Tạo một todo mới với title và description (optional)
+        - Auth
+      summary: Issue a guest access token
+      security: []
       requestBody:
         required: true
         content:
@@ -78,115 +31,240 @@ paths:
             schema:
               type: object
               required:
-                - title
+                - clientId
               properties:
-                title:
+                clientId:
                   type: string
-                  description: Tiêu đề todo
-                  example: "Học React.js"
-                description:
-                  type: string
-                  description: Mô tả chi tiết (không bắt buộc)
-                  example: "Hoàn thành khóa học React.js cơ bản"
-                deadline:
-                  type: string
-                  format: date-time
-                  description: Hạn chót (không bắt buộc)
-                  example: "2025-12-31T23:59:59.000Z"
+                  example: client-123
       responses:
-        '201':
-          description: Todo được tạo thành công
+        "200":
+          description: Token issued
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Todo'
-        '400':
-          description: Dữ liệu không hợp lệ
+                $ref: "#/components/schemas/AuthTokenResponse"
+        "400":
+          description: Invalid request
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-        '500':
-          description: Lỗi server
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
-  /todos/{id}:
-    patch:
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Health check
+      security: []
+      responses:
+        "200":
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: OK
+                  message:
+                    type: string
+                    example: Todo API is running
+
+  /info:
+    get:
+      tags:
+        - Health
+      summary: API info
+      security: []
+      responses:
+        "200":
+          description: API information
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /todos:
+    get:
       tags:
         - Todos
-      summary: Cập nhật todo
-      description: Cập nhật thông tin todo (title, description, completed, deadline)
+      summary: List todos with pagination and filters
       parameters:
-        - in: path
-          name: id
-          required: true
+        - in: query
+          name: page
+          schema:
+            type: integer
+            example: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            example: 50
+        - in: query
+          name: sortBy
           schema:
             type: string
-          description: ID của todo
-          example: "60f7b1b9b9b9b9b9b9b9b9b9"
+            enum: [createdAt, updatedAt, deadline, title, order, status]
+        - in: query
+          name: sortOrder
+          schema:
+            type: string
+            enum: [asc, desc]
+        - in: query
+          name: filter
+          schema:
+            type: string
+            enum: [all, active, completed, important, today, overdue]
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [todo, in_progress, done]
+        - in: query
+          name: important
+          schema:
+            type: boolean
+        - in: query
+          name: completed
+          schema:
+            type: boolean
+        - in: query
+          name: tags
+          description: Comma-separated tag list
+          schema:
+            type: string
+        - in: query
+          name: projectId
+          schema:
+            type: string
+        - in: query
+          name: sharedWith
+          schema:
+            type: string
+        - in: query
+          name: query
+          schema:
+            type: string
+        - in: query
+          name: deadlineBefore
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: deadlineAfter
+          schema:
+            type: string
+            format: date-time
+      responses:
+        "200":
+          description: Paginated todos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TodoListResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    post:
+      tags:
+        - Todos
+      summary: Create a todo
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                title:
-                  type: string
-                  description: Tiêu đề mới
-                  example: "Học Node.js"
-                description:
-                  type: string
-                  description: Mô tả mới
-                  example: "Hoàn thành khóa học Node.js nâng cao"
-                completed:
-                  type: boolean
-                  description: Trạng thái hoàn thành
-                  example: true
-                deadline:
-                  type: string
-                  format: date-time
-                  description: Hạn chót mới
-                  example: "2026-01-31T23:59:59.000Z"
+              $ref: "#/components/schemas/TodoInput"
       responses:
-        '200':
-          description: Todo được cập nhật thành công
+        "201":
+          description: Todo created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Todo'
-        '404':
-          description: Không tìm thấy todo
+                $ref: "#/components/schemas/Todo"
+        "400":
+          description: Validation error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-        '500':
-          description: Lỗi server
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
-    delete:
+  /todos/{id}:
+    get:
       tags:
         - Todos
-      summary: Xóa todo
-      description: Xóa một todo theo ID
+      summary: Get todo by ID
       parameters:
         - in: path
           name: id
           required: true
           schema:
             type: string
-          description: ID của todo cần xóa
-          example: "60f7b1b9b9b9b9b9b9b9b9b9"
       responses:
-        '200':
-          description: Todo được xóa thành công
+        "200":
+          description: Todo
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Todo"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    patch:
+      tags:
+        - Todos
+      summary: Update a todo
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TodoUpdateInput"
+      responses:
+        "200":
+          description: Updated todo
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Todo"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    delete:
+      tags:
+        - Todos
+      summary: Delete a todo
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Deleted
           content:
             application/json:
               schema:
@@ -194,227 +272,750 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: "Todo deleted successfully"
-        '404':
-          description: Không tìm thấy todo
+                  id:
+                    type: string
+        "403":
+          description: Forbidden
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-        '500':
-          description: Lỗi server
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /todos/{id}/toggle:
     patch:
       tags:
         - Todos
-      summary: Toggle trạng thái hoàn thành
-      description: Đảo ngược trạng thái completed của todo (true -> false hoặc false -> true)
+      summary: Toggle completion
       parameters:
         - in: path
           name: id
           required: true
           schema:
             type: string
-          description: ID của todo
-          example: "60f7b1b9b9b9b9b9b9b9b9b9"
       responses:
-        '200':
-          description: Trạng thái được toggle thành công
+        "200":
+          description: Updated todo
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Todo'
-        '404':
-          description: Không tìm thấy todo
+                $ref: "#/components/schemas/Todo"
+
+  /todos/{id}/important:
+    patch:
+      tags:
+        - Todos
+      summary: Toggle important
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Updated todo
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-        '500':
-          description: Lỗi server
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Todo"
 
   /todos/search:
     get:
       tags:
         - Todos
-      summary: Tìm kiếm todos
-      description: Tìm kiếm todos theo tiêu đề hoặc mô tả (không phân biệt hoa thường)
+      summary: Search todos
       parameters:
         - in: query
           name: query
           required: true
           schema:
             type: string
-          description: Từ khóa tìm kiếm
-          example: "React"
+        - in: query
+          name: page
+          schema:
+            type: integer
+        - in: query
+          name: limit
+          schema:
+            type: integer
+        - in: query
+          name: sortBy
+          schema:
+            type: string
+            enum: [createdAt, updatedAt, deadline, title, order, status]
+        - in: query
+          name: sortOrder
+          schema:
+            type: string
+            enum: [asc, desc]
       responses:
-        '200':
-          description: Kết quả tìm kiếm
+        "200":
+          description: Search results
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Todo'
-        '500':
-          description: Lỗi server
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/TodoListResponse"
 
   /todos/filter:
     get:
       tags:
         - Todos
-      summary: Lọc todos theo trạng thái
-      description: Lọc todos theo trạng thái hoàn thành (completed = true/false)
+      summary: Filter todos
       parameters:
         - in: query
-          name: completed
-          required: true
+          name: status
           schema:
             type: string
-            enum: ['true', 'false']
-          description: Trạng thái hoàn thành
-          example: "true"
+            enum: [active, completed, important, todo, in_progress, done]
+        - in: query
+          name: completed
+          schema:
+            type: boolean
+        - in: query
+          name: important
+          schema:
+            type: boolean
+        - in: query
+          name: tags
+          schema:
+            type: string
+        - in: query
+          name: projectId
+          schema:
+            type: string
+        - in: query
+          name: sharedWith
+          schema:
+            type: string
+        - in: query
+          name: page
+          schema:
+            type: integer
+        - in: query
+          name: limit
+          schema:
+            type: integer
+        - in: query
+          name: sortBy
+          schema:
+            type: string
+            enum: [createdAt, updatedAt, deadline, title, order, status]
+        - in: query
+          name: sortOrder
+          schema:
+            type: string
+            enum: [asc, desc]
       responses:
-        '200':
-          description: Danh sách todos được lọc
+        "200":
+          description: Filtered todos
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Todo'
-        '500':
-          description: Lỗi server
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-
-  /todos/clear/completed:
-    delete:
-      tags:
-        - Todos
-      summary: Xóa tất cả todos đã hoàn thành
-      description: Xóa tất cả todos có trạng thái completed = true
-      responses:
-        '200':
-          description: Xóa thành công
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  deletedCount:
-                    type: integer
-                    description: Số lượng todos đã xóa
-                    example: 3
-        '500':
-          description: Lỗi server
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/TodoListResponse"
 
   /todos/due:
     get:
       tags:
         - Todos
-      summary: Lọc todos theo deadline
-      description: Lấy danh sách todos có deadline trước hoặc bằng ngày chỉ định
+      summary: Todos due within range
       parameters:
         - in: query
+          name: days
+          schema:
+            type: integer
+        - in: query
           name: before
-          required: true
           schema:
             type: string
-            format: date
-          description: Ngày deadline (YYYY-MM-DD)
-          example: "2025-12-31"
+            format: date-time
+        - in: query
+          name: after
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: page
+          schema:
+            type: integer
+        - in: query
+          name: limit
+          schema:
+            type: integer
+        - in: query
+          name: sortBy
+          schema:
+            type: string
+            enum: [createdAt, updatedAt, deadline, title, order, status]
+        - in: query
+          name: sortOrder
+          schema:
+            type: string
+            enum: [asc, desc]
       responses:
-        '200':
-          description: Danh sách todos theo deadline
+        "200":
+          description: Due todos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TodoListResponse"
+
+  /todos/overdue:
+    get:
+      tags:
+        - Todos
+      summary: Overdue todos
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+        - in: query
+          name: limit
+          schema:
+            type: integer
+        - in: query
+          name: sortBy
+          schema:
+            type: string
+            enum: [createdAt, updatedAt, deadline, title, order, status]
+        - in: query
+          name: sortOrder
+          schema:
+            type: string
+            enum: [asc, desc]
+      responses:
+        "200":
+          description: Overdue todos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TodoListResponse"
+
+  /todos/clear/completed:
+    delete:
+      tags:
+        - Todos
+      summary: Clear completed todos
+      responses:
+        "200":
+          description: Completed todos deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  deletedCount:
+                    type: integer
+
+  /todos/stats:
+    get:
+      tags:
+        - Todos
+      summary: Get todo stats
+      responses:
+        "200":
+          description: Stats summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TodoStats"
+
+  /todos/reorder:
+    patch:
+      tags:
+        - Todos
+      summary: Reorder todos
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - items
+              properties:
+                items:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - id
+                      - order
+                    properties:
+                      id:
+                        type: string
+                      order:
+                        type: integer
+                      status:
+                        type: string
+                        enum: [todo, in_progress, done]
+      responses:
+        "200":
+          description: Updated todos
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Todo'
-        '500':
-          description: Lỗi server
+                  $ref: "#/components/schemas/Todo"
+
+  /projects:
+    get:
+      tags:
+        - Projects
+      summary: List projects
+      responses:
+        "200":
+          description: Project list
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                type: array
+                items:
+                  $ref: "#/components/schemas/Project"
+    post:
+      tags:
+        - Projects
+      summary: Create project
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectInput"
+      responses:
+        "201":
+          description: Created project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+
+  /projects/{id}:
+    get:
+      tags:
+        - Projects
+      summary: Get project by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    patch:
+      tags:
+        - Projects
+      summary: Update project
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectUpdateInput"
+      responses:
+        "200":
+          description: Updated project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+    delete:
+      tags:
+        - Projects
+      summary: Delete project
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  id:
+                    type: string
+
+  /notifications/subscribe:
+    post:
+      tags:
+        - Notifications
+      summary: Subscribe to push notifications
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - subscription
+              properties:
+                subscription:
+                  type: object
+      responses:
+        "201":
+          description: Subscription saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationSubscription"
+    delete:
+      tags:
+        - Notifications
+      summary: Unsubscribe from push notifications
+      parameters:
+        - in: query
+          name: endpoint
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Unsubscribed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
 
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   schemas:
+    AuthTokenResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        tokenType:
+          type: string
+          example: Bearer
+        expiresIn:
+          type: string
+          example: 30d
+        ownerId:
+          type: string
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+        limit:
+          type: integer
+        total:
+          type: integer
+        pages:
+          type: integer
+    Subtask:
+      type: object
+      properties:
+        title:
+          type: string
+        completed:
+          type: boolean
+    Recurrence:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+        interval:
+          type: integer
+        unit:
+          type: string
+          enum: [day, week, month]
+        until:
+          type: string
+          format: date-time
+          nullable: true
+    Reminder:
+      type: object
+      properties:
+        enabled:
+          type: boolean
+        minutesBefore:
+          type: integer
+        channels:
+          type: array
+          items:
+            type: string
+            enum: [email, push]
+        email:
+          type: string
+        lastNotifiedAt:
+          type: string
+          format: date-time
+          nullable: true
     Todo:
       type: object
       properties:
         _id:
           type: string
-          description: ID duy nhất của todo
-          example: "60f7b1b9b9b9b9b9b9b9b9b9"
         title:
           type: string
-          description: Tiêu đề todo
-          example: "Học React.js"
         description:
           type: string
-          description: Mô tả chi tiết
-          example: "Hoàn thành khóa học React.js cơ bản"
         completed:
           type: boolean
-          description: Trạng thái hoàn thành
-          example: false
+        completedAt:
+          type: string
+          format: date-time
+          nullable: true
+        status:
+          type: string
+          enum: [todo, in_progress, done]
+        order:
+          type: number
         deadline:
           type: string
           format: date-time
           nullable: true
-          description: Hạn chót
-          example: "2025-12-31T23:59:59.000Z"
+        important:
+          type: boolean
+        tags:
+          type: array
+          items:
+            type: string
+        subtasks:
+          type: array
+          items:
+            $ref: "#/components/schemas/Subtask"
+        dependencies:
+          type: array
+          items:
+            type: string
+        recurrence:
+          $ref: "#/components/schemas/Recurrence"
+        reminder:
+          $ref: "#/components/schemas/Reminder"
+        projectId:
+          type: string
+          nullable: true
+        ownerId:
+          type: string
+        sharedWith:
+          type: array
+          items:
+            type: string
         createdAt:
           type: string
           format: date-time
-          description: Thời gian tạo
-          example: "2025-10-12T10:30:00.000Z"
         updatedAt:
           type: string
           format: date-time
-          description: Thời gian cập nhật cuối
-          example: "2025-10-12T11:15:00.000Z"
+    TodoInput:
+      type: object
       required:
-        - _id
         - title
-        - completed
-        - createdAt
-        - updatedAt
-
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        completed:
+          type: boolean
+        deadline:
+          type: string
+          format: date-time
+        important:
+          type: boolean
+        tags:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+          enum: [todo, in_progress, done]
+        order:
+          type: number
+        subtasks:
+          type: array
+          items:
+            $ref: "#/components/schemas/Subtask"
+        dependencies:
+          type: array
+          items:
+            type: string
+        recurrence:
+          $ref: "#/components/schemas/Recurrence"
+        reminder:
+          $ref: "#/components/schemas/Reminder"
+        projectId:
+          type: string
+        sharedWith:
+          type: array
+          items:
+            type: string
+    TodoUpdateInput:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        completed:
+          type: boolean
+        deadline:
+          type: string
+          format: date-time
+        important:
+          type: boolean
+        tags:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+          enum: [todo, in_progress, done]
+        order:
+          type: number
+        subtasks:
+          type: array
+          items:
+            $ref: "#/components/schemas/Subtask"
+        dependencies:
+          type: array
+          items:
+            type: string
+        recurrence:
+          $ref: "#/components/schemas/Recurrence"
+        reminder:
+          $ref: "#/components/schemas/Reminder"
+        projectId:
+          type: string
+        sharedWith:
+          type: array
+          items:
+            type: string
+    TodoListResponse:
+      type: object
+      properties:
+        todos:
+          type: array
+          items:
+            $ref: "#/components/schemas/Todo"
+        pagination:
+          $ref: "#/components/schemas/Pagination"
+    TodoStats:
+      type: object
+      properties:
+        total:
+          type: integer
+        completed:
+          type: integer
+        important:
+          type: integer
+        active:
+          type: integer
+        withDeadline:
+          type: integer
+        inProgress:
+          type: integer
+        todo:
+          type: integer
+        done:
+          type: integer
+        completedPercentage:
+          type: integer
+    Project:
+      type: object
+      properties:
+        _id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        color:
+          type: string
+        ownerId:
+          type: string
+        sharedWith:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    ProjectInput:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        color:
+          type: string
+        sharedWith:
+          type: array
+          items:
+            type: string
+    ProjectUpdateInput:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        color:
+          type: string
+        sharedWith:
+          type: array
+          items:
+            type: string
+    NotificationSubscription:
+      type: object
+      properties:
+        _id:
+          type: string
+        ownerId:
+          type: string
+        subscription:
+          type: object
     Error:
       type: object
       properties:
         message:
           type: string
-          description: Thông báo lỗi
-          example: "Title is required"
-      required:
-        - message
-
-tags:
-  - name: Health Check
-    description: Kiểm tra trạng thái server
-  - name: Todos
-    description: Quản lý todos (tạo, đọc, cập nhật, xóa, tìm kiếm, lọc)
