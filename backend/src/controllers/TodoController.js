@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import TodoService from "../services/TodoService.js";
 import BaseController from "./BaseController.js";
 
@@ -64,7 +65,15 @@ class TodoController extends BaseController {
       memberId,
     };
 
-    if (projectId) options.filter.projectId = projectId;
+    if (projectId) {
+      if (!mongoose.Types.ObjectId.isValid(projectId)) {
+        return res.status(400).json({
+          message: "Validation failed",
+          errors: [{ field: "projectId", message: "Project ID must be valid" }],
+        });
+      }
+      options.filter.projectId = projectId;
+    }
     if (status && STATUS_VALUES.has(status)) {
       options.filter.status = status;
     }

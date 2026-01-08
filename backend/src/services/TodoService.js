@@ -630,6 +630,7 @@ class TodoService {
   static async getStats(memberId) {
     const normalizedMemberId = normalizeMemberId(memberId);
     const memberFilter = buildMemberFilter(normalizedMemberId);
+    const now = new Date();
     const pipeline = [];
     if (Object.keys(memberFilter).length > 0) {
       pipeline.push({ $match: memberFilter });
@@ -642,6 +643,21 @@ class TodoService {
         important: { $sum: { $cond: ["$important", 1, 0] } },
         active: { $sum: { $cond: [{ $not: "$completed" }, 1, 0] } },
         withDeadline: { $sum: { $cond: [{ $ne: ["$deadline", null] }, 1, 0] } },
+        overdue: {
+          $sum: {
+            $cond: [
+              {
+                $and: [
+                  { $ne: ["$deadline", null] },
+                  { $lt: ["$deadline", now] },
+                  { $eq: ["$completed", false] },
+                ],
+              },
+              1,
+              0,
+            ],
+          },
+        },
         inProgress: {
           $sum: { $cond: [{ $eq: ["$status", "in_progress"] }, 1, 0] },
         },
@@ -657,6 +673,7 @@ class TodoService {
       important: 0,
       active: 0,
       withDeadline: 0,
+      overdue: 0,
       inProgress: 0,
       todo: 0,
       done: 0,

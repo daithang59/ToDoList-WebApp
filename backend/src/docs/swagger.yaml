@@ -944,10 +944,12 @@ components:
           type: integer
         active:
           type: integer
-        withDeadline:
-          type: integer
-        inProgress:
-          type: integer
+          withDeadline:
+            type: integer
+          overdue:
+            type: integer
+          inProgress:
+            type: integer
         todo:
           type: integer
         done:

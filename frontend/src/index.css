@@ -131,6 +131,65 @@ body {
   padding: 1.5rem;
   margin-bottom: 1.5rem;
 }
+.stats-panel {
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1rem;
+}
+.stats-card {
+  border-radius: 14px;
+  padding: 1rem;
+  background-color: var(--bg-base);
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.stats-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-2);
+}
+.stats-value-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+.stats-value {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text-1);
+}
+.stats-meta {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  color: var(--text-2);
+  background: hsla(var(--glow-color), 0.12);
+}
+.stats-progress {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--border);
+  overflow: hidden;
+}
+.stats-progress-bar {
+  display: block;
+  height: 100%;
+  background: var(--gradient-primary);
+  transition: width 0.3s ease;
+}
+.stats-warn .stats-value {
+  color: #f59e0b;
+}
+.stats-alert .stats-value {
+  color: #ef4444;
+}
 .toolbar-layout {
   display: flex;
   flex-direction: column;

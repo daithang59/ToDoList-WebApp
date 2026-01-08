@@ -63,6 +63,7 @@ export default function CalendarView({ items, onOpenModal }) {
         </h3>
         <List
           dataSource={selectedTodos}
+          rowKey={(todo) => todo._id}
           locale={{ emptyText: "No tasks for this date" }}
           renderItem={(todo) => (
             <List.Item onClick={() => onOpenModal(todo)} className="calendar-item">

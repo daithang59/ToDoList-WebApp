@@ -9,6 +9,7 @@ import EditTodoModal from "./components/EditTodoModal.jsx";
 import KanbanBoard from "./components/KanbanBoard.jsx";
 import ProjectModal from "./components/ProjectModal.jsx";
 import Sidebar from "./components/Sidebar/Sidebar.jsx";
+import StatsOverview from "./components/StatsOverview.jsx";
 import TodoList from "./components/TodoList.jsx";
 import Toolbar from "./components/Toolbar.jsx";
 import {
@@ -112,6 +113,54 @@ const normalizeTodo = (todo) => ({
 
 const normalizeTodos = (todos) => todos.map((todo) => normalizeTodo(todo));
 
+const buildStatsFromTodos = (items = []) => {
+  const stats = {
+    total: 0,
+    completed: 0,
+    important: 0,
+    active: 0,
+    overdue: 0,
+    inProgress: 0,
+    todo: 0,
+    done: 0,
+    withDeadline: 0,
+    completedPercentage: 0,
+  };
+
+  const now = new Date();
+  items.forEach((todo) => {
+    stats.total += 1;
+    const isCompleted = Boolean(todo.completed);
+    if (isCompleted) {
+      stats.completed += 1;
+      stats.done += 1;
+    } else {
+      stats.active += 1;
+    }
+    if (todo.important) {
+      stats.important += 1;
+    }
+    const status = todo.status || (isCompleted ? "done" : "todo");
+    if (status === "in_progress") {
+      stats.inProgress += 1;
+    } else if (status === "todo") {
+      stats.todo += 1;
+    }
+    if (todo.deadline) {
+      stats.withDeadline += 1;
+      if (!isCompleted && new Date(todo.deadline) < now) {
+        stats.overdue += 1;
+      }
+    }
+  });
+
+  stats.completedPercentage = stats.total
+    ? Math.round((stats.completed / stats.total) * 100)
+    : 0;
+
+  return stats;
+};
+
 const isNetworkError = (error) => !error?.response;
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -149,9 +198,11 @@ export default function MainApp({ isDark, onToggleDark }) {
     const stored = getStoredString(STORAGE_KEYS.viewMode, "list");
     return VALID_VIEW_MODES.has(stored) ? stored : "list";
   });
-  const [activeProjectId, setActiveProjectId] = useState(() =>
-    getStoredString(STORAGE_KEYS.projectId, "all")
-  );
+  const [activeProjectId, setActiveProjectId] = useState(() => {
+    const stored = getStoredString(STORAGE_KEYS.projectId, "all");
+    if (stored === "all") return "all";
+    return OBJECT_ID_REGEX.test(stored) ? stored : "all";
+  });
   const [modalOpen, setModalOpen] = useState(false);
   const [currentTodo, setCurrentTodo] = useState(null);
   const [projectModalOpen, setProjectModalOpen] = useState(false);
@@ -168,6 +219,7 @@ export default function MainApp({ isDark, onToggleDark }) {
     pages: 0,
   });
   const [hasCompleted, setHasCompleted] = useState(false);
+  const [stats, setStats] = useState(() => buildStatsFromTodos([]));
   const paramsRef = useRef(null);
 
   useEffect(() => {
@@ -200,6 +252,13 @@ export default function MainApp({ isDark, onToggleDark }) {
     }
   }, [activeProjectId]);
 
+  useEffect(() => {
+    if (activeProjectId === "all") return;
+    if (!projects.some((project) => project._id === activeProjectId)) {
+      setActiveProjectId("all");
+    }
+  }, [activeProjectId, projects]);
+
   const todoParams = useMemo(() => {
     const isListView = viewMode === "list";
     const params = {
@@ -227,6 +286,36 @@ export default function MainApp({ isDark, onToggleDark }) {
     }
   }, [clientId, message]);
 
+  const applyLocalStats = useCallback((items) => {
+    const derived = buildStatsFromTodos(items);
+    setStats(derived);
+    setHasCompleted(derived.completed > 0);
+  }, []);
+
+  const refreshStats = useCallback(
+    async (fallbackItems) => {
+      if (!navigator.onLine) {
+        if (fallbackItems) {
+          applyLocalStats(fallbackItems);
+        }
+        return;
+      }
+      try {
+        const data = await fetchStats();
+        if (data) {
+          setStats(data);
+          setHasCompleted(Boolean(data.completed));
+          return;
+        }
+      } catch {
+        if (fallbackItems) {
+          applyLocalStats(fallbackItems);
+        }
+      }
+    },
+    [applyLocalStats]
+  );
+
   const loadTodos = useCallback(async () => {
     setLoading(true);
     const params = todoParams;
@@ -251,9 +340,10 @@ export default function MainApp({ isDark, onToggleDark }) {
         !Array.isArray(cached) && cached?.pagination
           ? cached.pagination
           : buildPaginationFallback(cachedItems);
-      setTodos(normalizeTodos(cachedItems));
+      const normalizedItems = normalizeTodos(cachedItems);
+      setTodos(normalizedItems);
       setPagination(cachedPagination);
-      setHasCompleted(cachedItems.some((todo) => todo.completed));
+      applyLocalStats(normalizedItems);
       setLoading(false);
       return;
     }
@@ -277,9 +367,10 @@ export default function MainApp({ isDark, onToggleDark }) {
         const items = Array.isArray(payload?.todos) ? payload.todos : [];
         const nextPagination =
           payload?.pagination || buildPaginationFallback(items);
-        latestItems = items;
+        const normalizedItems = normalizeTodos(items);
+        latestItems = normalizedItems;
         latestPagination = nextPagination;
-        setTodos(normalizeTodos(items));
+        setTodos(normalizedItems);
         setPagination(nextPagination);
         setCachedTodos({
           key: cacheKey,
@@ -309,22 +400,18 @@ export default function MainApp({ isDark, onToggleDark }) {
         !Array.isArray(cached) && cached?.pagination
           ? cached.pagination
           : buildPaginationFallback(cachedItems);
-      setTodos(normalizeTodos(cachedItems));
+      const normalizedItems = normalizeTodos(cachedItems);
+      setTodos(normalizedItems);
       setPagination(cachedPagination);
-      setHasCompleted(cachedItems.some((todo) => todo.completed));
+      applyLocalStats(normalizedItems);
       setLoading(false);
       return;
     }
 
-    try {
-      const stats = await fetchStats();
-      setHasCompleted(Boolean(stats?.completed));
-    } catch {
-      setHasCompleted(latestItems.some((todo) => todo.completed));
-    }
+    await refreshStats(latestItems);
 
     setLoading(false);
-  }, [todoParams, pageSize, ensureAuth, message]);
+  }, [todoParams, pageSize, ensureAuth, message, applyLocalStats, refreshStats]);
 
   const loadProjects = useCallback(async () => {
     if (!navigator.onLine) {
@@ -400,9 +487,9 @@ export default function MainApp({ isDark, onToggleDark }) {
 
   useEffect(() => {
     if (!isOnline) {
-      refreshHasCompleted(todos);
+      applyLocalStats(todos);
     }
-  }, [isOnline, todos]);
+  }, [isOnline, todos, applyLocalStats]);
 
   const dependencyMap = useMemo(
     () => new Map(todos.map((todo) => [todo._id, Boolean(todo.completed)])),
@@ -572,6 +659,7 @@ export default function MainApp({ isDark, onToggleDark }) {
         )
       );
       message.success("Task added successfully!");
+      await refreshStats();
     } catch (error) {
       if (isNetworkError(error)) {
         enqueueAction({ type: QUEUE_ACTIONS.CREATE, tempId, payload });
@@ -653,6 +741,8 @@ export default function MainApp({ isDark, onToggleDark }) {
       message.success("Task status updated!");
       if (target.recurrence?.enabled && completed) {
         await loadTodos();
+      } else {
+        await refreshStats();
       }
     } catch (error) {
       if (isNetworkError(error)) {
@@ -715,6 +805,7 @@ export default function MainApp({ isDark, onToggleDark }) {
         )
       );
       message.success("Updated importance level!");
+      await refreshStats();
     } catch (error) {
       if (isNetworkError(error)) {
         if (!OBJECT_ID_REGEX.test(id)) {
@@ -770,6 +861,7 @@ export default function MainApp({ isDark, onToggleDark }) {
     try {
       await deleteTodo(id);
       message.success("Task deleted successfully!");
+      await refreshStats();
     } catch (error) {
       if (isNetworkError(error)) {
         if (!OBJECT_ID_REGEX.test(id)) {
@@ -882,6 +974,8 @@ export default function MainApp({ isDark, onToggleDark }) {
       message.success("Task updated successfully!");
       if (previous.recurrence?.enabled && normalizedChanges.status === "done") {
         await loadTodos();
+      } else {
+        await refreshStats();
       }
     } catch (error) {
       if (isNetworkError(error)) {
@@ -968,6 +1062,7 @@ export default function MainApp({ isDark, onToggleDark }) {
         try {
           await clearCompleted();
           message.success("Completed tasks cleared!");
+          await refreshStats();
         } catch (error) {
           if (isNetworkError(error)) {
             enqueueAction({ type: QUEUE_ACTIONS.CLEAR_COMPLETED });
@@ -1071,6 +1166,7 @@ export default function MainApp({ isDark, onToggleDark }) {
 
     try {
       await reorderTodos(serverUpdates);
+      await refreshStats();
     } catch (error) {
       if (isNetworkError(error)) {
         enqueueAction({ type: QUEUE_ACTIONS.REORDER, items: serverUpdates });
@@ -1198,6 +1294,9 @@ export default function MainApp({ isDark, onToggleDark }) {
 
         <Content className="main-content">
           <main className="container">
+            <div className="stats-panel card">
+              <StatsOverview stats={stats} loading={loading} />
+            </div>
             <div className="control-panel card">
               <AddTodoForm
                 value={newTitle}

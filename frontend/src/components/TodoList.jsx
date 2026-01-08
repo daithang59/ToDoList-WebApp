@@ -18,6 +18,7 @@ export default function TodoList({
     <div className="todo-list-wrapper">
       <List
         dataSource={items}
+        rowKey={(todo) => todo._id}
         locale={{ emptyText: "No todos yet" }}
         renderItem={(todo) => {
           const isBlocked =
