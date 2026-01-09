@@ -60,6 +60,7 @@ const VALID_PAGE_SIZES = new Set([5, 8, 10, 15]);
 const VALID_VIEW_MODES = new Set(["list", "kanban", "calendar"]);
 const OBJECT_ID_REGEX = /^[0-9a-fA-F]{24}$/;
 const MAX_VIEW_LIMIT = 200;
+const SEARCH_DEBOUNCE_MS = 300;
 
 const getStoredString = (key, fallback) => {
   if (typeof window === "undefined") return fallback;
@@ -194,6 +195,7 @@ export default function MainApp({ isDark, onToggleDark }) {
   const [query, setQuery] = useState(() =>
     getStoredString(STORAGE_KEYS.query, "")
   );
+  const [debouncedQuery, setDebouncedQuery] = useState(query);
   const [viewMode, setViewMode] = useState(() => {
     const stored = getStoredString(STORAGE_KEYS.viewMode, "list");
     return VALID_VIEW_MODES.has(stored) ? stored : "list";
@@ -245,6 +247,13 @@ export default function MainApp({ isDark, onToggleDark }) {
   }, [filter, sort, pageSize, query, viewMode, activeProjectId]);
 
   useEffect(() => {
+    const handle = setTimeout(() => {
+      setDebouncedQuery(query);
+    }, SEARCH_DEBOUNCE_MS);
+    return () => clearTimeout(handle);
+  }, [query]);
+
+  useEffect(() => {
     if (activeProjectId && activeProjectId !== "all") {
       setNewProjectId(activeProjectId);
     } else {
@@ -268,12 +277,12 @@ export default function MainApp({ isDark, onToggleDark }) {
       sortOrder: sort === "oldest" ? "asc" : "desc",
     };
     if (filter && filter !== "all") params.filter = filter;
-    if (query.trim()) params.query = query.trim();
+    if (debouncedQuery.trim()) params.query = debouncedQuery.trim();
     if (activeProjectId && activeProjectId !== "all") {
       params.projectId = activeProjectId;
     }
     return params;
-  }, [viewMode, page, pageSize, sort, filter, query, activeProjectId]);
+  }, [viewMode, page, pageSize, sort, filter, debouncedQuery, activeProjectId]);
 
   const ensureAuth = useCallback(async () => {
     if (!navigator.onLine) return true;
@@ -507,6 +516,12 @@ export default function MainApp({ isDark, onToggleDark }) {
     todo.dependencies.some((id) => dependencyMap.get(id) === false);
 
   const handleEnablePush = async () => {
+    if (!navigator.onLine) {
+      message.warning("You are offline. Enable push when back online.");
+      return;
+    }
+    const authOk = await ensureAuth();
+    if (!authOk) return;
     try {
       const result = await registerPushSubscription();
       if (result.enabled) {
@@ -1013,6 +1028,13 @@ export default function MainApp({ isDark, onToggleDark }) {
     setPage(1);
   }
 
+  function handleSearchSubmit(val) {
+    const next = typeof val === "string" ? val : query;
+    setQuery(next);
+    setDebouncedQuery(next);
+    setPage(1);
+  }
+
   function handlePageSizeChange(val) {
     setPageSize(val);
     setPage(1);
@@ -1317,7 +1339,8 @@ export default function MainApp({ isDark, onToggleDark }) {
                 pageSize={pageSize}
                 onPageSizeChange={handlePageSizeChange}
                 query={query}
-                onSearch={handleSearchChange}
+                onSearchChange={handleSearchChange}
+                onSearchSubmit={handleSearchSubmit}
                 onClearCompleted={handleClearCompleted}
                 clearDisabled={!hasCompleted}
                 viewMode={viewMode}

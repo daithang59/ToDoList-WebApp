@@ -26,7 +26,8 @@ export default function Toolbar({
   pageSize,
   onPageSizeChange,
   query,
-  onSearch,
+  onSearchChange,
+  onSearchSubmit,
   onClearCompleted,
   clearDisabled,
   viewMode,
@@ -108,8 +109,14 @@ export default function Toolbar({
           placeholder="Search todos..."
           className="toolbar-search"
           value={query}
-          onChange={(e) => onSearch(e.target.value)}
-          onSearch={onSearch}
+          onChange={(e) => onSearchChange?.(e.target.value)}
+          onSearch={(value) => {
+            if (onSearchSubmit) {
+              onSearchSubmit(value);
+            } else if (onSearchChange) {
+              onSearchChange(value);
+            }
+          }}
           allowClear
         />
 

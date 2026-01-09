@@ -1,5 +1,5 @@
 import axios from "axios";
-import { getAuthToken } from "./services/authStorage";
+import { clearAuthToken, getAuthToken } from "./services/authStorage";
 
 export const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
@@ -12,3 +12,13 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error?.response?.status === 401) {
+      clearAuthToken();
+    }
+    return Promise.reject(error);
+  }
+);
