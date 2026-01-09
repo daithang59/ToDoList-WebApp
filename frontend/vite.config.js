@@ -11,4 +11,8 @@ export default defineConfig({
       "todolist-frontend-route-todo-webapp.apps.okd.hldthang.io.vn",
     ],
   },
+  test: {
+    environment: "jsdom",
+    setupFiles: "./src/test/setup.js",
+  },
 });

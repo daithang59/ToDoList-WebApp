@@ -4,7 +4,9 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint .",
     "start": "node src/index.js",
     "dev": "nodemon src/index.js"
   },
@@ -34,6 +36,8 @@
     "eslint-plugin-react": "^7.37.5",
     "globals": "^16.4.0",
     "nodemon": "^3.1.10",
-    "prettier": "^3.6.2"
+    "prettier": "^3.6.2",
+    "supertest": "^6.3.4",
+    "vitest": "^2.1.9"
   }
 }

@@ -801,6 +801,9 @@ components:
         status:
           type: string
           enum: [todo, in_progress, done]
+        priority:
+          type: string
+          enum: [low, medium, high, urgent]
         order:
           type: number
         deadline:
@@ -863,6 +866,9 @@ components:
         status:
           type: string
           enum: [todo, in_progress, done]
+        priority:
+          type: string
+          enum: [low, medium, high, urgent]
         order:
           type: number
         subtasks:
@@ -904,6 +910,9 @@ components:
         status:
           type: string
           enum: [todo, in_progress, done]
+        priority:
+          type: string
+          enum: [low, medium, high, urgent]
         order:
           type: number
         subtasks:
@@ -924,6 +933,10 @@ components:
           type: array
           items:
             type: string
+        clientUpdatedAt:
+          type: string
+          format: date-time
+          description: Last known updatedAt timestamp for conflict detection.
     TodoListResponse:
       type: object
       properties:

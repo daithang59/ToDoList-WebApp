@@ -2,6 +2,13 @@ import { Button, Tag, Tooltip } from "antd";
 import { Check, Pencil, Star, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 
+const priorityColorMap = {
+  urgent: "red",
+  high: "volcano",
+  medium: "gold",
+  low: "blue",
+};
+
 const columns = [
   { key: "todo", title: "To Do" },
   { key: "in_progress", title: "In Progress" },
@@ -93,6 +100,8 @@ export default function KanbanBoard({
                   ? todo.subtasks.filter((subtask) => subtask.completed).length
                   : 0;
                 const project = projectMap?.get(todo.projectId);
+                const priority = todo.priority || "medium";
+                const priorityColor = priorityColorMap[priority] || "default";
 
                 return (
                   <div
@@ -123,6 +132,9 @@ export default function KanbanBoard({
                     {project && (
                       <Tag color={project.color || "default"}>{project.name}</Tag>
                     )}
+                    <Tag color={priorityColor}>
+                      {priority.charAt(0).toUpperCase() + priority.slice(1)}
+                    </Tag>
 
                     <div className="kanban-card-flags">
                       {isBlocked && <Tag color="orange">Blocked</Tag>}

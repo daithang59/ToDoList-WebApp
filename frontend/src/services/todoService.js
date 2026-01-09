@@ -4,6 +4,7 @@ const STORAGE_KEYS = {
   cache: "todo:cache",
   queue: "todo:queue",
   clientId: "todo:clientId",
+  conflicts: "todo:conflicts",
 };
 
 const QUEUE_ACTIONS = {
@@ -58,6 +59,30 @@ export const setQueue = (queue) => {
   writeStorage(STORAGE_KEYS.queue, queue);
 };
 
+export const getConflicts = () => readStorage(STORAGE_KEYS.conflicts, []);
+
+export const setConflicts = (conflicts) => {
+  writeStorage(STORAGE_KEYS.conflicts, conflicts);
+};
+
+export const addConflict = (conflict) => {
+  const conflicts = getConflicts();
+  conflicts.push(conflict);
+  setConflicts(conflicts);
+  return conflicts;
+};
+
+export const removeConflict = (conflictId) => {
+  const conflicts = getConflicts();
+  const next = conflicts.filter((conflict) => conflict.conflictId !== conflictId);
+  setConflicts(next);
+  return next;
+};
+
+export const clearConflicts = () => {
+  setConflicts([]);
+};
+
 export const enqueueAction = (action) => {
   const queue = getQueue();
   queue.push(action);
@@ -73,7 +98,9 @@ export async function processQueue() {
   const queue = getQueue();
   if (!queue.length) return { processed: 0, remaining: 0 };
 
+  let processed = 0;
   const remaining = [];
+  const conflicts = [];
   for (let i = 0; i < queue.length; i += 1) {
     const action = queue[i];
     try {
@@ -92,14 +119,29 @@ export async function processQueue() {
       if (action.type === QUEUE_ACTIONS.REORDER) {
         await api.patch(`/todos/reorder`, { items: action.items });
       }
+      processed += 1;
     } catch (error) {
-      remaining.push(...queue.slice(i));
+      if (error?.response?.status === 409) {
+        const conflict = {
+          conflictId: `conflict-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+          action: action.type,
+          id: action.id,
+          payload: action.payload,
+          server: error.response?.data?.details?.current || null,
+          occurredAt: new Date().toISOString(),
+        };
+        addConflict(conflict);
+        conflicts.push(conflict);
+        remaining.push(...queue.slice(i + 1));
+      } else {
+        remaining.push(...queue.slice(i));
+      }
       break;
     }
   }
 
   setQueue(remaining);
-  return { processed: queue.length - remaining.length, remaining: remaining.length };
+  return { processed, remaining: remaining.length, conflicts };
 }
 
 export async function fetchTodos(params = {}) {

@@ -1,10 +1,11 @@
-import { App, Button, Layout, Spin, Switch, Tag } from "antd";
+import { App, Button, Input, Layout, Modal, Spin, Switch, Tag } from "antd";
 import { Menu } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import logo from "./assets/logo.svg";
 import AddTodoForm from "./components/AddTodoForm.jsx";
 import CalendarView from "./components/CalendarView.jsx";
 import Chatbot from "./components/Chatbot/Chatbot.jsx";
+import ConflictModal from "./components/ConflictModal.jsx";
 import EditTodoModal from "./components/EditTodoModal.jsx";
 import KanbanBoard from "./components/KanbanBoard.jsx";
 import ProjectModal from "./components/ProjectModal.jsx";
@@ -14,6 +15,7 @@ import TodoList from "./components/TodoList.jsx";
 import Toolbar from "./components/Toolbar.jsx";
 import {
   QUEUE_ACTIONS,
+  addConflict,
   clearCompleted,
   createProject,
   createTodo,
@@ -25,9 +27,11 @@ import {
   fetchTodos,
   getCachedTodos,
   getClientId,
+  getConflicts,
   getQueue,
   processQueue,
   reorderTodos,
+  removeConflict,
   setCachedTodos,
   setQueue,
   updateProject,
@@ -35,6 +39,10 @@ import {
 } from "./services/todoService";
 import { ensureAuthToken } from "./services/authService";
 import { registerPushSubscription } from "./services/notificationService";
+import {
+  addTemplate,
+  getTemplates,
+} from "./services/templateService";
 
 const { Header, Content } = Layout;
 
@@ -45,6 +53,7 @@ const STORAGE_KEYS = {
   query: "todo:query",
   viewMode: "todo:viewMode",
   projectId: "todo:projectId",
+  priority: "todo:priority",
 };
 
 const VALID_FILTERS = new Set([
@@ -55,6 +64,9 @@ const VALID_FILTERS = new Set([
   "today",
   "overdue",
 ]);
+
+const PRIORITY_LEVELS = ["low", "medium", "high", "urgent"];
+const VALID_PRIORITY_FILTERS = new Set(["all", ...PRIORITY_LEVELS]);
 
 const VALID_PAGE_SIZES = new Set([5, 8, 10, 15]);
 const VALID_VIEW_MODES = new Set(["list", "kanban", "calendar"]);
@@ -91,6 +103,7 @@ const normalizeList = (values = []) => {
 const normalizeTodo = (todo) => ({
   ...todo,
   status: todo.status || (todo.completed ? "done" : "todo"),
+  priority: todo.priority || "medium",
   order: Number.isFinite(todo.order) ? todo.order : 0,
   tags: Array.isArray(todo.tags) ? todo.tags : [],
   subtasks: Array.isArray(todo.subtasks) ? todo.subtasks : [],
@@ -178,6 +191,11 @@ export default function MainApp({ isDark, onToggleDark }) {
   const [newTitle, setNewTitle] = useState("");
   const [newTags, setNewTags] = useState([]);
   const [newProjectId, setNewProjectId] = useState(null);
+  const [newPriority, setNewPriority] = useState("medium");
+  const [templates, setTemplates] = useState(() => getTemplates());
+  const [selectedTemplateId, setSelectedTemplateId] = useState(null);
+  const [templateModalOpen, setTemplateModalOpen] = useState(false);
+  const [templateName, setTemplateName] = useState("");
   const [filter, setFilter] = useState(() => {
     const stored = getStoredString(STORAGE_KEYS.filter, "all");
     return VALID_FILTERS.has(stored) ? stored : "all";
@@ -195,6 +213,10 @@ export default function MainApp({ isDark, onToggleDark }) {
   const [query, setQuery] = useState(() =>
     getStoredString(STORAGE_KEYS.query, "")
   );
+  const [priorityFilter, setPriorityFilter] = useState(() => {
+    const stored = getStoredString(STORAGE_KEYS.priority, "all");
+    return VALID_PRIORITY_FILTERS.has(stored) ? stored : "all";
+  });
   const [debouncedQuery, setDebouncedQuery] = useState(query);
   const [viewMode, setViewMode] = useState(() => {
     const stored = getStoredString(STORAGE_KEYS.viewMode, "list");
@@ -213,6 +235,8 @@ export default function MainApp({ isDark, onToggleDark }) {
     typeof navigator !== "undefined" ? navigator.onLine : true
   );
   const [queueCount, setQueueCount] = useState(() => getQueue().length);
+  const [conflicts, setConflicts] = useState(() => getConflicts());
+  const [conflictModalOpen, setConflictModalOpen] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [pagination, setPagination] = useState({
     page: 1,
@@ -244,7 +268,8 @@ export default function MainApp({ isDark, onToggleDark }) {
     localStorage.setItem(STORAGE_KEYS.query, query);
     localStorage.setItem(STORAGE_KEYS.viewMode, viewMode);
     localStorage.setItem(STORAGE_KEYS.projectId, activeProjectId);
-  }, [filter, sort, pageSize, query, viewMode, activeProjectId]);
+    localStorage.setItem(STORAGE_KEYS.priority, priorityFilter);
+  }, [filter, sort, pageSize, query, viewMode, activeProjectId, priorityFilter]);
 
   useEffect(() => {
     const handle = setTimeout(() => {
@@ -278,11 +303,23 @@ export default function MainApp({ isDark, onToggleDark }) {
     };
     if (filter && filter !== "all") params.filter = filter;
     if (debouncedQuery.trim()) params.query = debouncedQuery.trim();
+    if (priorityFilter && priorityFilter !== "all") {
+      params.priority = priorityFilter;
+    }
     if (activeProjectId && activeProjectId !== "all") {
       params.projectId = activeProjectId;
     }
     return params;
-  }, [viewMode, page, pageSize, sort, filter, debouncedQuery, activeProjectId]);
+  }, [
+    viewMode,
+    page,
+    pageSize,
+    sort,
+    filter,
+    debouncedQuery,
+    priorityFilter,
+    activeProjectId,
+  ]);
 
   const ensureAuth = useCallback(async () => {
     if (!navigator.onLine) return true;
@@ -447,9 +484,15 @@ export default function MainApp({ isDark, onToggleDark }) {
     setSyncing(true);
     const result = await processQueue();
     setQueueCount(result.remaining);
+    setConflicts(getConflicts());
+    if (result.conflicts?.length) {
+      message.warning(
+        `Sync paused: ${result.conflicts.length} conflict(s) need review.`
+      );
+    }
     await loadTodos();
     setSyncing(false);
-  }, [ensureAuth, loadTodos]);
+  }, [ensureAuth, loadTodos, message]);
 
   useEffect(() => {
     loadTodos();
@@ -584,6 +627,22 @@ export default function MainApp({ isDark, onToggleDark }) {
     setHasCompleted(items.some((todo) => todo.completed));
   };
 
+  const recordConflict = (action, error) => {
+    if (error?.response?.status !== 409) return false;
+    const conflict = {
+      conflictId: `conflict-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+      action: action.type,
+      id: action.id,
+      payload: action.payload,
+      server: error.response?.data?.details?.current || null,
+      occurredAt: new Date().toISOString(),
+    };
+    addConflict(conflict);
+    setConflicts(getConflicts());
+    message.warning("Conflict detected. Review it in the header.");
+    return true;
+  };
+
   const mergeQueuedCreate = (tempId, changes) => {
     const queue = getQueue();
     const index = queue.findIndex(
@@ -626,6 +685,7 @@ export default function MainApp({ isDark, onToggleDark }) {
       order: 0,
       deadline: null,
       important: false,
+      priority: newPriority,
       tags,
       projectId: newProjectId || null,
       ownerId: clientId,
@@ -646,6 +706,7 @@ export default function MainApp({ isDark, onToggleDark }) {
     const payload = {
       title,
       tags,
+      priority: newPriority,
       projectId: newProjectId || undefined,
     };
 
@@ -712,6 +773,9 @@ export default function MainApp({ isDark, onToggleDark }) {
       status: nextStatus,
       completedAt: completed ? new Date().toISOString() : null,
     };
+    if (OBJECT_ID_REGEX.test(id) && target.updatedAt) {
+      updates.clientUpdatedAt = target.updatedAt;
+    }
 
     setTodos((prev) => {
       const next = prev.map((todo) =>
@@ -760,6 +824,15 @@ export default function MainApp({ isDark, onToggleDark }) {
         await refreshStats();
       }
     } catch (error) {
+      if (
+        recordConflict(
+          { type: QUEUE_ACTIONS.UPDATE, id, payload: updates },
+          error
+        )
+      ) {
+        await loadTodos();
+        return;
+      }
       if (isNetworkError(error)) {
         if (!OBJECT_ID_REGEX.test(id)) {
           mergeQueuedCreate(id, updates);
@@ -783,6 +856,11 @@ export default function MainApp({ isDark, onToggleDark }) {
     const target = todos.find((todo) => todo._id === id);
     if (!target) return;
 
+    const updatePayload = { important };
+    if (OBJECT_ID_REGEX.test(id) && target.updatedAt) {
+      updatePayload.clientUpdatedAt = target.updatedAt;
+    }
+
     setTodos((prev) =>
       prev.map((todo) =>
         todo._id === id ? normalizeTodo({ ...todo, important }) : todo
@@ -793,7 +871,7 @@ export default function MainApp({ isDark, onToggleDark }) {
       if (!OBJECT_ID_REGEX.test(id)) {
         mergeQueuedCreate(id, { important });
       } else {
-        enqueueAction({ type: QUEUE_ACTIONS.UPDATE, id, payload: { important } });
+        enqueueAction({ type: QUEUE_ACTIONS.UPDATE, id, payload: updatePayload });
         updateQueueCount();
       }
       message.info("Update saved offline.");
@@ -805,7 +883,7 @@ export default function MainApp({ isDark, onToggleDark }) {
       if (!OBJECT_ID_REGEX.test(id)) {
         mergeQueuedCreate(id, { important });
       } else {
-        enqueueAction({ type: QUEUE_ACTIONS.UPDATE, id, payload: { important } });
+        enqueueAction({ type: QUEUE_ACTIONS.UPDATE, id, payload: updatePayload });
         updateQueueCount();
       }
       message.info("Update saved offline.");
@@ -813,7 +891,7 @@ export default function MainApp({ isDark, onToggleDark }) {
     }
 
     try {
-      const updated = await updateTodo(id, { important });
+      const updated = await updateTodo(id, updatePayload);
       setTodos((prev) =>
         prev.map((todo) =>
           todo._id === id ? normalizeTodo(updated) : todo
@@ -822,11 +900,20 @@ export default function MainApp({ isDark, onToggleDark }) {
       message.success("Updated importance level!");
       await refreshStats();
     } catch (error) {
+      if (
+        recordConflict(
+          { type: QUEUE_ACTIONS.UPDATE, id, payload: updatePayload },
+          error
+        )
+      ) {
+        await loadTodos();
+        return;
+      }
       if (isNetworkError(error)) {
         if (!OBJECT_ID_REGEX.test(id)) {
           mergeQueuedCreate(id, { important });
         } else {
-          enqueueAction({ type: QUEUE_ACTIONS.UPDATE, id, payload: { important } });
+          enqueueAction({ type: QUEUE_ACTIONS.UPDATE, id, payload: updatePayload });
           updateQueueCount();
         }
         message.info("Update saved offline.");
@@ -917,6 +1004,9 @@ export default function MainApp({ isDark, onToggleDark }) {
         : [],
       subtasks: Array.isArray(changes.subtasks) ? changes.subtasks : [],
     };
+    if (OBJECT_ID_REGEX.test(currentTodo._id) && currentTodo.updatedAt) {
+      normalizedChanges.clientUpdatedAt = currentTodo.updatedAt;
+    }
 
     const dependenciesToCheck =
       normalizedChanges.dependencies?.length > 0
@@ -993,6 +1083,19 @@ export default function MainApp({ isDark, onToggleDark }) {
         await refreshStats();
       }
     } catch (error) {
+      if (
+        recordConflict(
+          {
+            type: QUEUE_ACTIONS.UPDATE,
+            id: currentTodo._id,
+            payload: normalizedChanges,
+          },
+          error
+        )
+      ) {
+        await loadTodos();
+        return;
+      }
       if (isNetworkError(error)) {
         if (!OBJECT_ID_REGEX.test(currentTodo._id)) {
           mergeQueuedCreate(currentTodo._id, normalizedChanges);
@@ -1023,6 +1126,11 @@ export default function MainApp({ isDark, onToggleDark }) {
     setPage(1);
   }
 
+  function handlePriorityChange(val) {
+    setPriorityFilter(val);
+    setPage(1);
+  }
+
   function handleSearchChange(val) {
     setQuery(val);
     setPage(1);
@@ -1034,6 +1142,51 @@ export default function MainApp({ isDark, onToggleDark }) {
     setDebouncedQuery(next);
     setPage(1);
   }
+
+  const handleTemplateSelect = (templateId) => {
+    setSelectedTemplateId(templateId);
+    const template = templates.find((item) => item.id === templateId);
+    if (!template) return;
+    setNewTitle(template.title || "");
+    setNewTags(Array.isArray(template.tags) ? template.tags : []);
+    setNewPriority(
+      PRIORITY_LEVELS.includes(template.priority)
+        ? template.priority
+        : "medium"
+    );
+    setNewProjectId(template.projectId || null);
+  };
+
+  const openTemplateModal = () => {
+    if (!newTitle.trim()) {
+      message.warning("Enter a task title before saving a template.");
+      return;
+    }
+    setTemplateName(newTitle.trim());
+    setTemplateModalOpen(true);
+  };
+
+  const handleTemplateSave = () => {
+    const name = templateName.trim();
+    if (!name) {
+      message.warning("Template name is required.");
+      return;
+    }
+    const template = {
+      id: `tpl-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+      name,
+      title: newTitle.trim(),
+      tags: normalizeList(newTags),
+      priority: newPriority,
+      projectId: newProjectId || null,
+    };
+    const next = addTemplate(template);
+    setTemplates(next);
+    setSelectedTemplateId(template.id);
+    setTemplateModalOpen(false);
+    setTemplateName("");
+    message.success("Template saved.");
+  };
 
   function handlePageSizeChange(val) {
     setPageSize(val);
@@ -1100,6 +1253,36 @@ export default function MainApp({ isDark, onToggleDark }) {
       },
     });
   }
+
+  const handleUseServer = async (conflictId) => {
+    const next = removeConflict(conflictId);
+    setConflicts(next);
+    message.info("Conflict resolved using server data.");
+    if (isOnline && getQueue().length > 0) {
+      await syncQueueAndRefresh();
+    } else {
+      await loadTodos();
+    }
+  };
+
+  const handleReapplyLocal = async (conflict) => {
+    if (!conflict?.server || conflict.action !== QUEUE_ACTIONS.UPDATE) {
+      message.warning("Unable to reapply this conflict.");
+      return;
+    }
+    const payload = {
+      ...conflict.payload,
+      clientUpdatedAt: conflict.server.updatedAt,
+    };
+    enqueueAction({ type: QUEUE_ACTIONS.UPDATE, id: conflict.id, payload });
+    updateQueueCount();
+    const next = removeConflict(conflict.conflictId);
+    setConflicts(next);
+    message.success("Local changes re-queued for sync.");
+    if (isOnline) {
+      await syncQueueAndRefresh();
+    }
+  };
 
   const handleMoveTodo = async (id, status, targetIndex) => {
     const current = todos.find((todo) => todo._id === id);
@@ -1283,6 +1466,15 @@ export default function MainApp({ isDark, onToggleDark }) {
           {!isOnline && <Tag color="volcano">Offline</Tag>}
           {queueCount > 0 && <Tag color="blue">Sync pending: {queueCount}</Tag>}
           {syncing && <Tag color="cyan">Syncing...</Tag>}
+          {conflicts.length > 0 && (
+            <Tag
+              color="red"
+              style={{ cursor: "pointer" }}
+              onClick={() => setConflictModalOpen(true)}
+            >
+              Conflicts: {conflicts.length}
+            </Tag>
+          )}
           <Switch
             checked={isDark}
             onChange={onToggleDark}
@@ -1328,6 +1520,12 @@ export default function MainApp({ isDark, onToggleDark }) {
                 projects={projects}
                 projectId={newProjectId}
                 onProjectChange={setNewProjectId}
+                priority={newPriority}
+                onPriorityChange={setNewPriority}
+                templates={templates}
+                templateId={selectedTemplateId}
+                onTemplateSelect={handleTemplateSelect}
+                onSaveTemplate={openTemplateModal}
                 onAdd={handleAdd}
                 loading={addLoading}
               />
@@ -1336,6 +1534,8 @@ export default function MainApp({ isDark, onToggleDark }) {
                 onFilterChange={handleFilterChange}
                 sort={sort}
                 onSortChange={setSort}
+                priority={priorityFilter}
+                onPriorityChange={handlePriorityChange}
                 pageSize={pageSize}
                 onPageSizeChange={handlePageSizeChange}
                 query={query}
@@ -1383,6 +1583,24 @@ export default function MainApp({ isDark, onToggleDark }) {
         </Content>
       </div>
 
+      <Modal
+        title="Save Template"
+        open={templateModalOpen}
+        onOk={handleTemplateSave}
+        onCancel={() => {
+          setTemplateModalOpen(false);
+          setTemplateName("");
+        }}
+        okText="Save"
+        destroyOnClose
+      >
+        <Input
+          placeholder="Template name"
+          value={templateName}
+          onChange={(event) => setTemplateName(event.target.value)}
+        />
+      </Modal>
+
       <EditTodoModal
         open={modalOpen}
         onClose={closeModal}
@@ -1391,6 +1609,14 @@ export default function MainApp({ isDark, onToggleDark }) {
         projects={projects}
         allTodos={todos}
         onEnablePush={handleEnablePush}
+      />
+
+      <ConflictModal
+        open={conflictModalOpen}
+        conflicts={conflicts}
+        onUseServer={handleUseServer}
+        onReapplyLocal={handleReapplyLocal}
+        onClose={() => setConflictModalOpen(false)}
       />
 
       <ProjectModal

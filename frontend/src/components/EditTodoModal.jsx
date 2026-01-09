@@ -28,6 +28,13 @@ const RECURRENCE_UNITS = [
   { value: "month", label: "Month(s)" },
 ];
 
+const PRIORITY_OPTIONS = [
+  { value: "urgent", label: "Urgent" },
+  { value: "high", label: "High" },
+  { value: "medium", label: "Medium" },
+  { value: "low", label: "Low" },
+];
+
 const REMINDER_CHANNELS = [
   { value: "email", label: "Email" },
   { value: "push", label: "Push" },
@@ -61,6 +68,7 @@ export default function EditTodoModal({
   const [deadline, setDeadline] = useState(null);
   const [tags, setTags] = useState([]);
   const [status, setStatus] = useState("todo");
+  const [priority, setPriority] = useState("medium");
   const [projectId, setProjectId] = useState(null);
   const [subtasks, setSubtasks] = useState([]);
   const [dependencies, setDependencies] = useState([]);
@@ -74,6 +82,7 @@ export default function EditTodoModal({
     setDeadline(todo?.deadline ? dayjs(todo.deadline) : null);
     setTags(Array.isArray(todo?.tags) ? todo.tags : []);
     setStatus(todo?.status || (todo?.completed ? "done" : "todo"));
+    setPriority(todo?.priority || "medium");
     setProjectId(todo?.projectId || null);
     setSubtasks(Array.isArray(todo?.subtasks) ? todo.subtasks : []);
     setDependencies(Array.isArray(todo?.dependencies) ? todo.dependencies : []);
@@ -140,6 +149,7 @@ export default function EditTodoModal({
             deadline: deadline ? deadline.toDate() : null,
             tags,
             status,
+            priority,
             projectId,
             subtasks,
             dependencies,
@@ -165,6 +175,12 @@ export default function EditTodoModal({
         value={status}
         onChange={setStatus}
         options={STATUS_OPTIONS}
+        style={{ width: "100%", marginBottom: 12 }}
+      />
+      <Select
+        value={priority}
+        onChange={setPriority}
+        options={PRIORITY_OPTIONS}
         style={{ width: "100%", marginBottom: 12 }}
       />
       <Select

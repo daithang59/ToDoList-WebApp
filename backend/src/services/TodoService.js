@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import Todo from "../models/Todo.js";
 
 const STATUS_VALUES = new Set(["todo", "in_progress", "done"]);
+const PRIORITY_VALUES = new Set(["low", "medium", "high", "urgent"]);
 const RECURRENCE_UNITS = new Set(["day", "week", "month"]);
 const REMINDER_CHANNELS = new Set(["email", "push"]);
 
@@ -17,6 +18,14 @@ const mergeFilters = (base, extra) => {
   if (!extra || Object.keys(extra).length === 0) return base;
   if (!base || Object.keys(base).length === 0) return extra;
   return { $and: [base, extra] };
+};
+
+const buildConflictError = (currentTodo) => {
+  const error = new Error("Todo has been updated since last sync");
+  error.status = 409;
+  error.code = "CONFLICT";
+  error.details = { current: currentTodo };
+  return error;
 };
 
 class TodoService {
@@ -260,6 +269,7 @@ class TodoService {
       deadline,
       important,
       tags,
+      priority,
       status,
       order,
       subtasks,
@@ -285,6 +295,10 @@ class TodoService {
 
     if (status !== undefined && !STATUS_VALUES.has(status)) {
       throw new Error("Invalid status value");
+    }
+
+    if (priority !== undefined && !PRIORITY_VALUES.has(priority)) {
+      throw new Error("Invalid priority value");
     }
 
     const processedTags = this.sanitizeTags(tags);
@@ -315,6 +329,7 @@ class TodoService {
       important: Boolean(important),
       tags: processedTags,
       status: resolvedStatus,
+      priority: priority || "medium",
       completed: resolvedCompleted,
       completedAt: resolvedCompleted ? new Date() : null,
       order: Number.isFinite(Number(order)) ? Number(order) : 0,
@@ -336,6 +351,18 @@ class TodoService {
     const todo = await Todo.findOne({ _id: id, ...memberFilter });
     if (!todo) {
       throw new Error("Todo not found");
+    }
+
+    let expectedUpdatedAt = null;
+    if (updateData.clientUpdatedAt !== undefined && updateData.clientUpdatedAt !== null) {
+      const parsed = new Date(updateData.clientUpdatedAt);
+      if (Number.isNaN(parsed.getTime())) {
+        throw new Error("Invalid clientUpdatedAt");
+      }
+      expectedUpdatedAt = parsed;
+      if (todo.updatedAt && todo.updatedAt.getTime() !== parsed.getTime()) {
+        throw buildConflictError(todo.toObject());
+      }
     }
 
     const updates = {};
@@ -415,6 +442,13 @@ class TodoService {
       updates.important = Boolean(updateData.important);
     }
 
+    if (updateData.priority !== undefined) {
+      if (!PRIORITY_VALUES.has(updateData.priority)) {
+        throw new Error("Invalid priority value");
+      }
+      updates.priority = updateData.priority;
+    }
+
     const { status, completed } = this.resolveStatusAndCompleted(
       todo,
       updateData
@@ -439,10 +473,25 @@ class TodoService {
       );
     }
 
-    const updatedTodo = await Todo.findByIdAndUpdate(id, updates, {
+    const updateFilter = { _id: id, ...memberFilter };
+    if (expectedUpdatedAt) {
+      updateFilter.updatedAt = expectedUpdatedAt;
+    }
+
+    const updatedTodo = await Todo.findOneAndUpdate(updateFilter, updates, {
       new: true,
       runValidators: true,
     });
+
+    if (!updatedTodo) {
+      if (expectedUpdatedAt) {
+        const current = await Todo.findOne({ _id: id, ...memberFilter });
+        if (current) {
+          throw buildConflictError(current.toObject());
+        }
+      }
+      throw new Error("Todo not found");
+    }
 
     if (!previousCompleted && updatedTodo.completed) {
       await this.createNextRecurringTodo(updatedTodo);
@@ -559,6 +608,7 @@ class TodoService {
       completed,
       important,
       status,
+      priority,
       tags,
       deadline,
       projectId,
@@ -593,6 +643,10 @@ class TodoService {
         default:
           break;
       }
+    }
+
+    if (priority && PRIORITY_VALUES.has(priority)) {
+      filter.priority = priority;
     }
 
     if (tags && Array.isArray(tags) && tags.length > 0) {

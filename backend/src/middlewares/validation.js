@@ -2,6 +2,7 @@
  * Validation middleware cho Todo routes
  */
 const STATUS_VALUES = new Set(["todo", "in_progress", "done"]);
+const PRIORITY_VALUES = new Set(["low", "medium", "high", "urgent"]);
 const RECURRENCE_UNITS = new Set(["day", "week", "month"]);
 const REMINDER_CHANNELS = new Set(["email", "push"]);
 const objectIdRegex = /^[0-9a-fA-F]{24}$/;
@@ -19,6 +20,7 @@ class TodoValidation {
       deadline,
       tags,
       status,
+      priority,
       subtasks,
       dependencies,
       projectId,
@@ -85,6 +87,13 @@ class TodoValidation {
       errors.push({
         field: "status",
         message: "Status must be todo, in_progress, or done",
+      });
+    }
+
+    if (priority !== undefined && !PRIORITY_VALUES.has(priority)) {
+      errors.push({
+        field: "priority",
+        message: "Priority must be low, medium, high, or urgent",
       });
     }
 
@@ -256,6 +265,7 @@ class TodoValidation {
       tags,
       description,
       status,
+      priority,
       subtasks,
       dependencies,
       projectId,
@@ -264,6 +274,7 @@ class TodoValidation {
       sharedWith,
       order,
       ownerId,
+      clientUpdatedAt,
     } = req.body;
     const errors = [];
 
@@ -339,6 +350,13 @@ class TodoValidation {
       errors.push({
         field: "status",
         message: "Status must be todo, in_progress, or done",
+      });
+    }
+
+    if (priority !== undefined && !PRIORITY_VALUES.has(priority)) {
+      errors.push({
+        field: "priority",
+        message: "Priority must be low, medium, high, or urgent",
       });
     }
 
@@ -486,6 +504,16 @@ class TodoValidation {
         errors.push({
           field: "ownerId",
           message: "OwnerId must be a non-empty string",
+        });
+      }
+    }
+
+    if (clientUpdatedAt !== undefined && clientUpdatedAt !== null) {
+      const parsed = new Date(clientUpdatedAt);
+      if (isNaN(parsed.getTime())) {
+        errors.push({
+          field: "clientUpdatedAt",
+          message: "clientUpdatedAt must be a valid date",
         });
       }
     }

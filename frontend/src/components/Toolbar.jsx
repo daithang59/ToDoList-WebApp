@@ -23,6 +23,8 @@ export default function Toolbar({
   onFilterChange,
   sort,
   onSortChange,
+  priority,
+  onPriorityChange,
   pageSize,
   onPageSizeChange,
   query,
@@ -155,6 +157,18 @@ export default function Toolbar({
                 value: "calendar",
               },
             ]}
+          />
+          <Select
+            value={priority}
+            onChange={onPriorityChange}
+            options={[
+              { value: "all", label: "All priorities" },
+              { value: "urgent", label: "Urgent" },
+              { value: "high", label: "High" },
+              { value: "medium", label: "Medium" },
+              { value: "low", label: "Low" },
+            ]}
+            style={{ minWidth: 150 }}
           />
           <Select
             value={sort}

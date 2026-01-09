@@ -27,10 +27,15 @@ class AuthController extends BaseController {
       { expiresIn }
     );
 
+    const decoded = jwt.decode(token);
+    const expiresAt =
+      decoded?.exp ? new Date(decoded.exp * 1000).toISOString() : null;
+
     res.json({
       token,
       tokenType: "Bearer",
       expiresIn,
+      expiresAt,
       ownerId: clientId,
     });
   });

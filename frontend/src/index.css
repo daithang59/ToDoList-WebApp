@@ -114,13 +114,21 @@ body {
 .add-todo-row {
   display: flex;
   gap: 0.75rem;
+  flex-wrap: wrap;
 }
 .add-todo-row .ant-input-wrapper {
   flex-grow: 1;
 }
+.add-todo-row-secondary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.75rem;
+}
 .add-tags-select {
   width: 100%;
 }
+.add-priority-select,
+.add-template-select,
 .add-project-select {
   width: 100%;
 }

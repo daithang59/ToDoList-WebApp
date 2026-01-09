@@ -1,6 +1,13 @@
 import { Button, List, Pagination, Tag, Tooltip, Typography } from "antd";
 import { Check, Pencil, Star, Trash2 } from "lucide-react";
 
+const priorityColorMap = {
+  urgent: "red",
+  high: "volcano",
+  medium: "gold",
+  low: "blue",
+};
+
 export default function TodoList({
   items,
   total,
@@ -33,6 +40,8 @@ export default function TodoList({
             ? todo.subtasks.filter((subtask) => subtask.completed).length
             : 0;
           const project = projectMap?.get(todo.projectId);
+          const priority = todo.priority || "medium";
+          const priorityColor = priorityColorMap[priority] || "default";
 
           return (
             <List.Item
@@ -89,6 +98,9 @@ export default function TodoList({
                         {project.name}
                       </Tag>
                     )}
+                    <Tag color={priorityColor}>
+                      {priority.charAt(0).toUpperCase() + priority.slice(1)}
+                    </Tag>
                     {todo.status === "in_progress" && (
                       <Tag className="todo-status-chip">In Progress</Tag>
                     )}

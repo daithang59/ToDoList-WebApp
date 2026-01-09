@@ -12,11 +12,24 @@ export default function AddTodoForm({
   projects,
   projectId,
   onProjectChange,
+  priority,
+  onPriorityChange,
+  templates,
+  templateId,
+  onTemplateSelect,
+  onSaveTemplate,
 }) {
   const projectOptions = Array.isArray(projects)
     ? projects.map((project) => ({
         value: project._id,
         label: project.name,
+      }))
+    : [];
+
+  const templateOptions = Array.isArray(templates)
+    ? templates.map((template) => ({
+        value: template.id,
+        label: template.name,
       }))
     : [];
 
@@ -34,6 +47,13 @@ export default function AddTodoForm({
         <Button type="primary" size="large" onClick={onAdd} loading={loading}>
           Add
         </Button>
+        <Button
+          size="large"
+          onClick={onSaveTemplate}
+          disabled={!value.trim()}
+        >
+          Save Template
+        </Button>
       </div>
       <Select
         mode="tags"
@@ -45,16 +65,38 @@ export default function AddTodoForm({
         maxTagCount="responsive"
         allowClear
       />
-      <Select
-        value={projectId || ""}
-        onChange={(value) => onProjectChange(value || null)}
-        options={[
-          { value: "", label: "No project" },
-          ...projectOptions,
-        ]}
-        placeholder="Project"
-        className="add-project-select"
-      />
+      <div className="add-todo-row add-todo-row-secondary">
+        <Select
+          value={priority}
+          onChange={onPriorityChange}
+          options={[
+            { value: "urgent", label: "Urgent" },
+            { value: "high", label: "High" },
+            { value: "medium", label: "Medium" },
+            { value: "low", label: "Low" },
+          ]}
+          placeholder="Priority"
+          className="add-priority-select"
+        />
+        <Select
+          value={templateId || ""}
+          onChange={(value) => onTemplateSelect?.(value || null)}
+          options={[{ value: "", label: "No template" }, ...templateOptions]}
+          placeholder="Template"
+          className="add-template-select"
+          allowClear
+        />
+        <Select
+          value={projectId || ""}
+          onChange={(value) => onProjectChange(value || null)}
+          options={[
+            { value: "", label: "No project" },
+            ...projectOptions,
+          ]}
+          placeholder="Project"
+          className="add-project-select"
+        />
+      </div>
     </div>
   );
 }

@@ -19,6 +19,11 @@ const todoSchema = new mongoose.Schema(
       enum: ["todo", "in_progress", "done"],
       default: "todo",
     },
+    priority: {
+      type: String,
+      enum: ["low", "medium", "high", "urgent"],
+      default: "medium",
+    },
     order: { type: Number, default: 0 },
     deadline: { type: Date, default: null },
     important: { type: Boolean, default: false },
@@ -44,5 +49,17 @@ const todoSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+todoSchema.index({ ownerId: 1, createdAt: -1 });
+todoSchema.index({ sharedWith: 1, createdAt: -1 });
+todoSchema.index({ ownerId: 1, status: 1 });
+todoSchema.index({ sharedWith: 1, status: 1 });
+todoSchema.index({ ownerId: 1, priority: 1 });
+todoSchema.index({ sharedWith: 1, priority: 1 });
+todoSchema.index({ ownerId: 1, completed: 1, deadline: 1 });
+todoSchema.index({ sharedWith: 1, completed: 1, deadline: 1 });
+todoSchema.index({ ownerId: 1, projectId: 1 });
+todoSchema.index({ sharedWith: 1, projectId: 1 });
+todoSchema.index({ tags: 1 });
 
 export default mongoose.model("Todo", todoSchema);

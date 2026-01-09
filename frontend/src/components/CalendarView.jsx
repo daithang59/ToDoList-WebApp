@@ -1,11 +1,27 @@
-import { Badge, Calendar, List } from "antd";
+import { Badge, Calendar, List, Tag } from "antd";
 import dayjs from "dayjs";
 import { useMemo, useState } from "react";
 
 const statusForTodo = (todo) => {
   if (todo.completed) return "success";
   if (todo.deadline && new Date(todo.deadline) < new Date()) return "error";
-  return "processing";
+  switch (todo.priority) {
+    case "urgent":
+      return "error";
+    case "high":
+      return "warning";
+    case "low":
+      return "default";
+    default:
+      return "processing";
+  }
+};
+
+const priorityColorMap = {
+  urgent: "red",
+  high: "volcano",
+  medium: "gold",
+  low: "blue",
 };
 
 export default function CalendarView({ items, onOpenModal }) {
@@ -71,6 +87,11 @@ export default function CalendarView({ items, onOpenModal }) {
                 title={todo.title}
                 description={todo.description || "No description"}
               />
+              <Tag color={priorityColorMap[todo.priority] || "default"}>
+                {(todo.priority || "medium")
+                  .charAt(0)
+                  .toUpperCase() + (todo.priority || "medium").slice(1)}
+              </Tag>
               <Badge status={statusForTodo(todo)} />
             </List.Item>
           )}

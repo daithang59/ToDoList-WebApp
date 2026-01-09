@@ -3,6 +3,7 @@ import TodoService from "../services/TodoService.js";
 import BaseController from "./BaseController.js";
 
 const STATUS_VALUES = new Set(["todo", "in_progress", "done"]);
+const PRIORITY_VALUES = new Set(["low", "medium", "high", "urgent"]);
 const SORT_FIELDS = new Set([
   "createdAt",
   "updatedAt",
@@ -45,6 +46,7 @@ class TodoController extends BaseController {
       sortOrder,
       projectId,
       status,
+      priority,
       important,
       completed,
       tags,
@@ -76,6 +78,9 @@ class TodoController extends BaseController {
     }
     if (status && STATUS_VALUES.has(status)) {
       options.filter.status = status;
+    }
+    if (priority && PRIORITY_VALUES.has(priority)) {
+      options.filter.priority = priority;
     }
     if (important !== undefined) {
       options.filter.important = important === "true";
@@ -232,6 +237,7 @@ class TodoController extends BaseController {
       completed,
       important,
       status,
+      priority,
       tags,
       projectId,
       sharedWith,
@@ -247,6 +253,7 @@ class TodoController extends BaseController {
       completed: completed !== undefined ? completed === "true" : undefined,
       important: important !== undefined ? important === "true" : undefined,
       status,
+      priority,
       tags: tags ? normalizeList(tags) : undefined,
       projectId,
       sharedWith,

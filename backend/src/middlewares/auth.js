@@ -3,12 +3,15 @@ import jwt from "jsonwebtoken";
 const getTokenFromHeader = (req) => {
   const header = req.headers?.authorization || "";
   const [scheme, token] = header.split(" ");
-  if (scheme !== "Bearer") return null;
+  if (!scheme || scheme.toLowerCase() !== "bearer") return null;
   return token || null;
 };
 
 export function authMiddleware(req, res, next) {
   if (req.method === "OPTIONS") return next();
+  if (!process.env.JWT_SECRET) {
+    return res.status(500).json({ message: "JWT_SECRET is not configured" });
+  }
   const token = getTokenFromHeader(req);
   if (!token) {
     return res.status(401).json({ message: "Missing authentication token" });
