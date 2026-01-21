@@ -1,5 +1,5 @@
 {
-  "name": "server",
+  "name": "backend",
   "version": "1.0.0",
   "main": "index.js",
   "type": "module",
@@ -10,10 +10,16 @@
     "start": "node src/index.js",
     "dev": "nodemon src/index.js"
   },
-  "keywords": [],
+  "keywords": [
+    "todolist",
+    "backend",
+    "express",
+    "mongodb",
+    "rest-api"
+  ],
   "author": "",
-  "license": "ISC",
-  "description": "",
+  "license": "MIT",
+  "description": "Backend API for TodoList WebApp - RESTful API built with Express and MongoDB",
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",

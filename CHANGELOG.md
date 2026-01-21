@@ -7,11 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
-- Project infrastructure improvements
-- Comprehensive root package.json with useful scripts for monorepo management
-- Prettier configuration for consistent code formatting
-- Enhanced .gitignore patterns
+### Changed
+- Updated frontend version to 1.0.0 for consistency with root package
+- Improved frontend package.json with meaningful description and keywords
+- Enhanced backend package.json with better project metadata and keywords
+- Standardized license to MIT across all packages (frontend, backend, root)
+- Updated backend package name from "server" to "backend" for clarity
+
+### Chore
+- Removed unnecessary "main" field from frontend package.json
+- Added relevant keywords to frontend and backend packages for better discoverability
 
 ## [1.0.0] - 2026-01-04
 
