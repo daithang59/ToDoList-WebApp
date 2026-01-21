@@ -12,6 +12,7 @@ pnpm-debug.log*
 .env
 .env.*
 !.env.example   # giữ file ví dụ cấu hình
+!.env.production   # cho phép production env cho Vercel
 
 # Logs & temporary files
 logs/

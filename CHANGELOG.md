@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Fixed CORS issue on Vercel production by adding frontend domains to allowed origins
+- Added missing environment variables to backend (.env) including JWT_SECRET, SESSION_SECRET
+- Configured CORS to support credentials for authentication flow
+
+### Added
+- Created `.env.production` file for frontend with production API URL
+- Added VERCEL_DEPLOYMENT.md guide for environment variable configuration
+
 ### Changed
 - Updated frontend version to 1.0.0 for consistency with root package
 - Improved frontend package.json with meaningful description and keywords
