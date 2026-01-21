@@ -20,6 +20,8 @@ const swaggerDocument = YAML.load(join(__dirname, "docs", "swagger.yaml"));
 const DEFAULT_ALLOWED_ORIGINS = [
   "http://localhost:5173",
   "http://localhost:8080",
+  "https://to-do-list-web-app-frontend-delta.vercel.app",
+  "https://todolist-webapp.vercel.app",
 ];
 
 const parseOrigins = (value) =>
@@ -45,6 +47,7 @@ export default function createApp() {
       if (allowedOrigins.includes(origin)) return callback(null, true);
       return callback(new Error("Not allowed by CORS"));
     },
+    credentials: true,
     methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   };
