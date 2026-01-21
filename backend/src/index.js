@@ -1,27 +1,31 @@
 import process from "process";
-import { connectDB } from "./config/db.js";
 import createApp from "./app.js";
+import { connectDB } from "./config/db.js";
 import { startReminderScheduler } from "./services/reminderScheduler.js";
 
 const app = createApp();
 
 const PORT = process.env.PORT || 4000;
 
-console.log("Environment variables:");
-console.log("  NODE_ENV:", process.env.NODE_ENV);
-console.log("  PORT:", process.env.PORT);
+console.log("\n🚀 Starting TodoList Backend Server...");
+console.log("📋 Environment Configuration:");
+console.log("  NODE_ENV:", process.env.NODE_ENV || "development");
+console.log("  PORT:", PORT);
 console.log(
   "  MONGODB_URI:",
-  process.env.MONGODB_URI?.replace(/\/\/.*:.*@/, "//***:***@")
+  process.env.MONGODB_URI?.replace(/\/\/.*:.*@/, "//***:***@") || "Not set"
 );
+console.log("");
 
 connectDB(process.env.MONGODB_URI)
   .then(() => {
-    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-    console.log(`Server is running on http://localhost:${PORT}`);
-    console.log(
-      `API Documentation available at http://localhost:${PORT}/api-docs`
-    );
+    app.listen(PORT, () => {
+      console.log("✅ Server started successfully!");
+      console.log(`🌐 Server running at: http://localhost:${PORT}`);
+      console.log(`📚 API Documentation: http://localhost:${PORT}/api-docs`);
+      console.log(`🔗 API Endpoint: http://localhost:${PORT}/api`);
+      console.log("\n✨ Ready to accept requests!\n");
+    });
     startReminderScheduler();
   })
   .catch((err) => {

@@ -15,6 +15,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Created `.env.production` file for frontend with production API URL
 - Added VERCEL_DEPLOYMENT.md guide for environment variable configuration
+- Added QUICK_START.md with common commands and troubleshooting tips
+- Added CONTRIBUTING.md guide for open-source contributors
+- Enhanced backend logging with emoji indicators and better formatting
+- Added CORS configuration logging for easier debugging
+- Added blocked origin warnings in CORS handler
+
+### Improved
+- Enhanced server startup messages with clearer information
+- Better environment variable logging with fallback values
+- Improved console output formatting for better developer experience
 
 ### Changed
 - Updated frontend version to 1.0.0 for consistency with root package

@@ -40,11 +40,17 @@ export default function createApp() {
   const allowedOrigins =
     rawOrigins && !allowAllOrigins ? parseOrigins(rawOrigins) : DEFAULT_ALLOWED_ORIGINS;
 
+  // Log CORS configuration for debugging
+  console.log("🔐 CORS Configuration:");
+  console.log("  Allow all origins:", allowAllOrigins);
+  console.log("  Allowed origins:", allowedOrigins);
+
   const corsOptions = {
     origin: (origin, callback) => {
       if (!origin) return callback(null, true);
       if (allowAllOrigins) return callback(null, true);
       if (allowedOrigins.includes(origin)) return callback(null, true);
+      console.warn(`❌ CORS blocked origin: ${origin}`);
       return callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
