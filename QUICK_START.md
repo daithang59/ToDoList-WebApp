@@ -18,22 +18,35 @@ npm run dev:frontend
 ## Build
 
 ```bash
-# Build frontend
+# Build cả backend và frontend
+npm run build
+
+# Build riêng frontend
 npm run build:frontend
 
-# Build backend
+# Build riêng backend
 npm run build:backend
 ```
 
 ## Testing & Linting
 
 ```bash
+# Chạy tất cả tests
+npm test
+
+# Chạy test riêng
+npm run test:backend
+npm run test:frontend
+
 # Chạy lint cho cả hai
 npm run lint
 
 # Chạy lint riêng
 npm run lint:backend
 npm run lint:frontend
+
+# Auto-fix lint issues
+npm run lint:fix
 
 # Format code với Prettier
 npm run format
@@ -45,20 +58,26 @@ npm run format:check
 ## Docker Commands
 
 ```bash
+# Khởi động lại containers
+npm run restart
+
 # Dừng containers
 npm run stop
+
+# Kiểm tra trạng thái containers
+npm run status
 
 # Dọn dẹp containers và volumes
 npm run clean
 
-# Xem logs
-docker-compose logs -f
+# Xem tất cả logs
+npm run logs
 
 # Xem logs backend
-docker-compose logs -f backend
+npm run logs:backend
 
 # Xem logs frontend  
-docker-compose logs -f frontend
+npm run logs:frontend
 ```
 
 ## Installation

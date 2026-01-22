@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Added convenient npm scripts for better developer workflow:
+  - `npm run restart` - Quick restart of docker services
+  - `npm run build` - Build both backend and frontend
+  - `npm test` - Run all tests (backend + frontend)
+  - `npm run test:backend` - Run backend tests only
+  - `npm run test:frontend` - Run frontend tests only
+  - `npm run lint:fix` - Auto-fix linting issues
+  - `npm run logs` - View all docker logs
+  - `npm run logs:backend` - View backend logs only
+  - `npm run logs:frontend` - View frontend logs only
+  - `npm run status` - Check docker containers status
+- Added `.editorconfig` file to maintain consistent coding styles across editors
+- Added `.nvmrc` file to specify Node.js version (18.0.0)
+- Updated QUICK_START.md with all new npm scripts
+
 ### Fixed
 - Fixed CORS issue on Vercel production by adding frontend domains to allowed origins
 - Added missing environment variables to backend (.env) including JWT_SECRET, SESSION_SECRET
