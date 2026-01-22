@@ -8,6 +8,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Added GitHub templates for better issue and PR management:
+  - Bug report template with structured format
+  - Feature request template with detailed sections
+  - Pull request template with comprehensive checklist
+- Added SECURITY.md with vulnerability reporting process and security best practices
+- Added CODE_OF_CONDUCT.md based on Contributor Covenant v2.1
+- Enhanced .gitignore with comprehensive patterns:
+  - Additional IDE support (VS Code, JetBrains, Vim, Sublime, Emacs)
+  - Backup files and temporary artifacts
+  - Security files (certificates, keys, credentials)
+  - Framework-specific patterns (Next.js, Nuxt.js, Gatsby)
+  - Debug artifacts and test coverage patterns
 - Added convenient npm scripts for better developer workflow:
   - `npm run restart` - Quick restart of docker services
   - `npm run build` - Build both backend and frontend
