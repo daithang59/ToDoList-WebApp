@@ -7,6 +7,7 @@ import "antd/dist/reset.css";
 import React, { useEffect, useMemo, useState } from "react";
 import ReactDOM from "react-dom/client";
 import MainApp from "./App.jsx"; // [CHANGED] Rename import App to MainApp to avoid conflicts
+import { AuthProvider } from "./contexts/AuthContext.jsx";
 import "./index.css";
 import "./styles/custom-antd.css";
 
@@ -67,7 +68,9 @@ function Root() {
     <ConfigProvider theme={themeCfg}>
       {/* [CHANGED] Wrap your application in Ant Design's <App> */}
       <App>
-        <MainApp isDark={isDark} onToggleDark={toggleDarkTheme} />
+        <AuthProvider>
+          <MainApp isDark={isDark} onToggleDark={toggleDarkTheme} />
+        </AuthProvider>
         <SpeedInsights />
         <Analytics />
       </App>
