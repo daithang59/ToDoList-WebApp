@@ -6,7 +6,7 @@ Vào Vercel Dashboard → Project Settings → Environment Variables và thêm:
 
 ```
 PORT=4000
-MONGODB_URI=mongodb+srv://daithang_db:minhanh2014@todolist.4j2ifq6.mongodb.net/todolist?retryWrites=true&w=majority
+MONGODB_URI=
 JWT_SECRET=daithang_jwt_secret_key_2026
 SESSION_SECRET=daithang_session_secret_key_2026
 NODE_ENV=production
