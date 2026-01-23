@@ -1,21 +1,23 @@
 // src/App.jsx
 
 import { App, Button, Layout, Spin, Switch } from "antd";
-import { Menu } from "lucide-react";
+import { LogOut, Menu, User } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import logo from "./assets/logo.svg";
 import AddTodoForm from "./components/AddTodoForm.jsx";
+import AuthPage from "./components/Auth/AuthPage.jsx";
 import Chatbot from "./components/Chatbot/Chatbot.jsx";
 import EditTodoModal from "./components/EditTodoModal.jsx";
 import Sidebar from "./components/Sidebar/Sidebar.jsx";
 import TodoList from "./components/TodoList.jsx";
 import Toolbar from "./components/Toolbar.jsx";
+import { useAuth } from "./contexts/AuthContext.jsx";
 import {
-  clearCompleted,
-  createTodo,
-  deleteTodo,
-  fetchTodos,
-  updateTodo,
+    clearCompleted,
+    createTodo,
+    deleteTodo,
+    fetchTodos,
+    updateTodo,
 } from "./services/todoService";
 
 const { Header, Content } = Layout;
@@ -25,6 +27,7 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export default function MainApp({ isDark, onToggleDark }) {
   const { message } = App.useApp();
+  const { isAuthenticated, loading: authLoading, user, isGuest, logout } = useAuth();
 
   const [isSidebarVisible, setSidebarVisible] = useState(true);
   const [todos, setTodos] = useState([]);
@@ -217,6 +220,19 @@ export default function MainApp({ isDark, onToggleDark }) {
     }
   }
 
+  // Show auth page if not authenticated
+  if (authLoading) {
+    return (
+      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh" }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <AuthPage />;
+  }
+
   return (
     <Layout>
       <Header className="app-header">
@@ -231,6 +247,24 @@ export default function MainApp({ isDark, onToggleDark }) {
           <h1>To-Do List</h1>
         </div>
         <div className="header-actions">
+          {user && (
+            <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginRight: "1rem" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                <User size={18} />
+                <span style={{ fontSize: "0.9rem" }}>
+                  {isGuest ? "Khách" : user.name}
+                </span>
+              </div>
+              <Button
+                type="text"
+                icon={<LogOut size={18} />}
+                onClick={logout}
+                style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
+              >
+                Đăng xuất
+              </Button>
+            </div>
+          )}
           <Switch
             checked={isDark}
             onChange={onToggleDark}
