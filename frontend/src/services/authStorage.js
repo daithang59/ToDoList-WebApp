@@ -1,0 +1,18 @@
+const TOKEN_KEY = "todo:token";
+
+export const getAuthToken = () => {
+  if (typeof window === "undefined") return "";
+  return localStorage.getItem(TOKEN_KEY) || "";
+};
+
+export const setAuthToken = (token) => {
+  if (typeof window === "undefined") return;
+  if (token) {
+    localStorage.setItem(TOKEN_KEY, token);
+  }
+};
+
+export const clearAuthToken = () => {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem(TOKEN_KEY);
+};

@@ -1,7 +1,17 @@
 // src/components/Toolbar/Toolbar.jsx
 
 import { Button, Input, Segmented, Select } from "antd";
-import { CheckCircle2, History, LayoutGrid, Star, Trash2 } from "lucide-react";
+import {
+  AlertTriangle,
+  Calendar,
+  CheckCircle2,
+  Columns,
+  History,
+  LayoutGrid,
+  List,
+  Star,
+  Trash2,
+} from "lucide-react";
 
 const sortOptions = [
   { value: "newest", label: "Newest" },
@@ -13,11 +23,17 @@ export default function Toolbar({
   onFilterChange,
   sort,
   onSortChange,
+  priority,
+  onPriorityChange,
   pageSize,
   onPageSizeChange,
   query,
-  onSearch,
+  onSearchChange,
+  onSearchSubmit,
   onClearCompleted,
+  clearDisabled,
+  viewMode,
+  onViewModeChange,
 }) {
   const iconSize = 16;
   const iconStrokeWidth = 2;
@@ -39,6 +55,15 @@ export default function Toolbar({
               </div>
             ),
             value: "all",
+          },
+          {
+            label: (
+              <div className="segmented-label">
+                <Calendar size={iconSize} strokeWidth={iconStrokeWidth} />
+                <span>Today</span>
+              </div>
+            ),
+            value: "today",
           },
           {
             label: (
@@ -67,6 +92,15 @@ export default function Toolbar({
             ),
             value: "important",
           },
+          {
+            label: (
+              <div className="segmented-label">
+                <AlertTriangle size={iconSize} strokeWidth={iconStrokeWidth} />
+                <span>Overdue</span>
+              </div>
+            ),
+            value: "overdue",
+          },
         ]}
       />
 
@@ -77,13 +111,65 @@ export default function Toolbar({
           placeholder="Search todos..."
           className="toolbar-search"
           value={query}
-          onChange={(e) => onSearch(e.target.value)}
-          onSearch={onSearch}
+          onChange={(e) => onSearchChange?.(e.target.value)}
+          onSearch={(value) => {
+            if (onSearchSubmit) {
+              onSearchSubmit(value);
+            } else if (onSearchChange) {
+              onSearchChange(value);
+            }
+          }}
           allowClear
         />
 
         {/* Khối bên phải: Các tùy chọn */}
         <div className="toolbar-options">
+          <Segmented
+            value={viewMode}
+            onChange={onViewModeChange}
+            className="view-toggle"
+            options={[
+              {
+                label: (
+                  <div className="segmented-label">
+                    <List size={iconSize} strokeWidth={iconStrokeWidth} />
+                    <span>List</span>
+                  </div>
+                ),
+                value: "list",
+              },
+              {
+                label: (
+                  <div className="segmented-label">
+                    <Columns size={iconSize} strokeWidth={iconStrokeWidth} />
+                    <span>Kanban</span>
+                  </div>
+                ),
+                value: "kanban",
+              },
+              {
+                label: (
+                  <div className="segmented-label">
+                    <Calendar size={iconSize} strokeWidth={iconStrokeWidth} />
+                    <span>Calendar</span>
+                  </div>
+                ),
+                value: "calendar",
+              },
+            ]}
+          />
+          <Select
+            value={priority}
+            onChange={onPriorityChange}
+            options={[
+              { value: "all", label: "All priorities" },
+              { value: "urgent", label: "Urgent" },
+              { value: "high", label: "High" },
+              { value: "medium", label: "Medium" },
+              { value: "low", label: "Low" },
+            ]}
+            style={{ minWidth: 150 }}
+          />
           <Select
             value={sort}
             onChange={onSortChange}
@@ -99,7 +185,12 @@ export default function Toolbar({
             }))}
             style={{ minWidth: 110 }}
           />
-          <Button danger icon={<Trash2 size={16} />} onClick={onClearCompleted}>
+          <Button
+            danger
+            icon={<Trash2 size={16} />}
+            onClick={onClearCompleted}
+            disabled={clearDisabled}
+          >
             Clear Completed
           </Button>
         </div>

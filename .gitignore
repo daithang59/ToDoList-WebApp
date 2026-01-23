@@ -12,6 +12,7 @@ pnpm-debug.log*
 .env
 .env.*
 !.env.example   # giữ file ví dụ cấu hình
+!.env.production   # cho phép production env cho Vercel
 
 # Logs & temporary files
 logs/
@@ -25,10 +26,40 @@ temp/
 # OS / Editor junk
 .DS_Store
 Thumbs.db
+desktop.ini
+
+# VS Code
 .vscode/
+.vscode/settings.json
+.vscode/tasks.json
+.vscode/launch.json
+.vscode/extensions.json
+
+# JetBrains IDEs (WebStorm, IntelliJ, etc)
 .idea/
+*.iml
+*.iws
+*.ipr
+
+# Vim
 *.swp
 *.swo
+*~
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Emacs
+*~
+\#*\#
+.\#*
+
+# Backup files
+*.bak
+*.backup
+*.old
+*.orig
 
 # =========================================
 # ⚙️ BACKEND
@@ -78,11 +109,10 @@ frontend/public/static/
 # =========================================
 # 🐳 DOCKER / DEPLOYMENT
 # =========================================
-# Docker
-Dockerfile
-Dockerfile.*
-docker-compose.yml
-docker-compose.*.yml
+# Docker runtime data (keep Docker config files)
+docker-compose.override.yml
+.docker/
+mongo_data/
 
 # Build cache / runtime data
 *.tar
@@ -90,13 +120,64 @@ docker-compose.*.yml
 *.zip
 *.gz
 
+# Docker volumes and temporary containers
+.dockerignore.local
+
+# Vercel
+.vercel
+
 # =========================================
 # 🧪 MISC
 # =========================================
 # TypeScript build artifacts
 *.tsbuildinfo
 
+# Test coverage
+coverage/
+.nyc_output/
+htmlcov/
+.pytest_cache/
+
 # Optional lock files (chọn giữ lại 1 loại)
-package-lock.json
+# package-lock.json
 # yarn.lock
 # pnpm-lock.yaml
+
+# Prettier cache
+.prettierignore
+
+# ESLint cache
+.eslintcache
+
+# Storybook
+storybook-static/
+
+# npm package
+*.tgz
+
+# Next.js (if added later)
+.next/
+out/
+
+# Nuxt.js (if added later)
+.nuxt/
+
+# Gatsby files (if added later)
+.cache/
+public/
+
+# Debugging artifacts
+dump.rdb
+*.heapsnapshot
+
+# Security / credentials
+*.pem
+*.key
+*.cert
+*.crt
+credentials.json
+serviceAccountKey.json
+
+# Local history / temp
+.history/
+*.tmp

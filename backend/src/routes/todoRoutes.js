@@ -1,49 +1,60 @@
 import { Router } from "express";
 import TodoController from "../controllers/TodoController.js";
 import TodoValidation from "../middlewares/validation.js";
+import { validatePagination } from "../middlewares/pagination.js";
 
 const router = Router();
 
-// GET /api/todos - Lấy tất cả todos
-router.get("/", TodoController.getAllTodos);
-
-// POST /api/todos - Tạo todo mới
+// Collection routes
+router.get("/", validatePagination, TodoController.getAllTodos);
 router.post("/", TodoValidation.validateCreateTodo, TodoController.createTodo);
 
-// GET /api/todos/search - Tìm kiếm todos (phải đặt trước /:id)
-router.get("/search", TodoValidation.validateSearchQuery, TodoController.searchTodos);
-
-// GET /api/todos/filter - Lọc todos theo trạng thái
-router.get("/filter", TodoController.filterTodos);
-
-// GET /api/todos/due - Lấy todos sắp đến hạn
-router.get("/due", TodoController.getDueTodos);
-
-// GET /api/todos/overdue - Lấy todos quá hạn
-router.get("/overdue", TodoController.getOverdueTodos);
-
-// GET /api/todos/stats - Thống kê todos
+// Query routes
+router.get(
+  "/search",
+  validatePagination,
+  TodoValidation.validateSearchQuery,
+  TodoController.searchTodos
+);
+router.get("/filter", validatePagination, TodoController.filterTodos);
 router.get("/stats", TodoController.getTodoStats);
 
-// DELETE /api/todos/clear/completed - Xóa tất cả todos đã hoàn thành
+// Deadline routes
+router.get("/due", validatePagination, TodoController.getDueTodos);
+router.get("/overdue", validatePagination, TodoController.getOverdueTodos);
+
+// Bulk operations
 router.delete("/clear/completed", TodoController.clearCompletedTodos);
+router.patch(
+  "/reorder",
+  TodoValidation.validateReorderPayload,
+  TodoController.reorderTodos
+);
 
-// GET /api/todos/:id - Lấy todo theo ID
+// Single resource routes
 router.get("/:id", TodoValidation.validateObjectId, TodoController.getTodoById);
+router.patch(
+  "/:id",
+  TodoValidation.validateObjectId,
+  TodoValidation.validateUpdateTodo,
+  TodoController.updateTodo
+);
+router.delete(
+  "/:id",
+  TodoValidation.validateObjectId,
+  TodoController.deleteTodo
+);
 
-// PATCH /api/todos/:id - Cập nhật todo
-router.patch("/:id", TodoValidation.validateObjectId, TodoValidation.validateUpdateTodo, TodoController.updateTodo);
-
-// DELETE /api/todos/:id - Xóa todo
-router.delete("/:id", TodoValidation.validateObjectId, TodoController.deleteTodo);
-
-// PATCH /api/todos/:id/toggle - Toggle trạng thái completed
-router.patch("/:id/toggle", TodoValidation.validateObjectId, TodoController.toggleTodo);
-
-// PATCH /api/todos/:id/important - Toggle trạng thái important
-router.patch("/:id/important", TodoValidation.validateObjectId, TodoController.toggleImportant);
-
+// Toggle operations
+router.patch(
+  "/:id/toggle",
+  TodoValidation.validateObjectId,
+  TodoController.toggleTodo
+);
+router.patch(
+  "/:id/important",
+  TodoValidation.validateObjectId,
+  TodoController.toggleImportant
+);
 
 export default router;
-
-

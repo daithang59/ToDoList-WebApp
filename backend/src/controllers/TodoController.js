@@ -1,241 +1,367 @@
-import Todo from "../models/Todo.js";
+import mongoose from "mongoose";
 import TodoService from "../services/TodoService.js";
+import BaseController from "./BaseController.js";
+
+const STATUS_VALUES = new Set(["todo", "in_progress", "done"]);
+const PRIORITY_VALUES = new Set(["low", "medium", "high", "urgent"]);
+const SORT_FIELDS = new Set([
+  "createdAt",
+  "updatedAt",
+  "deadline",
+  "title",
+  "order",
+  "status",
+]);
+
+const normalizeList = (value) =>
+  typeof value === "string"
+    ? value
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean)
+    : [];
+
+const mergeFilters = (base, extra) => {
+  if (!extra || Object.keys(extra).length === 0) return base;
+  if (!base || Object.keys(base).length === 0) return extra;
+  return { $and: [base, extra] };
+};
+
+const parseDateValue = (value) => {
+  if (!value) return null;
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+};
 
 /**
- * TodoController - Xử lý HTTP requests và responses cho Todo
+ * TodoController - HTTP handlers for Todo resources
  */
-class TodoController {
-  // GET /api/todos - Lấy tất cả todos với phân trang
-  static async getAllTodos(req, res, next) {
-    try {
-      const { page, limit, sortBy, sortOrder } = req.query;
-      const options = {
-        page: parseInt(page) || 1,
-        limit: parseInt(limit) || 50, // Tăng limit mặc định
-        sortBy: sortBy || "createdAt",
-        sortOrder: sortOrder || "desc"
+class TodoController extends BaseController {
+  // GET /api/todos - List todos with pagination and filters
+  static getAllTodos = BaseController.asyncHandler(async (req, res) => {
+    const {
+      page,
+      limit,
+      sortBy,
+      sortOrder,
+      projectId,
+      status,
+      priority,
+      important,
+      completed,
+      tags,
+      sharedWith,
+      query,
+      filter: filterKey,
+      deadlineBefore,
+      deadlineAfter,
+    } = req.query;
+
+    const memberId = req.user?.id;
+    const options = {
+      page: parseInt(page) || 1,
+      limit: parseInt(limit) || 50,
+      sortBy: SORT_FIELDS.has(sortBy) ? sortBy : "createdAt",
+      sortOrder: sortOrder === "asc" ? "asc" : "desc",
+      filter: {},
+      memberId,
+    };
+
+    if (projectId) {
+      if (!mongoose.Types.ObjectId.isValid(projectId)) {
+        return res.status(400).json({
+          message: "Validation failed",
+          errors: [{ field: "projectId", message: "Project ID must be valid" }],
+        });
+      }
+      options.filter.projectId = projectId;
+    }
+    if (status && STATUS_VALUES.has(status)) {
+      options.filter.status = status;
+    }
+    if (priority && PRIORITY_VALUES.has(priority)) {
+      options.filter.priority = priority;
+    }
+    if (important !== undefined) {
+      options.filter.important = important === "true";
+    }
+    if (completed !== undefined) {
+      options.filter.completed = completed === "true";
+    }
+    const tagList = normalizeList(tags);
+    if (tagList.length > 0) {
+      options.filter.tags = { $in: tagList };
+    }
+    if (sharedWith) {
+      options.filter.sharedWith = sharedWith;
+    }
+
+    if (filterKey === "active") {
+      options.filter.completed = false;
+    } else if (filterKey === "completed") {
+      options.filter.completed = true;
+    } else if (filterKey === "important") {
+      options.filter.important = true;
+    } else if (filterKey === "today") {
+      const now = new Date();
+      const startOfDay = new Date(now);
+      startOfDay.setHours(0, 0, 0, 0);
+      const endOfDay = new Date(now);
+      endOfDay.setHours(23, 59, 59, 999);
+      options.filter.deadline = {
+        ...(options.filter.deadline || {}),
+        $gte: startOfDay,
+        $lte: endOfDay,
       };
-
-      const result = await TodoService.getTodos(options);
-      
-      // Trả về dạng array đơn giản để tương thích với frontend hiện tại
-      res.json(result.todos);
-    } catch (error) {
-      next(error);
+    } else if (filterKey === "overdue") {
+      options.filter.completed = false;
+      options.filter.deadline = {
+        ...(options.filter.deadline || {}),
+        $lt: new Date(),
+      };
     }
-  }
 
-  // POST /api/todos - Tạo todo mới
-  static async createTodo(req, res, next) {
-    try {
-      const todo = await TodoService.createTodo(req.body);
-      res.status(201).json(todo);
-    } catch (error) {
-      if (error.message.includes("required") || error.message.includes("Invalid")) {
-        return res.status(400).json({ 
-          message: error.message,
-          field: error.message.includes("Title") ? "title" : "deadline"
-        });
-      }
-      next(error);
+    const beforeDate = parseDateValue(deadlineBefore);
+    const afterDate = parseDateValue(deadlineAfter);
+    if (beforeDate || afterDate) {
+      options.filter.deadline = {
+        ...(options.filter.deadline || {}),
+        ...(beforeDate ? { $lte: beforeDate } : {}),
+        ...(afterDate ? { $gte: afterDate } : {}),
+      };
     }
-  }
 
-  // GET /api/todos/:id - Lấy todo theo ID
-  static async getTodoById(req, res, next) {
-    try {
-      const { id } = req.params;
-      const todo = await Todo.findById(id);
-      
-      if (!todo) {
-        return res.status(404).json({ 
-          message: "Todo not found",
-          id: id 
-        });
-      }
-      
-      res.json(todo);
-    } catch (error) {
-      next(error);
+    if (query?.trim()) {
+      const searchRegex = new RegExp(query.trim(), "i");
+      const searchFilter = {
+        $or: [
+          { title: searchRegex },
+          { description: searchRegex },
+          { tags: { $in: [searchRegex] } },
+        ],
+      };
+      options.filter = mergeFilters(options.filter, searchFilter);
     }
-  }
 
-  // PATCH /api/todos/:id - Cập nhật todo
-  static async updateTodo(req, res, next) {
-    try {
-      const { id } = req.params;
-      const todo = await TodoService.updateTodo(id, req.body);
-      res.json(todo);
-    } catch (error) {
-      const { id } = req.params;
-      
-      if (error.message.includes("not found")) {
-        return res.status(404).json({ 
-          message: error.message,
-          id: id 
-        });
-      }
-      if (error.message.includes("required") || error.message.includes("Invalid") || error.message.includes("empty")) {
-        return res.status(400).json({ 
-          message: error.message,
-          field: error.message.includes("Title") ? "title" : "deadline"
-        });
-      }
-      next(error);
-    }
-  }
+    const result = await TodoService.getTodos(options);
+    res.json(result);
+  });
 
-  // DELETE /api/todos/:id - Xóa todo
-  static async deleteTodo(req, res, next) {
-    try {
-      const { id } = req.params;
-      await TodoService.deleteTodo(id);
-      
-      res.json({ 
-        message: "Todo deleted successfully",
-        id: id 
+  // POST /api/todos - Create a new todo
+  static createTodo = BaseController.asyncHandler(async (req, res) => {
+    const memberId = req.user?.id;
+    const todo = await TodoService.createTodo(req.body, memberId);
+    res.status(201).json(todo);
+  });
+
+  // GET /api/todos/:id - Get todo by ID
+  static getTodoById = BaseController.asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const memberId = req.user?.id;
+    const todo = await TodoService.getTodoById(id, memberId);
+    res.json(todo);
+  });
+
+  // PATCH /api/todos/:id - Update todo
+  static updateTodo = BaseController.asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const memberId = req.user?.id;
+    const todo = await TodoService.updateTodo(id, req.body, memberId);
+    res.json(todo);
+  });
+
+  // DELETE /api/todos/:id - Delete todo
+  static deleteTodo = BaseController.asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const memberId = req.user?.id;
+    await TodoService.deleteTodo(id, memberId);
+
+    res.json({
+      message: "Todo deleted successfully",
+      id,
+    });
+  });
+
+  // PATCH /api/todos/:id/toggle - Toggle completed status
+  static toggleTodo = BaseController.asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const memberId = req.user?.id;
+    const todo = await TodoService.toggleCompleted(id, memberId);
+    res.json(todo);
+  });
+
+  // PATCH /api/todos/:id/important - Toggle important
+  static toggleImportant = BaseController.asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const memberId = req.user?.id;
+    const todo = await TodoService.toggleImportant(id, memberId);
+    res.json(todo);
+  });
+
+  // GET /api/todos/search - Search todos
+  static searchTodos = BaseController.asyncHandler(async (req, res) => {
+    const query = req.query.query?.trim();
+    const memberId = req.user?.id;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 50;
+    const sortBy = SORT_FIELDS.has(req.query.sortBy)
+      ? req.query.sortBy
+      : "createdAt";
+    const sortOrder = req.query.sortOrder === "asc" ? "asc" : "desc";
+
+    if (!query) {
+      return res.json({
+        todos: [],
+        pagination: {
+          page,
+          limit,
+          total: 0,
+          pages: 0,
+        },
       });
-    } catch (error) {
-      const { id } = req.params;
-      
-      if (error.message.includes("not found")) {
-        return res.status(404).json({ 
-          message: error.message,
-          id: id 
-        });
-      }
-      next(error);
     }
-  }
 
-  // PATCH /api/todos/:id/toggle - Toggle trạng thái completed
-  static async toggleTodo(req, res, next) {
-    try {
-      const { id } = req.params;
-      const todo = await TodoService.toggleCompleted(id);
-      res.json(todo);
-    } catch (error) {
-      const { id } = req.params;
-      
-      if (error.message.includes("not found")) {
-        return res.status(404).json({ 
-          message: error.message,
-          id: id 
-        });
-      }
-      next(error);
-    }
-  }
+    const result = await TodoService.searchTodos(query, {
+      page,
+      limit,
+      sortBy,
+      sortOrder,
+      memberId,
+    });
+    res.json(result);
+  });
 
-  // PATCH /api/todos/:id/important - Toggle trạng thái important
-  static async toggleImportant(req, res, next) {
-    try {
-      const { id } = req.params;
-      const todo = await TodoService.toggleImportant(id);
-      res.json(todo);
-    } catch (error) {
-      const { id } = req.params;
-      
-      if (error.message.includes("not found")) {
-        return res.status(404).json({ 
-          message: error.message,
-          id: id 
-        });
-      }
-      next(error);
-    }
-  }
+  // GET /api/todos/filter - Filter todos
+  static filterTodos = BaseController.asyncHandler(async (req, res) => {
+    const {
+      completed,
+      important,
+      status,
+      priority,
+      tags,
+      projectId,
+      sharedWith,
+    } = req.query;
+    const memberId = req.user?.id;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 50;
+    const sortBy = SORT_FIELDS.has(req.query.sortBy)
+      ? req.query.sortBy
+      : "createdAt";
+    const sortOrder = req.query.sortOrder === "asc" ? "asc" : "desc";
+    const filterOptions = {
+      completed: completed !== undefined ? completed === "true" : undefined,
+      important: important !== undefined ? important === "true" : undefined,
+      status,
+      priority,
+      tags: tags ? normalizeList(tags) : undefined,
+      projectId,
+      sharedWith,
+      memberId,
+    };
 
-  // GET /api/todos/search - Tìm kiếm todos
-  static async searchTodos(req, res, next) {
-    try {
-      const query = req.query.query?.trim();
-      
-      if (!query) {
-        return res.json([]);
-      }
-      
-      const result = await TodoService.searchTodos(query);
-      res.json(result.todos || []);
-    } catch (error) {
-      next(error);
-    }
-  }
+    const result = await TodoService.filterTodos(filterOptions, {
+      page,
+      limit,
+      sortBy,
+      sortOrder,
+      memberId,
+    });
+    res.json(result);
+  });
 
-  // GET /api/todos/filter - Lọc todos theo trạng thái
-  static async filterTodos(req, res, next) {
-    try {
-      const { completed, important, status, tags } = req.query;
-      const filterOptions = {
-        completed: completed !== undefined ? completed === "true" : undefined,
-        important: important !== undefined ? important === "true" : undefined,
-        status,
-        tags: tags ? tags.split(",") : undefined
-      };
+  // DELETE /api/todos/clear/completed - Delete all completed todos
+  static clearCompletedTodos = BaseController.asyncHandler(async (req, res) => {
+    const memberId = req.user?.id;
+    const deletedCount = await TodoService.clearCompleted(memberId);
+    res.json({
+      message: `Deleted ${deletedCount} completed todos`,
+      deletedCount,
+    });
+  });
 
-      const result = await TodoService.filterTodos(filterOptions);
-      res.json(result.todos);
-    } catch (error) {
-      next(error);
-    }
-  }
+  // GET /api/todos/due - Get upcoming todos
+  static getDueTodos = BaseController.asyncHandler(async (req, res) => {
+    const { before, after, days } = req.query;
+    const memberId = req.user?.id;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 50;
+    const sortBy = SORT_FIELDS.has(req.query.sortBy)
+      ? req.query.sortBy
+      : "deadline";
+    const sortOrder = req.query.sortOrder === "asc" ? "asc" : "desc";
 
-  // DELETE /api/todos/clear/completed - Xóa tất cả todos đã hoàn thành
-  static async clearCompletedTodos(req, res, next) {
-    try {
-      const deletedCount = await TodoService.clearCompleted();
-      res.json({ 
-        message: `Deleted ${deletedCount} completed todos`,
-        deletedCount 
+    if (days) {
+      const todos = await TodoService.getUpcomingTodos(
+        parseInt(days, 10),
+        memberId
+      );
+      return res.json({
+        todos,
+        pagination: {
+          page: 1,
+          limit: todos.length,
+          total: todos.length,
+          pages: todos.length > 0 ? 1 : 0,
+        },
       });
-    } catch (error) {
-      next(error);
     }
-  }
 
-  // GET /api/todos/due - Lấy todos sắp đến hạn
-  static async getDueTodos(req, res, next) {
-    try {
-      const { before, after, days } = req.query;
-      
-      if (days) {
-        const todos = await TodoService.getUpcomingTodos(parseInt(days));
-        return res.json(todos);
-      }
+    const filterOptions = {
+      deadline: {},
+      memberId,
+    };
 
-      const filterOptions = {
-        deadline: {}
-      };
+    if (before) filterOptions.deadline.before = before;
+    if (after) filterOptions.deadline.after = after;
 
-      if (before) filterOptions.deadline.before = before;
-      if (after) filterOptions.deadline.after = after;
+    const result = await TodoService.filterTodos(filterOptions, {
+      page,
+      limit,
+      sortBy,
+      sortOrder,
+      memberId,
+    });
+    res.json(result);
+  });
 
-      const result = await TodoService.filterTodos(filterOptions);
-      res.json(result.todos);
-    } catch (error) {
-      next(error);
-    }
-  }
+  // GET /api/todos/overdue - Get overdue todos
+  static getOverdueTodos = BaseController.asyncHandler(async (req, res) => {
+    const memberId = req.user?.id;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 50;
+    const sortBy = SORT_FIELDS.has(req.query.sortBy)
+      ? req.query.sortBy
+      : "deadline";
+    const sortOrder = req.query.sortOrder === "asc" ? "asc" : "desc";
+    const result = await TodoService.getTodos({
+      page,
+      limit,
+      sortBy,
+      sortOrder,
+      memberId,
+      filter: {
+        deadline: { $lt: new Date() },
+        completed: false,
+      },
+    });
+    res.json(result);
+  });
 
-  // GET /api/todos/overdue - Lấy todos quá hạn
-  static async getOverdueTodos(req, res, next) {
-    try {
-      const todos = await TodoService.getOverdueTodos();
-      res.json(todos);
-    } catch (error) {
-      next(error);
-    }
-  }
+  // GET /api/todos/stats - Todo stats
+  static getTodoStats = BaseController.asyncHandler(async (req, res) => {
+    const memberId = req.user?.id;
+    const stats = await TodoService.getStats(memberId);
+    res.json(stats);
+  });
 
-  // GET /api/todos/stats - Thống kê todos
-  static async getTodoStats(req, res, next) {
-    try {
-      const stats = await TodoService.getStats();
-      res.json(stats);
-    } catch (error) {
-      next(error);
-    }
-  }
+  // PATCH /api/todos/reorder - Reorder todos
+  static reorderTodos = BaseController.asyncHandler(async (req, res) => {
+    const { items } = req.body;
+    const memberId = req.user?.id;
+    const updated = await TodoService.reorderTodos(items, memberId);
+    res.json(updated);
+  });
 }
 
 export default TodoController;

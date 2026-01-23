@@ -1,10 +1,30 @@
 import mongoose from "mongoose";
 
+const subtaskSchema = new mongoose.Schema(
+  {
+    title: { type: String, required: true, trim: true },
+    completed: { type: Boolean, default: false },
+  },
+  { timestamps: true }
+);
+
 const todoSchema = new mongoose.Schema(
   {
     title: { type: String, required: true, trim: true },
     description: { type: String, default: "" },
     completed: { type: Boolean, default: false },
+    completedAt: { type: Date, default: null },
+    status: {
+      type: String,
+      enum: ["todo", "in_progress", "done"],
+      default: "todo",
+    },
+    priority: {
+      type: String,
+      enum: ["low", "medium", "high", "urgent"],
+      default: "medium",
+    },
+    order: { type: Number, default: 0 },
     deadline: { type: Date, default: null },
     important: { type: Boolean, default: false },
     tags: [{ type: String, trim: true }],

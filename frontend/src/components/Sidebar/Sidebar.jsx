@@ -1,54 +1,93 @@
-// src/components/Sidebar/Sidebar.jsx
-
 import {
   AppstoreOutlined,
   CalendarOutlined,
+  CheckCircleOutlined,
+  ClockCircleOutlined,
+  ExclamationCircleOutlined,
   ProjectOutlined,
   StarOutlined,
 } from "@ant-design/icons";
-import { Avatar, Menu } from "antd";
+import { Button, Avatar, Menu } from "antd";
+import { Pencil, Plus } from "lucide-react";
 import "./sidebar.css";
 
 function getItem(label, key, icon, children, type) {
   return { key, icon, children, label, type };
 }
 
-const projectItems = [
-  getItem("Personal Tasks", "proj-1"),
-  getItem("Work Project", "proj-2"),
-  getItem("House Buying Plan", "proj-3"),
-];
-
 const quickFilterItems = [
   getItem("All", "filter-all", <AppstoreOutlined />),
   getItem("Today", "filter-today", <CalendarOutlined />),
+  getItem("Active", "filter-active", <ClockCircleOutlined />),
+  getItem("Completed", "filter-completed", <CheckCircleOutlined />),
   getItem("Important", "filter-important", <StarOutlined />),
+  getItem("Overdue", "filter-overdue", <ExclamationCircleOutlined />),
 ];
 
-export default function Sidebar({ onMenuItemClick }) {
+export default function Sidebar({
+  onFilterSelect,
+  activeFilter,
+  projects,
+  activeProjectId,
+  onProjectSelect,
+  onProjectAdd,
+  onProjectEdit,
+}) {
+  const selectedFilterKey = activeFilter ? `filter-${activeFilter}` : "filter-all";
+  const projectItems = [
+    getItem("All Projects", "project-all", <ProjectOutlined />),
+    ...(Array.isArray(projects)
+      ? projects.map((project) =>
+          getItem(project.name, `project-${project._id}`, <ProjectOutlined />)
+        )
+      : []),
+  ];
+
   return (
     <div className="sidebar-container">
       <div className="sidebar-menus">
         <Menu
           mode="inline"
-          defaultSelectedKeys={["filter-all"]}
+          selectedKeys={[selectedFilterKey]}
           items={quickFilterItems}
           className="sidebar-menu"
-          onClick={onMenuItemClick}
+          onClick={(info) => onFilterSelect(info.key)}
         />
+
+        <div className="project-header">
+          <span>Projects</span>
+          <Button
+            type="text"
+            size="small"
+            icon={<Plus size={16} />}
+            onClick={onProjectAdd}
+          />
+        </div>
+
         <Menu
           mode="inline"
-          defaultOpenKeys={["projects"]}
-          items={[
-            getItem("Projects", "projects", <ProjectOutlined />, projectItems),
+          selectedKeys={[
+            activeProjectId ? `project-${activeProjectId}` : "project-all",
           ]}
+          items={projectItems}
           className="sidebar-menu"
-          onClick={onMenuItemClick}
+          onClick={(info) => onProjectSelect(info.key)}
         />
+
+        {activeProjectId && (
+          <Button
+            type="text"
+            size="small"
+            icon={<Pencil size={14} />}
+            className="project-edit-btn"
+            onClick={() => onProjectEdit(activeProjectId)}
+          >
+            Edit project
+          </Button>
+        )}
       </div>
 
       <div className="sidebar-footer">
-        {/* --- BỌC AVATAR TRONG THẺ <a> ĐỂ GẮN LINK --- */}
         <a
           href="https://www.facebook.com/hldaithangg"
           target="_blank"
