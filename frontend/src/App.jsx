@@ -1,9 +1,11 @@
-import { App, Button, Input, Layout, Modal, Spin, Switch, Tag } from "antd";
-import { Menu } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+// src/App.jsx
+
+import { App, Button, Layout, Spin, Switch } from "antd";
+import { LogOut, Menu, User } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import logo from "./assets/logo.svg";
 import AddTodoForm from "./components/AddTodoForm.jsx";
-import CalendarView from "./components/CalendarView.jsx";
+import AuthPage from "./components/Auth/AuthPage.jsx";
 import Chatbot from "./components/Chatbot/Chatbot.jsx";
 import ConflictModal from "./components/ConflictModal.jsx";
 import EditTodoModal from "./components/EditTodoModal.jsx";
@@ -13,29 +15,13 @@ import Sidebar from "./components/Sidebar/Sidebar.jsx";
 import StatsOverview from "./components/StatsOverview.jsx";
 import TodoList from "./components/TodoList.jsx";
 import Toolbar from "./components/Toolbar.jsx";
+import { useAuth } from "./contexts/AuthContext.jsx";
 import {
-  QUEUE_ACTIONS,
-  addConflict,
-  clearCompleted,
-  createProject,
-  createTodo,
-  deleteProject,
-  deleteTodo,
-  enqueueAction,
-  fetchProjects,
-  fetchStats,
-  fetchTodos,
-  getCachedTodos,
-  getClientId,
-  getConflicts,
-  getQueue,
-  processQueue,
-  reorderTodos,
-  removeConflict,
-  setCachedTodos,
-  setQueue,
-  updateProject,
-  updateTodo,
+    clearCompleted,
+    createTodo,
+    deleteTodo,
+    fetchTodos,
+    updateTodo,
 } from "./services/todoService";
 import { ensureAuthToken } from "./services/authService";
 import { registerPushSubscription } from "./services/notificationService";
@@ -180,8 +166,8 @@ const isNetworkError = (error) => !error?.response;
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export default function MainApp({ isDark, onToggleDark }) {
-  const { message, modal } = App.useApp();
-  const clientId = useMemo(() => getClientId(), []);
+  const { message } = App.useApp();
+  const { isAuthenticated, loading: authLoading, user, isGuest, logout } = useAuth();
 
   const [isSidebarVisible, setSidebarVisible] = useState(true);
   const [todos, setTodos] = useState([]);
@@ -1254,200 +1240,18 @@ export default function MainApp({ isDark, onToggleDark }) {
     });
   }
 
-  const handleUseServer = async (conflictId) => {
-    const next = removeConflict(conflictId);
-    setConflicts(next);
-    message.info("Conflict resolved using server data.");
-    if (isOnline && getQueue().length > 0) {
-      await syncQueueAndRefresh();
-    } else {
-      await loadTodos();
-    }
-  };
-
-  const handleReapplyLocal = async (conflict) => {
-    if (!conflict?.server || conflict.action !== QUEUE_ACTIONS.UPDATE) {
-      message.warning("Unable to reapply this conflict.");
-      return;
-    }
-    const payload = {
-      ...conflict.payload,
-      clientUpdatedAt: conflict.server.updatedAt,
-    };
-    enqueueAction({ type: QUEUE_ACTIONS.UPDATE, id: conflict.id, payload });
-    updateQueueCount();
-    const next = removeConflict(conflict.conflictId);
-    setConflicts(next);
-    message.success("Local changes re-queued for sync.");
-    if (isOnline) {
-      await syncQueueAndRefresh();
-    }
-  };
-
-  const handleMoveTodo = async (id, status, targetIndex) => {
-    const current = todos.find((todo) => todo._id === id);
-    if (!current) return;
-    if (status === "done" && isBlocked(current)) {
-      message.warning("Complete dependencies before finishing this task.");
-      return;
-    }
-
-    const currentStatus = current.status || (current.completed ? "done" : "todo");
-    const nextTodos = todos.map((todo) =>
-      todo._id === id
-        ? normalizeTodo({
-            ...todo,
-            status,
-            completed: status === "done",
-            completedAt: status === "done" ? new Date().toISOString() : null,
-          })
-        : todo
+  // Show auth page if not authenticated
+  if (authLoading) {
+    return (
+      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh" }}>
+        <Spin size="large" />
+      </div>
     );
+  }
 
-    const reorderTargets = new Set([currentStatus, status]);
-    const updates = [];
-    let updatedTodos = [...nextTodos];
-
-    reorderTargets.forEach((statusKey) => {
-      let column = updatedTodos.filter(
-        (todo) => (todo.status || "todo") === statusKey
-      );
-      column.sort((a, b) => {
-        const orderA = Number.isFinite(a.order) ? a.order : 0;
-        const orderB = Number.isFinite(b.order) ? b.order : 0;
-        if (orderA !== orderB) return orderA - orderB;
-        return new Date(a.createdAt) - new Date(b.createdAt);
-      });
-
-      if (statusKey === status) {
-        const moving = column.find((todo) => todo._id === id);
-        column = column.filter((todo) => todo._id !== id);
-        const insertIndex = Math.min(
-          Math.max(targetIndex, 0),
-          column.length
-        );
-        if (moving) {
-          column.splice(insertIndex, 0, moving);
-        }
-      }
-
-      column = column.map((todo, index) => {
-        updates.push({ id: todo._id, status: statusKey, order: index });
-        return { ...todo, order: index };
-      });
-
-      updatedTodos = updatedTodos.map((todo) =>
-        column.some((item) => item._id === todo._id)
-          ? column.find((item) => item._id === todo._id)
-          : todo
-      );
-    });
-
-    setTodos(updatedTodos);
-    refreshHasCompleted(updatedTodos);
-
-    const serverUpdates = updates.filter((item) =>
-      OBJECT_ID_REGEX.test(item.id)
-    );
-
-    if (!serverUpdates.length) {
-      return;
-    }
-
-    if (!navigator.onLine) {
-      enqueueAction({ type: QUEUE_ACTIONS.REORDER, items: serverUpdates });
-      updateQueueCount();
-      message.info("Reorder queued for sync.");
-      return;
-    }
-
-    const authOk = await ensureAuth();
-    if (!authOk) {
-      enqueueAction({ type: QUEUE_ACTIONS.REORDER, items: serverUpdates });
-      updateQueueCount();
-      message.info("Reorder queued for sync.");
-      return;
-    }
-
-    try {
-      await reorderTodos(serverUpdates);
-      await refreshStats();
-    } catch (error) {
-      if (isNetworkError(error)) {
-        enqueueAction({ type: QUEUE_ACTIONS.REORDER, items: serverUpdates });
-        updateQueueCount();
-        message.info("Reorder queued for sync.");
-      } else {
-        await loadTodos();
-        message.error("Unable to reorder tasks.");
-      }
-    }
-  };
-
-  const openProjectModal = (project) => {
-    setProjectEditing(project || null);
-    setProjectModalOpen(true);
-  };
-
-  const closeProjectModal = () => {
-    setProjectModalOpen(false);
-    setProjectEditing(null);
-  };
-
-  const handleProjectSave = async (values) => {
-    try {
-      const authOk = await ensureAuth();
-      if (!authOk) {
-        return;
-      }
-      if (projectEditing) {
-        const updated = await updateProject(projectEditing._id, values);
-        setProjects((prev) =>
-          prev.map((project) =>
-            project._id === updated._id ? updated : project
-          )
-        );
-        message.success("Project updated.");
-      } else {
-        const created = await createProject(values);
-        setProjects((prev) => [created, ...prev]);
-        setActiveProjectId(created._id);
-        message.success("Project created.");
-      }
-      closeProjectModal();
-    } catch (error) {
-      message.error(error?.response?.data?.message || "Unable to save project.");
-    }
-  };
-
-  const handleProjectDelete = (projectId) => {
-    modal.confirm({
-      title: "Delete this project?",
-      content: "Tasks will remain, but the project will be removed.",
-      okText: "Delete",
-      okButtonProps: { danger: true },
-      cancelText: "Cancel",
-      onOk: async () => {
-        try {
-          const authOk = await ensureAuth();
-          if (!authOk) {
-            return;
-          }
-          await deleteProject(projectId);
-          setProjects((prev) =>
-            prev.filter((project) => project._id !== projectId)
-          );
-          if (activeProjectId === projectId) {
-            setActiveProjectId("all");
-          }
-          message.success("Project deleted.");
-          closeProjectModal();
-        } catch {
-          message.error("Unable to delete project.");
-        }
-      },
-    });
-  };
+  if (!isAuthenticated) {
+    return <AuthPage />;
+  }
 
   return (
     <Layout>
@@ -1463,17 +1267,23 @@ export default function MainApp({ isDark, onToggleDark }) {
           <h1>To-Do List</h1>
         </div>
         <div className="header-actions">
-          {!isOnline && <Tag color="volcano">Offline</Tag>}
-          {queueCount > 0 && <Tag color="blue">Sync pending: {queueCount}</Tag>}
-          {syncing && <Tag color="cyan">Syncing...</Tag>}
-          {conflicts.length > 0 && (
-            <Tag
-              color="red"
-              style={{ cursor: "pointer" }}
-              onClick={() => setConflictModalOpen(true)}
-            >
-              Conflicts: {conflicts.length}
-            </Tag>
+          {user && (
+            <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginRight: "1rem" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                <User size={18} />
+                <span style={{ fontSize: "0.9rem" }}>
+                  {isGuest ? "Khách" : user.name}
+                </span>
+              </div>
+              <Button
+                type="text"
+                icon={<LogOut size={18} />}
+                onClick={logout}
+                style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
+              >
+                Đăng xuất
+              </Button>
+            </div>
           )}
           <Switch
             checked={isDark}

@@ -1,61 +1,117 @@
-import { api } from "../api";
-import { clearAuthToken, getAuthToken, setAuthToken } from "./authStorage";
+import axios from "axios";
 
-let authPromise = null;
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:4000/api";
 
-const decodeBase64 = (value) => {
-  if (typeof atob === "function") {
-    return atob(value);
-  }
-  if (typeof Buffer !== "undefined") {
-    return Buffer.from(value, "base64").toString("utf-8");
-  }
-  return "";
-};
+/**
+ * Register a new user account
+ */
+export async function register(name, email, password) {
+  const response = await axios.post(`${API_BASE_URL}/auth/register`, {
+    name,
+    email,
+    password,
+  });
+  
+  return response.data;
+}
 
-const decodeJwtPayload = (token) => {
-  if (!token) return null;
-  const parts = token.split(".");
-  if (parts.length < 2) return null;
-  const base64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
-  const padded = base64 + "=".repeat((4 - (base64.length % 4)) % 4);
-  try {
-    return JSON.parse(decodeBase64(padded));
-  } catch {
-    return null;
-  }
-};
+/**
+ * Login with email and password
+ */
+export async function login(email, password, rememberMe = false) {
+  const response = await axios.post(`${API_BASE_URL}/auth/login`, {
+    email,
+    password,
+    rememberMe,
+  });
+  
+  return response.data;
+}
 
-const isTokenExpired = (token, bufferSeconds = 60) => {
-  const payload = decodeJwtPayload(token);
-  if (!payload?.exp) return true;
-  const now = Math.floor(Date.now() / 1000);
-  return payload.exp - bufferSeconds <= now;
-};
+/**
+ * Get current authenticated user
+ */
+export async function getCurrentUser(token) {
+  const response = await axios.get(`${API_BASE_URL}/auth/me`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  
+  return response.data;
+}
 
-export const ensureAuthToken = async (clientId) => {
-  const existing = getAuthToken();
-  if (existing && !isTokenExpired(existing)) return existing;
-  if (existing) clearAuthToken();
-  if (!clientId) {
-    throw new Error("Client ID is required for authentication");
-  }
+/**
+ * Get guest token
+ */
+export async function getGuestToken(clientId) {
+  const response = await axios.post(`${API_BASE_URL}/auth/guest`, {
+    clientId,
+  });
+  
+  return response.data;
+}
 
-  if (!authPromise) {
-    authPromise = api
-      .post("/auth/guest", { clientId })
-      .then((response) => {
-        const token = response.data?.token;
-        if (!token) {
-          throw new Error("Missing auth token");
-        }
-        setAuthToken(token);
-        return token;
-      })
-      .finally(() => {
-        authPromise = null;
-      });
-  }
+/**
+ * Migrate guest data to user account
+ */
+export async function migrateGuestData(token, guestOwnerId) {
+  const response = await axios.post(
+    `${API_BASE_URL}/auth/migrate-guest-data`,
+    { guestOwnerId },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  
+  return response.data;
+}
 
-  return authPromise;
-};
+// Token management
+const TOKEN_KEY = "auth_token";
+const USER_KEY = "auth_user";
+const GUEST_ID_KEY = "guest_id";
+
+export function saveToken(token) {
+  localStorage.setItem(TOKEN_KEY, token);
+}
+
+export function getToken() {
+  return localStorage.getItem(TOKEN_KEY);
+}
+
+export function removeToken() {
+  localStorage.removeItem(TOKEN_KEY);
+}
+
+export function saveUser(user) {
+  localStorage.setItem(USER_KEY, JSON.stringify(user));
+}
+
+export function getUser() {
+  const user = localStorage.getItem(USER_KEY);
+  return user ? JSON.parse(user) : null;
+}
+
+export function removeUser() {
+  localStorage.removeItem(USER_KEY);
+}
+
+export function saveGuestId(guestId) {
+  localStorage.setItem(GUEST_ID_KEY, guestId);
+}
+
+export function getGuestId() {
+  return localStorage.getItem(GUEST_ID_KEY);
+}
+
+export function removeGuestId() {
+  localStorage.removeItem(GUEST_ID_KEY);
+}
+
+export function clearAuth() {
+  removeToken();
+  removeUser();
+}

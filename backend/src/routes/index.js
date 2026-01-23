@@ -2,16 +2,16 @@ import { Router } from "express";
 import apiDocRoutes from "./apiDocRoute.js";
 import appRoutes from "./appRoutes.js";
 import authRoutes from "./authRoutes.js";
-import notificationRoutes from "./notificationRoutes.js";
-import projectRoutes from "./projectRoutes.js";
 import todoRoutes from "./todoRoutes.js";
 import { authMiddleware } from "../middlewares/auth.js";
 
 const router = Router();
 
-// =================== PUBLIC ROUTES ===================
+// Auth Routes
 router.use("/auth", authRoutes);
-router.use("/api-docs", apiDocRoutes);
+
+// API Routes
+router.use("/todos", todoRoutes);
 router.use("/", appRoutes);
 
 // =================== PROTECTED ROUTES ===================

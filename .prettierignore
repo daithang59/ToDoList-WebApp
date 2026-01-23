@@ -1,0 +1,10 @@
+# Ignore files
+*.min.js
+*.min.css
+node_modules/
+dist/
+build/
+coverage/
+.vercel/
+.docker/
+mongo_data/
