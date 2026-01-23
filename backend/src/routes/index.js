@@ -1,9 +1,10 @@
 import { Router } from "express";
-import apiDocRoutes from "./apiDocRoute.js";
+import { authMiddleware } from "../middlewares/auth.js";
 import appRoutes from "./appRoutes.js";
 import authRoutes from "./authRoutes.js";
+import notificationRoutes from "./notificationRoutes.js";
+import projectRoutes from "./projectRoutes.js";
 import todoRoutes from "./todoRoutes.js";
-import { authMiddleware } from "../middlewares/auth.js";
 
 const router = Router();
 

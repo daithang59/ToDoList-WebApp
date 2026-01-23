@@ -75,7 +75,7 @@ export function optionalAuthMiddleware(req, res, next) {
     };
 
     next();
-  } catch (error) {
+  } catch {
     // If token is invalid, just continue without user info
     // Don't block the request
     next();

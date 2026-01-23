@@ -1,0 +1,587 @@
+Warning: React version not specified in eslint-plugin-react settings. See https://github.com/jsx-eslint/eslint-plugin-react#configuration .
+
+C:\Users\THANG\To-DoList_WebApp\frontend\src\App.jsx
+   168:35  error  'isDark' is missing in props validation                   react/prop-types
+   168:43  error  'onToggleDark' is missing in props validation             react/prop-types
+   218:28  error  'setProjectModalOpen' is assigned a value but never used  no-unused-vars
+   219:26  error  'setProjectEditing' is assigned a value but never used    no-unused-vars
+   223:10  error  'queueCount' is assigned a value but never used           no-unused-vars
+   223:54  error  'getQueue' is not defined                                 no-undef
+   224:52  error  'getConflicts' is not defined                             no-undef
+   226:10  error  'syncing' is assigned a value but never used              no-unused-vars
+   235:21  error  'useRef' is not defined                                   no-undef
+   310:22  error  'useCallback' is not defined                              no-undef
+   313:13  error  'ensureAuthToken' is not defined                          no-undef
+   313:29  error  'clientId' is not defined                                 no-undef
+   319:7   error  'clientId' is not defined                                 no-undef
+   321:27  error  'useCallback' is not defined                              no-undef
+   327:24  error  'useCallback' is not defined                              no-undef
+   336:28  error  'fetchStats' is not defined                               no-undef
+   351:21  error  'useCallback' is not defined                              no-undef
+   365:22  error  'getCachedTodos' is not defined                           no-undef
+   404:9   error  'latestPagination' is assigned a value but never used     no-unused-vars
+   407:9   error  'setCachedTodos' is not defined                           no-undef
+   416:16  error  'error' is defined but never used                         no-unused-vars
+   425:22  error  'getCachedTodos' is not defined                           no-undef
+   448:24  error  'useCallback' is not defined                              no-undef
+   459:26  error  'fetchProjects' is not defined                            no-undef
+   466:31  error  'useCallback' is not defined                              no-undef
+   471:26  error  'processQueue' is not defined                             no-undef
+   473:18  error  'getConflicts' is not defined                             no-undef
+   490:11  error  'getQueue' is not defined                                 no-undef
+   498:5   error  'setCachedTodos' is not defined                           no-undef
+   601:19  error  'getQueue' is not defined                                 no-undef
+   626:5   error  'addConflict' is not defined                              no-undef
+   627:18  error  'getConflicts' is not defined                             no-undef
+   633:19  error  'getQueue' is not defined                                 no-undef
+   635:35  error  'QUEUE_ACTIONS' is not defined                            no-undef
+   642:5   error  'setQueue' is not defined                                 no-undef
+   648:19  error  'getQueue' is not defined                                 no-undef
+   650:37  error  'QUEUE_ACTIONS' is not defined                            no-undef
+   652:5   error  'setQueue' is not defined                                 no-undef
+   677:16  error  'clientId' is not defined                                 no-undef
+   700:7   error  'enqueueAction' is not defined                            no-undef
+   700:29  error  'QUEUE_ACTIONS' is not defined                            no-undef
+   709:7   error  'enqueueAction' is not defined                            no-undef
+   709:29  error  'QUEUE_ACTIONS' is not defined                            no-undef
+   727:9   error  'enqueueAction' is not defined                            no-undef
+   727:31  error  'QUEUE_ACTIONS' is not defined                            no-undef
+   778:9   error  'enqueueAction' is not defined                            no-undef
+   778:31  error  'QUEUE_ACTIONS' is not defined                            no-undef
+   790:9   error  'enqueueAction' is not defined                            no-undef
+   790:31  error  'QUEUE_ACTIONS' is not defined                            no-undef
+   815:19  error  'QUEUE_ACTIONS' is not defined                            no-undef
+   826:11  error  'enqueueAction' is not defined                            no-undef
+   826:33  error  'QUEUE_ACTIONS' is not defined                            no-undef
+   860:9   error  'enqueueAction' is not defined                            no-undef
+   860:31  error  'QUEUE_ACTIONS' is not defined                            no-undef
+   872:9   error  'enqueueAction' is not defined                            no-undef
+   872:31  error  'QUEUE_ACTIONS' is not defined                            no-undef
+   891:19  error  'QUEUE_ACTIONS' is not defined                            no-undef
+   902:11  error  'enqueueAction' is not defined                            no-undef
+   902:33  error  'QUEUE_ACTIONS' is not defined                            no-undef
+   930:9   error  'enqueueAction' is not defined                            no-undef
+   930:31  error  'QUEUE_ACTIONS' is not defined                            no-undef
+   942:9   error  'enqueueAction' is not defined                            no-undef
+   942:31  error  'QUEUE_ACTIONS' is not defined                            no-undef
+   958:11  error  'enqueueAction' is not defined                            no-undef
+   958:33  error  'QUEUE_ACTIONS' is not defined                            no-undef
+  1029:9   error  'enqueueAction' is not defined                            no-undef
+  1030:17  error  'QUEUE_ACTIONS' is not defined                            no-undef
+  1045:9   error  'enqueueAction' is not defined                            no-undef
+  1046:17  error  'QUEUE_ACTIONS' is not defined                            no-undef
+  1075:19  error  'QUEUE_ACTIONS' is not defined                            no-undef
+  1089:11  error  'enqueueAction' is not defined                            no-undef
+  1090:19  error  'QUEUE_ACTIONS' is not defined                            no-undef
+  1195:5   error  'modal' is not defined                                    no-undef
+  1211:11  error  'enqueueAction' is not defined                            no-undef
+  1211:33  error  'QUEUE_ACTIONS' is not defined                            no-undef
+  1218:11  error  'enqueueAction' is not defined                            no-undef
+  1218:33  error  'QUEUE_ACTIONS' is not defined                            no-undef
+  1229:13  error  'enqueueAction' is not defined                            no-undef
+  1229:35  error  'QUEUE_ACTIONS' is not defined                            no-undef
+  1246:7   error  'React' must be in scope when using JSX                   react/react-in-jsx-scope
+  1247:9   error  'React' must be in scope when using JSX                   react/react-in-jsx-scope
+  1253:12  error  'React' must be in scope when using JSX                   react/react-in-jsx-scope
+  1257:5   error  'React' must be in scope when using JSX                   react/react-in-jsx-scope
+  1258:7   error  'React' must be in scope when using JSX                   react/react-in-jsx-scope
+  1259:9   error  'React' must be in scope when using JSX                   react/react-in-jsx-scope
+  1260:11  error  'React' must be in scope when using JSX                   react/react-in-jsx-scope
+  1263:19  error  'React' must be in scope when using JSX                   react/react-in-jsx-scope
+  1266:11  error  'React' must be in scope when using JSX                   react/react-in-jsx-scope
+  1267:11  error  'React' must be in scope when using JSX                   react/react-in-jsx-scope
+  1269:9   error  'React' must be in scope when using JSX                   react/react-in-jsx-scope
+  1271:13  error  'React' must be in scope when using JSX                   react/react-in-jsx-scope
+  1272:15  error  'React' must be in scope when using JSX                   react/react-in-jsx-scope
+  1273:17  error  'React' must be in scope when using JSX                   react/react-in-jsx-scope
+  1274:17  error  'React' must be in scope when using JSX                   react/react-in-jsx-scope
+  1278:15  error  'React' must be in scope when using JSX                   react/react-in-jsx-scope
+  1280:23  error  'React' must be in scope when using JSX                   react/react-in-jsx-scope
+  1288:11  error  'React' must be in scope when using JSX                   react/react-in-jsx-scope
+  1297:7   error  'React' must be in scope when using JSX                   react/react-in-jsx-scope
+  1300:9   error  'React' must be in scope when using JSX                   react/react-in-jsx-scope
+  1305:9   error  'React' must be in scope when using JSX                   react/react-in-jsx-scope
+  1306:11  error  'React' must be in scope when using JSX                   react/react-in-jsx-scope
+  1312:33  error  'openProjectModal' is not defined                         no-undef
+  1314:15  error  'openProjectModal' is not defined                         no-undef
+  1319:9   error  'React' must be in scope when using JSX                   react/react-in-jsx-scope
+  1320:11  error  'React' must be in scope when using JSX                   react/react-in-jsx-scope
+  1321:13  error  'React' must be in scope when using JSX                   react/react-in-jsx-scope
+  1322:15  error  'React' must be in scope when using JSX                   react/react-in-jsx-scope
+  1324:13  error  'React' must be in scope when using JSX                   react/react-in-jsx-scope
+  1325:15  error  'React' must be in scope when using JSX                   react/react-in-jsx-scope
+  1342:15  error  'React' must be in scope when using JSX                   react/react-in-jsx-scope
+  1361:13  error  'React' must be in scope when using JSX                   react/react-in-jsx-scope
+  1363:17  error  'React' must be in scope when using JSX                   react/react-in-jsx-scope
+  1365:17  error  'React' must be in scope when using JSX                   react/react-in-jsx-scope
+  1367:27  error  'handleMoveTodo' is not defined                           no-undef
+  1375:17  error  'React' must be in scope when using JSX                   react/react-in-jsx-scope
+  1375:18  error  'CalendarView' is not defined                             react/jsx-no-undef
+  1377:17  error  'React' must be in scope when using JSX                   react/react-in-jsx-scope
+  1396:7   error  'React' must be in scope when using JSX                   react/react-in-jsx-scope
+  1396:8   error  'Modal' is not defined                                    react/jsx-no-undef
+  1407:9   error  'React' must be in scope when using JSX                   react/react-in-jsx-scope
+  1407:10  error  'Input' is not defined                                    react/jsx-no-undef
+  1414:7   error  'React' must be in scope when using JSX                   react/react-in-jsx-scope
+  1424:7   error  'React' must be in scope when using JSX                   react/react-in-jsx-scope
+  1427:22  error  'handleUseServer' is not defined                          no-undef
+  1428:25  error  'handleReapplyLocal' is not defined                       no-undef
+  1432:7   error  'React' must be in scope when using JSX                   react/react-in-jsx-scope
+  1435:17  error  'handleProjectSave' is not defined                        no-undef
+  1436:19  error  'handleProjectDelete' is not defined                      no-undef
+  1437:18  error  'closeProjectModal' is not defined                        no-undef
+  1440:7   error  'React' must be in scope when using JSX                   react/react-in-jsx-scope
+
+C:\Users\THANG\To-DoList_WebApp\frontend\src\api.js
+  2:10  error  'clearAuthToken' is defined but never used  no-unused-vars
+  2:26  error  'getAuthToken' is defined but never used    no-unused-vars
+
+C:\Users\THANG\To-DoList_WebApp\frontend\src\components\AddTodoForm.jsx
+   6:3   error  'value' is missing in props validation             react/prop-types
+   7:3   error  'onChange' is missing in props validation          react/prop-types
+   8:3   error  'onAdd' is missing in props validation             react/prop-types
+   9:3   error  'loading' is missing in props validation           react/prop-types
+  10:3   error  'tags' is missing in props validation              react/prop-types
+  11:3   error  'onTagsChange' is missing in props validation      react/prop-types
+  12:3   error  'projects' is missing in props validation          react/prop-types
+  13:3   error  'projectId' is missing in props validation         react/prop-types
+  14:3   error  'onProjectChange' is missing in props validation   react/prop-types
+  15:3   error  'priority' is missing in props validation          react/prop-types
+  16:3   error  'onPriorityChange' is missing in props validation  react/prop-types
+  17:3   error  'templates' is missing in props validation         react/prop-types
+  18:3   error  'templateId' is missing in props validation        react/prop-types
+  19:3   error  'onTemplateSelect' is missing in props validation  react/prop-types
+  20:3   error  'onSaveTemplate' is missing in props validation    react/prop-types
+  23:16  error  'projects.map' is missing in props validation      react/prop-types
+  30:17  error  'templates.map' is missing in props validation     react/prop-types
+  37:5   error  'React' must be in scope when using JSX            react/react-in-jsx-scope
+  38:7   error  'React' must be in scope when using JSX            react/react-in-jsx-scope
+  39:9   error  'React' must be in scope when using JSX            react/react-in-jsx-scope
+  47:9   error  'React' must be in scope when using JSX            react/react-in-jsx-scope
+  50:9   error  'React' must be in scope when using JSX            react/react-in-jsx-scope
+  53:28  error  'value.trim' is missing in props validation        react/prop-types
+  58:7   error  'React' must be in scope when using JSX            react/react-in-jsx-scope
+  68:7   error  'React' must be in scope when using JSX            react/react-in-jsx-scope
+  69:9   error  'React' must be in scope when using JSX            react/react-in-jsx-scope
+  81:9   error  'React' must be in scope when using JSX            react/react-in-jsx-scope
+  89:9   error  'React' must be in scope when using JSX            react/react-in-jsx-scope
+
+C:\Users\THANG\To-DoList_WebApp\frontend\src\components\Auth\AuthPage.jsx
+  40:5   error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+  41:7   error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+  43:11  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+  50:11  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+
+C:\Users\THANG\To-DoList_WebApp\frontend\src\components\Auth\Login.jsx
+    4:33  error  'onLogin' is missing in props validation             react/prop-types
+    4:42  error  'onSwitchToRegister' is missing in props validation  react/prop-types
+    4:62  error  'onGuestMode' is missing in props validation         react/prop-types
+    4:75  error  'loading' is missing in props validation             react/prop-types
+   37:5   error  'React' must be in scope when using JSX              react/react-in-jsx-scope
+   38:7   error  'React' must be in scope when using JSX              react/react-in-jsx-scope
+   39:9   error  'React' must be in scope when using JSX              react/react-in-jsx-scope
+   40:9   error  'React' must be in scope when using JSX              react/react-in-jsx-scope
+   43:17  error  'React' must be in scope when using JSX              react/react-in-jsx-scope
+   45:7   error  'React' must be in scope when using JSX              react/react-in-jsx-scope
+   46:9   error  'React' must be in scope when using JSX              react/react-in-jsx-scope
+   47:11  error  'React' must be in scope when using JSX              react/react-in-jsx-scope
+   50:11  error  'React' must be in scope when using JSX              react/react-in-jsx-scope
+   63:9   error  'React' must be in scope when using JSX              react/react-in-jsx-scope
+   64:11  error  'React' must be in scope when using JSX              react/react-in-jsx-scope
+   67:11  error  'React' must be in scope when using JSX              react/react-in-jsx-scope
+   80:9   error  'React' must be in scope when using JSX              react/react-in-jsx-scope
+   81:11  error  'React' must be in scope when using JSX              react/react-in-jsx-scope
+   89:11  error  'React' must be in scope when using JSX              react/react-in-jsx-scope
+   92:9   error  'React' must be in scope when using JSX              react/react-in-jsx-scope
+   96:9   error  'React' must be in scope when using JSX              react/react-in-jsx-scope
+   98:9   error  'React' must be in scope when using JSX              react/react-in-jsx-scope
+  108:7   error  'React' must be in scope when using JSX              react/react-in-jsx-scope
+  110:9   error  'React' must be in scope when using JSX              react/react-in-jsx-scope
+
+C:\Users\THANG\To-DoList_WebApp\frontend\src\components\Auth\Register.jsx
+    4:36  error  'onRegister' is missing in props validation       react/prop-types
+    4:48  error  'onSwitchToLogin' is missing in props validation  react/prop-types
+    4:65  error  'onGuestMode' is missing in props validation      react/prop-types
+    4:78  error  'loading' is missing in props validation          react/prop-types
+   83:5   error  'React' must be in scope when using JSX           react/react-in-jsx-scope
+   84:7   error  'React' must be in scope when using JSX           react/react-in-jsx-scope
+   85:9   error  'React' must be in scope when using JSX           react/react-in-jsx-scope
+   86:9   error  'React' must be in scope when using JSX           react/react-in-jsx-scope
+   89:17  error  'React' must be in scope when using JSX           react/react-in-jsx-scope
+   91:7   error  'React' must be in scope when using JSX           react/react-in-jsx-scope
+   92:9   error  'React' must be in scope when using JSX           react/react-in-jsx-scope
+   93:11  error  'React' must be in scope when using JSX           react/react-in-jsx-scope
+   96:11  error  'React' must be in scope when using JSX           react/react-in-jsx-scope
+  109:9   error  'React' must be in scope when using JSX           react/react-in-jsx-scope
+  110:11  error  'React' must be in scope when using JSX           react/react-in-jsx-scope
+  113:11  error  'React' must be in scope when using JSX           react/react-in-jsx-scope
+  126:9   error  'React' must be in scope when using JSX           react/react-in-jsx-scope
+  127:11  error  'React' must be in scope when using JSX           react/react-in-jsx-scope
+  130:11  error  'React' must be in scope when using JSX           react/react-in-jsx-scope
+  142:13  error  'React' must be in scope when using JSX           react/react-in-jsx-scope
+  143:15  error  'React' must be in scope when using JSX           react/react-in-jsx-scope
+  150:13  error  'React' must be in scope when using JSX           react/react-in-jsx-scope
+  156:9   error  'React' must be in scope when using JSX           react/react-in-jsx-scope
+  157:11  error  'React' must be in scope when using JSX           react/react-in-jsx-scope
+  160:11  error  'React' must be in scope when using JSX           react/react-in-jsx-scope
+  173:9   error  'React' must be in scope when using JSX           react/react-in-jsx-scope
+  177:9   error  'React' must be in scope when using JSX           react/react-in-jsx-scope
+  179:9   error  'React' must be in scope when using JSX           react/react-in-jsx-scope
+  189:7   error  'React' must be in scope when using JSX           react/react-in-jsx-scope
+  191:9   error  'React' must be in scope when using JSX           react/react-in-jsx-scope
+
+C:\Users\THANG\To-DoList_WebApp\frontend\src\components\CalendarView.jsx
+  27:40  error  'items' is missing in props validation          react/prop-types
+  27:47  error  'onOpenModal' is missing in props validation    react/prop-types
+  32:11  error  'items.forEach' is missing in props validation  react/prop-types
+  54:5   error  'React' must be in scope when using JSX         react/react-in-jsx-scope
+  55:7   error  'React' must be in scope when using JSX         react/react-in-jsx-scope
+  62:13  error  'React' must be in scope when using JSX         react/react-in-jsx-scope
+  64:17  error  'React' must be in scope when using JSX         react/react-in-jsx-scope
+  65:19  error  'React' must be in scope when using JSX         react/react-in-jsx-scope
+  69:17  error  'React' must be in scope when using JSX         react/react-in-jsx-scope
+  76:7   error  'React' must be in scope when using JSX         react/react-in-jsx-scope
+  77:9   error  'React' must be in scope when using JSX         react/react-in-jsx-scope
+  80:9   error  'React' must be in scope when using JSX         react/react-in-jsx-scope
+  85:13  error  'React' must be in scope when using JSX         react/react-in-jsx-scope
+  86:15  error  'React' must be in scope when using JSX         react/react-in-jsx-scope
+  90:15  error  'React' must be in scope when using JSX         react/react-in-jsx-scope
+  95:15  error  'React' must be in scope when using JSX         react/react-in-jsx-scope
+
+C:\Users\THANG\To-DoList_WebApp\frontend\src\components\Chatbot\Chatbot.jsx
+   53:5   error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+   55:9   error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+   56:11  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+   57:13  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+   58:15  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+   58:29  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+   59:15  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+   60:17  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+   61:17  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+   64:13  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+   67:21  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+   72:11  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+   76:19  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+   77:21  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+   77:35  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+   78:21  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+   83:17  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+   84:19  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+   85:19  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+   85:33  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+   89:13  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+   92:11  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+   93:13  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+  100:13  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+  103:21  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+  110:7   error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+  113:15  error  'React' must be in scope when using JSX  react/react-in-jsx-scope
+
+C:\Users\THANG\To-DoList_WebApp\frontend\src\components\ConflictModal.jsx
+  14:3   error  'open' is missing in props validation            react/prop-types
+  15:3   error  'conflicts' is missing in props validation       react/prop-types
+  16:3   error  'onUseServer' is missing in props validation     react/prop-types
+  17:3   error  'onReapplyLocal' is missing in props validation  react/prop-types
+  18:3   error  'onClose' is missing in props validation         react/prop-types
+  21:5   error  'React' must be in scope when using JSX          react/react-in-jsx-scope
+  28:7   error  'React' must be in scope when using JSX          react/react-in-jsx-scope
+  38:13  error  'React' must be in scope when using JSX          react/react-in-jsx-scope
+  40:17  error  'React' must be in scope when using JSX          react/react-in-jsx-scope
+  43:17  error  'React' must be in scope when using JSX          react/react-in-jsx-scope
+  53:15  error  'React' must be in scope when using JSX          react/react-in-jsx-scope
+  55:19  error  'React' must be in scope when using JSX          react/react-in-jsx-scope
+  56:21  error  'React' must be in scope when using JSX          react/react-in-jsx-scope
+  57:21  error  'React' must be in scope when using JSX          react/react-in-jsx-scope
+  61:19  error  'React' must be in scope when using JSX          react/react-in-jsx-scope
+  62:21  error  'React' must be in scope when using JSX          react/react-in-jsx-scope
+  65:21  error  'React' must be in scope when using JSX          react/react-in-jsx-scope
+
+C:\Users\THANG\To-DoList_WebApp\frontend\src\components\EditTodoModal.jsx
+   58:3   error  'open' is missing in props validation               react/prop-types
+   59:3   error  'onClose' is missing in props validation            react/prop-types
+   60:3   error  'todo' is missing in props validation               react/prop-types
+   61:3   error  'onSave' is missing in props validation             react/prop-types
+   62:3   error  'projects' is missing in props validation           react/prop-types
+   63:3   error  'allTodos' is missing in props validation           react/prop-types
+   64:3   error  'onEnablePush' is missing in props validation       react/prop-types
+   80:20  error  'todo.title' is missing in props validation         react/prop-types
+   81:19  error  'todo.description' is missing in props validation   react/prop-types
+   82:23  error  'todo.deadline' is missing in props validation      react/prop-types
+   82:45  error  'todo.deadline' is missing in props validation      react/prop-types
+   83:33  error  'todo.tags' is missing in props validation          react/prop-types
+   83:46  error  'todo.tags' is missing in props validation          react/prop-types
+   84:21  error  'todo.status' is missing in props validation        react/prop-types
+   84:38  error  'todo.completed' is missing in props validation     react/prop-types
+   85:23  error  'todo.priority' is missing in props validation      react/prop-types
+   86:24  error  'todo.projectId' is missing in props validation     react/prop-types
+   87:37  error  'todo.subtasks' is missing in props validation      react/prop-types
+   87:54  error  'todo.subtasks' is missing in props validation      react/prop-types
+   88:41  error  'todo.dependencies' is missing in props validation  react/prop-types
+   88:62  error  'todo.dependencies' is missing in props validation  react/prop-types
+   89:54  error  'todo.recurrence' is missing in props validation    react/prop-types
+   90:50  error  'todo.reminder' is missing in props validation      react/prop-types
+   91:39  error  'todo.sharedWith' is missing in props validation    react/prop-types
+   91:58  error  'todo.sharedWith' is missing in props validation    react/prop-types
+  103:20  error  'projects.map' is missing in props validation       react/prop-types
+  115:14  error  'allTodos.filter' is missing in props validation    react/prop-types
+  115:50  error  'todo._id' is missing in props validation           react/prop-types
+  141:5   error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  168:7   error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  174:7   error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  180:7   error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  186:7   error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  193:7   error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  199:7   error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  209:7   error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  216:7   error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  217:7   error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  219:11  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  220:13  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  226:13  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  231:13  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  234:21  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  239:9   error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  241:17  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  248:7   error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  249:7   error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  260:7   error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  261:7   error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  262:9   error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  269:11  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  270:13  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  280:13  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  288:13  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  302:7   error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  303:7   error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  304:9   error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  311:11  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  312:13  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  322:13  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  332:13  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  343:7   error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  344:7   error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+
+C:\Users\THANG\To-DoList_WebApp\frontend\src\components\KanbanBoard.jsx
+   19:3   error  'items' is missing in props validation              react/prop-types
+   20:3   error  'onMove' is missing in props validation             react/prop-types
+   21:3   error  'onToggleImportant' is missing in props validation  react/prop-types
+   22:3   error  'onDelete' is missing in props validation           react/prop-types
+   23:3   error  'onOpenModal' is missing in props validation        react/prop-types
+   24:3   error  'dependencyMap' is missing in props validation      react/prop-types
+   25:3   error  'projectMap' is missing in props validation         react/prop-types
+   36:11  error  'items.forEach' is missing in props validation      react/prop-types
+   72:5   error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+   76:11  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+   82:13  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+   83:15  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+   84:15  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+   87:13  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+   94:43  error  'dependencyMap.get' is missing in props validation  react/prop-types
+  102:45  error  'projectMap.get' is missing in props validation     react/prop-types
+  107:19  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  116:21  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  119:23  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  125:23  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  127:27  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  133:23  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  135:21  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  139:21  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  140:37  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  142:25  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  147:25  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  148:27  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  153:21  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  154:23  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  161:25  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  168:33  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  171:23  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  172:25  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  176:33  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  179:23  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  180:25  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  185:33  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+
+C:\Users\THANG\To-DoList_WebApp\frontend\src\components\ProjectModal.jsx
+   7:3   error  'open' is missing in props validation                 react/prop-types
+   8:3   error  'project' is missing in props validation              react/prop-types
+   9:3   error  'onSave' is missing in props validation               react/prop-types
+  10:3   error  'onDelete' is missing in props validation             react/prop-types
+  11:3   error  'onClose' is missing in props validation              react/prop-types
+  19:22  error  'project.name' is missing in props validation         react/prop-types
+  20:29  error  'project.description' is missing in props validation  react/prop-types
+  21:23  error  'project.color' is missing in props validation        react/prop-types
+  22:42  error  'project.sharedWith' is missing in props validation   react/prop-types
+  22:64  error  'project.sharedWith' is missing in props validation   react/prop-types
+  36:5   error  'React' must be in scope when using JSX               react/react-in-jsx-scope
+  42:11  error  'React' must be in scope when using JSX               react/react-in-jsx-scope
+  42:71  error  'project._id' is missing in props validation          react/prop-types
+  46:9   error  'React' must be in scope when using JSX               react/react-in-jsx-scope
+  49:9   error  'React' must be in scope when using JSX               react/react-in-jsx-scope
+  59:7   error  'React' must be in scope when using JSX               react/react-in-jsx-scope
+  65:7   error  'React' must be in scope when using JSX               react/react-in-jsx-scope
+  72:7   error  'React' must be in scope when using JSX               react/react-in-jsx-scope
+  78:7   error  'React' must be in scope when using JSX               react/react-in-jsx-scope
+
+C:\Users\THANG\To-DoList_WebApp\frontend\src\components\Sidebar\Sidebar.jsx
+   19:32  error  'React' must be in scope when using JSX           react/react-in-jsx-scope
+   20:36  error  'React' must be in scope when using JSX           react/react-in-jsx-scope
+   21:38  error  'React' must be in scope when using JSX           react/react-in-jsx-scope
+   22:44  error  'React' must be in scope when using JSX           react/react-in-jsx-scope
+   23:44  error  'React' must be in scope when using JSX           react/react-in-jsx-scope
+   24:40  error  'React' must be in scope when using JSX           react/react-in-jsx-scope
+   28:3   error  'onFilterSelect' is missing in props validation   react/prop-types
+   29:3   error  'activeFilter' is missing in props validation     react/prop-types
+   30:3   error  'projects' is missing in props validation         react/prop-types
+   31:3   error  'activeProjectId' is missing in props validation  react/prop-types
+   32:3   error  'onProjectSelect' is missing in props validation  react/prop-types
+   33:3   error  'onProjectAdd' is missing in props validation     react/prop-types
+   34:3   error  'onProjectEdit' is missing in props validation    react/prop-types
+   38:44  error  'React' must be in scope when using JSX           react/react-in-jsx-scope
+   40:18  error  'projects.map' is missing in props validation     react/prop-types
+   41:59  error  'React' must be in scope when using JSX           react/react-in-jsx-scope
+   47:5   error  'React' must be in scope when using JSX           react/react-in-jsx-scope
+   48:7   error  'React' must be in scope when using JSX           react/react-in-jsx-scope
+   49:9   error  'React' must be in scope when using JSX           react/react-in-jsx-scope
+   57:9   error  'React' must be in scope when using JSX           react/react-in-jsx-scope
+   58:11  error  'React' must be in scope when using JSX           react/react-in-jsx-scope
+   59:11  error  'React' must be in scope when using JSX           react/react-in-jsx-scope
+   62:19  error  'React' must be in scope when using JSX           react/react-in-jsx-scope
+   67:9   error  'React' must be in scope when using JSX           react/react-in-jsx-scope
+   78:11  error  'React' must be in scope when using JSX           react/react-in-jsx-scope
+   81:19  error  'React' must be in scope when using JSX           react/react-in-jsx-scope
+   90:7   error  'React' must be in scope when using JSX           react/react-in-jsx-scope
+   91:9   error  'React' must be in scope when using JSX           react/react-in-jsx-scope
+   96:11  error  'React' must be in scope when using JSX           react/react-in-jsx-scope
+  100:9   error  'React' must be in scope when using JSX           react/react-in-jsx-scope
+  101:11  error  'React' must be in scope when using JSX           react/react-in-jsx-scope
+  102:11  error  'React' must be in scope when using JSX           react/react-in-jsx-scope
+
+C:\Users\THANG\To-DoList_WebApp\frontend\src\components\StatsOverview.jsx
+   3:41  error  'stats' is missing in props validation                      react/prop-types
+   3:48  error  'loading' is missing in props validation                    react/prop-types
+   4:35  error  'stats.total' is missing in props validation                react/prop-types
+   5:39  error  'stats.completed' is missing in props validation            react/prop-types
+   6:39  error  'stats.important' is missing in props validation            react/prop-types
+   7:36  error  'stats.active' is missing in props validation               react/prop-types
+   8:37  error  'stats.overdue' is missing in props validation              react/prop-types
+   9:40  error  'stats.inProgress' is missing in props validation           react/prop-types
+  10:49  error  'stats.completedPercentage' is missing in props validation  react/prop-types
+  23:5   error  'React' must be in scope when using JSX                     react/react-in-jsx-scope
+  25:9   error  'React' must be in scope when using JSX                     react/react-in-jsx-scope
+  29:11  error  'React' must be in scope when using JSX                     react/react-in-jsx-scope
+  30:11  error  'React' must be in scope when using JSX                     react/react-in-jsx-scope
+  31:13  error  'React' must be in scope when using JSX                     react/react-in-jsx-scope
+  33:15  error  'React' must be in scope when using JSX                     react/react-in-jsx-scope
+  37:13  error  'React' must be in scope when using JSX                     react/react-in-jsx-scope
+  38:15  error  'React' must be in scope when using JSX                     react/react-in-jsx-scope
+
+C:\Users\THANG\To-DoList_WebApp\frontend\src\components\TodoList.jsx
+   12:3   error  'items' is missing in props validation              react/prop-types
+   13:3   error  'total' is missing in props validation              react/prop-types
+   14:3   error  'page' is missing in props validation               react/prop-types
+   15:3   error  'pageSize' is missing in props validation           react/prop-types
+   16:3   error  'onPageChange' is missing in props validation       react/prop-types
+   17:3   error  'onToggle' is missing in props validation           react/prop-types
+   18:3   error  'onToggleImportant' is missing in props validation  react/prop-types
+   19:3   error  'onDelete' is missing in props validation           react/prop-types
+   20:3   error  'onOpenModal' is missing in props validation        react/prop-types
+   21:3   error  'dependencyMap' is missing in props validation      react/prop-types
+   22:3   error  'projectMap' is missing in props validation         react/prop-types
+   25:5   error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+   26:7   error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+   35:58  error  'dependencyMap.get' is missing in props validation  react/prop-types
+   42:39  error  'projectMap.get' is missing in props validation     react/prop-types
+   47:13  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+   50:15  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+   51:17  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+   56:19  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+   60:40  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+   64:17  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+   65:19  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+   73:21  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+   79:21  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+   81:25  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+   88:19  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+   90:23  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+   97:23  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  101:21  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  105:23  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  107:35  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  109:23  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  114:23  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  115:25  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  116:25  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  122:17  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  123:19  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  130:21  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  135:29  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  138:19  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  139:21  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  143:29  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  146:19  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  147:21  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  152:29  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  162:9   error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+  163:11  error  'React' must be in scope when using JSX             react/react-in-jsx-scope
+
+C:\Users\THANG\To-DoList_WebApp\frontend\src\components\Toolbar.jsx
+   22:3   error  'filter' is missing in props validation            react/prop-types
+   23:3   error  'onFilterChange' is missing in props validation    react/prop-types
+   24:3   error  'sort' is missing in props validation              react/prop-types
+   25:3   error  'onSortChange' is missing in props validation      react/prop-types
+   26:3   error  'priority' is missing in props validation          react/prop-types
+   27:3   error  'onPriorityChange' is missing in props validation  react/prop-types
+   28:3   error  'pageSize' is missing in props validation          react/prop-types
+   29:3   error  'onPageSizeChange' is missing in props validation  react/prop-types
+   30:3   error  'query' is missing in props validation             react/prop-types
+   31:3   error  'onSearchChange' is missing in props validation    react/prop-types
+   32:3   error  'onSearchSubmit' is missing in props validation    react/prop-types
+   33:3   error  'onClearCompleted' is missing in props validation  react/prop-types
+   34:3   error  'clearDisabled' is missing in props validation     react/prop-types
+   35:3   error  'viewMode' is missing in props validation          react/prop-types
+   36:3   error  'onViewModeChange' is missing in props validation  react/prop-types
+   42:5   error  'React' must be in scope when using JSX            react/react-in-jsx-scope
+   44:7   error  'React' must be in scope when using JSX            react/react-in-jsx-scope
+   52:15  error  'React' must be in scope when using JSX            react/react-in-jsx-scope
+   53:17  error  'React' must be in scope when using JSX            react/react-in-jsx-scope
+   54:17  error  'React' must be in scope when using JSX            react/react-in-jsx-scope
+   61:15  error  'React' must be in scope when using JSX            react/react-in-jsx-scope
+   62:17  error  'React' must be in scope when using JSX            react/react-in-jsx-scope
+   63:17  error  'React' must be in scope when using JSX            react/react-in-jsx-scope
+   70:15  error  'React' must be in scope when using JSX            react/react-in-jsx-scope
+   71:17  error  'React' must be in scope when using JSX            react/react-in-jsx-scope
+   72:17  error  'React' must be in scope when using JSX            react/react-in-jsx-scope
+   79:15  error  'React' must be in scope when using JSX            react/react-in-jsx-scope
+   80:17  error  'React' must be in scope when using JSX            react/react-in-jsx-scope
+   81:17  error  'React' must be in scope when using JSX            react/react-in-jsx-scope
+   88:15  error  'React' must be in scope when using JSX            react/react-in-jsx-scope
+   89:17  error  'React' must be in scope when using JSX            react/react-in-jsx-scope
+   90:17  error  'React' must be in scope when using JSX            react/react-in-jsx-scope
+   97:15  error  'React' must be in scope when using JSX            react/react-in-jsx-scope
+   98:17  error  'React' must be in scope when using JSX            react/react-in-jsx-scope
+   99:17  error  'React' must be in scope when using JSX            react/react-in-jsx-scope
+  108:7   error  'React' must be in scope when using JSX            react/react-in-jsx-scope
+  110:9   error  'React' must be in scope when using JSX            react/react-in-jsx-scope
+  126:9   error  'React' must be in scope when using JSX            react/react-in-jsx-scope
+  127:11  error  'React' must be in scope when using JSX            react/react-in-jsx-scope
+  134:19  error  'React' must be in scope when using JSX            react/react-in-jsx-scope
+  135:21  error  'React' must be in scope when using JSX            react/react-in-jsx-scope
+  136:21  error  'React' must be in scope when using JSX            react/react-in-jsx-scope
+  143:19  error  'React' must be in scope when using JSX            react/react-in-jsx-scope
+  144:21  error  'React' must be in scope when using JSX            react/react-in-jsx-scope
+  145:21  error  'React' must be in scope when using JSX            react/react-in-jsx-scope
+  152:19  error  'React' must be in scope when using JSX            react/react-in-jsx-scope
+  153:21  error  'React' must be in scope when using JSX            react/react-in-jsx-scope
+  154:21  error  'React' must be in scope when using JSX            react/react-in-jsx-scope
+  161:11  error  'React' must be in scope when using JSX            react/react-in-jsx-scope
+  173:11  error  'React' must be in scope when using JSX            react/react-in-jsx-scope
+  179:11  error  'React' must be in scope when using JSX            react/react-in-jsx-scope
+  188:11  error  'React' must be in scope when using JSX            react/react-in-jsx-scope
+  190:19  error  'React' must be in scope when using JSX            react/react-in-jsx-scope
+
+C:\Users\THANG\To-DoList_WebApp\frontend\src\contexts\AuthContext.jsx
+    6:32  error  'children' is missing in props validation  react/prop-types
+  116:10  error  'React' must be in scope when using JSX    react/react-in-jsx-scope
+
+âœ– 549 problems (549 errors, 0 warnings)
+

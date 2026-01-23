@@ -17,13 +17,13 @@ import TodoList from "./components/TodoList.jsx";
 import Toolbar from "./components/Toolbar.jsx";
 import { useAuth } from "./contexts/AuthContext.jsx";
 import {
-    clearCompleted,
-    createTodo,
-    deleteTodo,
-    fetchTodos,
-    updateTodo,
+  clearCompleted,
+  createTodo,
+  deleteTodo,
+  fetchTodos,
+  updateTodo,
 } from "./services/todoService";
-import { ensureAuthToken } from "./services/authService";
+
 import { registerPushSubscription } from "./services/notificationService";
 import {
   addTemplate,

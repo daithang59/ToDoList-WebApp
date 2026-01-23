@@ -1,10 +1,10 @@
-export function notFound(req, res, next) {
+export function notFound(req, res) {
   res.status(404).json({
     message: "Route not found",
   });
 }
 
-export function errorHandler(err, req, res, next) {
+export function errorHandler(err, req, res) {
   console.error("ERR:", err);
   const status = err.status || 500;
   const payload = {

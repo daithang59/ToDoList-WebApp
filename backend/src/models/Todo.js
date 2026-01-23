@@ -1,12 +1,5 @@
 import mongoose from "mongoose";
 
-const subtaskSchema = new mongoose.Schema(
-  {
-    title: { type: String, required: true, trim: true },
-    completed: { type: Boolean, default: false },
-  },
-  { timestamps: true }
-);
 
 const todoSchema = new mongoose.Schema(
   {
@@ -28,16 +21,6 @@ const todoSchema = new mongoose.Schema(
     deadline: { type: Date, default: null },
     important: { type: Boolean, default: false },
     tags: [{ type: String, trim: true }],
-    status: {
-      type: String,
-      enum: ["todo", "in_progress", "done"],
-      default: "todo",
-    },
-    priority: {
-      type: String,
-      enum: ["low", "medium", "high", "urgent"],
-      default: "medium",
-    },
     // Owner fields - support both guest and authenticated users
     ownerId: {
       type: String,
@@ -57,7 +40,6 @@ const todoSchema = new mongoose.Schema(
       default: null,
     },
     // Additional fields from frontend
-    order: { type: Number, default: 0 },
     subtasks: [
       {
         id: String,
@@ -83,7 +65,6 @@ const todoSchema = new mongoose.Schema(
       email: { type: String, default: "" },
       lastNotifiedAt: { type: Date, default: null },
     },
-    completedAt: { type: Date, default: null },
     syncStatus: {
       type: String,
       enum: ["synced", "pending", "error"],

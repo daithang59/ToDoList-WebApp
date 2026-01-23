@@ -46,7 +46,6 @@ export function validateRegister(req, res, next) {
     const hasUpperCase = /[A-Z]/.test(password);
     const hasLowerCase = /[a-z]/.test(password);
     const hasNumber = /\d/.test(password);
-    const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
 
     if (!(hasUpperCase || hasLowerCase) || !hasNumber) {
       errors.push({
