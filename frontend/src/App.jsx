@@ -685,7 +685,7 @@ export default function MainApp({ isDark, onToggleDark }) {
       priority: newPriority,
       tags,
       projectId: newProjectId || null,
-      ownerId: clientId,
+      ownerId: getClientId(),
       createdAt: now,
       updatedAt: now,
       syncStatus: isOnline ? "syncing" : "pending",
