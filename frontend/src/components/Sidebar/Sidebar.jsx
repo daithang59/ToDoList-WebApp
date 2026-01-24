@@ -1,14 +1,15 @@
 import {
-  AppstoreOutlined,
-  CalendarOutlined,
-  CheckCircleOutlined,
-  ClockCircleOutlined,
-  ExclamationCircleOutlined,
-  ProjectOutlined,
-  StarOutlined,
+    AppstoreOutlined,
+    CalendarOutlined,
+    CheckCircleOutlined,
+    ClockCircleOutlined,
+    ExclamationCircleOutlined,
+    ProjectOutlined,
+    StarOutlined,
 } from "@ant-design/icons";
-import { Button, Avatar, Menu } from "antd";
+import { Avatar, Button, Menu } from "antd";
 import { Pencil, Plus } from "lucide-react";
+import { useAuth } from "../../contexts/AuthContext";
 import "./sidebar.css";
 
 function getItem(label, key, icon, children, type) {
@@ -33,6 +34,7 @@ export default function Sidebar({
   onProjectAdd,
   onProjectEdit,
 }) {
+  const { user, isGuest } = useAuth();
   const selectedFilterKey = activeFilter ? `filter-${activeFilter}` : "filter-all";
   const projectItems = [
     getItem("All Projects", "project-all", <ProjectOutlined />),
@@ -42,6 +44,11 @@ export default function Sidebar({
         )
       : []),
   ];
+
+  // Get user display info
+  const userName = user?.name || "Guest User";
+  const userInitial = userName.charAt(0).toUpperCase();
+  const userEmail = user?.email || (isGuest ? "Guest Mode" : "");
 
   return (
     <div className="sidebar-container">
@@ -88,18 +95,12 @@ export default function Sidebar({
       </div>
 
       <div className="sidebar-footer">
-        <a
-          href="https://www.facebook.com/hldaithangg"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Avatar size="large" className="author-avatar">
-            T
-          </Avatar>
-        </a>
+        <Avatar size="large" className="author-avatar">
+          {userInitial}
+        </Avatar>
         <div className="author-details">
-          <span className="author-name">Huynh Le Dai Thang</span>
-          <span className="author-meta">23521422 - UIT</span>
+          <span className="author-name">{userName}</span>
+          <span className="author-meta">{userEmail}</span>
         </div>
       </div>
     </div>
