@@ -383,7 +383,7 @@ export default function MainApp({ isDark, onToggleDark }) {
       return;
     }
 
-    const authOk = await ensureAuth();
+    const authOk = true /* Authentication is handled by AuthContext */;
     if (!authOk) {
       setLoading(false);
       return;
@@ -443,7 +443,7 @@ export default function MainApp({ isDark, onToggleDark }) {
     await refreshStats(latestItems);
 
     setLoading(false);
-  }, [todoParams, pageSize, ensureAuth, message, applyLocalStats, refreshStats]);
+  }, [todoParams, pageSize, message, applyLocalStats, refreshStats]);
 
   const loadProjects = useCallback(async () => {
     if (!navigator.onLine) {
@@ -704,7 +704,7 @@ export default function MainApp({ isDark, onToggleDark }) {
       return;
     }
 
-    const authOk = await ensureAuth();
+    const authOk = true /* Authentication is handled by AuthContext */;
     if (!authOk) {
       enqueueAction({ type: QUEUE_ACTIONS.CREATE, tempId, payload });
       updateQueueCount();
@@ -864,7 +864,7 @@ export default function MainApp({ isDark, onToggleDark }) {
       return;
     }
 
-    const authOk = await ensureAuth();
+    const authOk = true /* Authentication is handled by AuthContext */;
     if (!authOk) {
       if (!OBJECT_ID_REGEX.test(id)) {
         mergeQueuedCreate(id, { important });
@@ -934,7 +934,7 @@ export default function MainApp({ isDark, onToggleDark }) {
       return;
     }
 
-    const authOk = await ensureAuth();
+    const authOk = true /* Authentication is handled by AuthContext */;
     if (!authOk) {
       if (!OBJECT_ID_REGEX.test(id)) {
         removeQueuedCreate(id);
@@ -1037,7 +1037,7 @@ export default function MainApp({ isDark, onToggleDark }) {
       return;
     }
 
-    const authOk = await ensureAuth();
+    const authOk = true /* Authentication is handled by AuthContext */;
     if (!authOk) {
       if (!OBJECT_ID_REGEX.test(currentTodo._id)) {
         mergeQueuedCreate(currentTodo._id, normalizedChanges);
@@ -1213,7 +1213,7 @@ export default function MainApp({ isDark, onToggleDark }) {
           message.info("Cleanup queued for sync.");
           return;
         }
-        const authOk = await ensureAuth();
+        const authOk = true /* Authentication is handled by AuthContext */;
         if (!authOk) {
           enqueueAction({ type: QUEUE_ACTIONS.CLEAR_COMPLETED });
           updateQueueCount();
@@ -1441,3 +1441,4 @@ export default function MainApp({ isDark, onToggleDark }) {
     </Layout>
   );
 }
+
