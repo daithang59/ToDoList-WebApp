@@ -2,7 +2,7 @@
 
 import { App, Button, Layout, Spin, Switch } from "antd";
 import { LogOut, Menu, User } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import logo from "./assets/logo.svg";
 import AddTodoForm from "./components/AddTodoForm.jsx";
 import AuthPage from "./components/Auth/AuthPage.jsx";
@@ -17,17 +17,28 @@ import TodoList from "./components/TodoList.jsx";
 import Toolbar from "./components/Toolbar.jsx";
 import { useAuth } from "./contexts/AuthContext.jsx";
 import {
-  clearCompleted,
-  createTodo,
-  deleteTodo,
-  fetchTodos,
-  updateTodo,
+    addConflict,
+    clearCompleted,
+    createTodo,
+    deleteTodo,
+    enqueueAction,
+    fetchProjects,
+    fetchStats,
+    fetchTodos,
+    getCachedTodos,
+    getConflicts,
+    getQueue,
+    processQueue,
+    QUEUE_ACTIONS,
+    setCachedTodos,
+    setQueue,
+    updateTodo
 } from "./services/todoService";
 
 import { registerPushSubscription } from "./services/notificationService";
 import {
-  addTemplate,
-  getTemplates,
+    addTemplate,
+    getTemplates,
 } from "./services/templateService";
 
 const { Header, Content } = Layout;
