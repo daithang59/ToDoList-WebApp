@@ -9,10 +9,30 @@ const REMINDER_CHANNELS = new Set(["email", "push"]);
 const normalizeMemberId = (value) =>
   typeof value === "string" ? value.trim() : "";
 
-const buildMemberFilter = (memberId) =>
-  memberId
-    ? { $or: [{ ownerId: memberId }, { sharedWith: memberId }] }
-    : {};
+const buildMemberFilter = (memberId) => {
+  if (!memberId) return {};
+  
+  // Check if memberId is a MongoDB ObjectId (authenticated user)
+  const isAuthenticatedUser = mongoose.Types.ObjectId.isValid(memberId);
+  
+  if (isAuthenticatedUser) {
+    // For authenticated users, filter by userId OR shared todos
+    return {
+      $or: [
+        { userId: memberId },
+        { sharedWith: memberId }
+      ]
+    };
+  } else {
+    // For guest users (clientId), filter by ownerId OR shared todos
+    return {
+      $or: [
+        { ownerId: memberId },
+        { sharedWith: memberId }
+      ]
+    };
+  }
+};
 
 const mergeFilters = (base, extra) => {
   if (!extra || Object.keys(extra).length === 0) return base;
@@ -217,6 +237,7 @@ class TodoService {
         lastNotifiedAt: null,
       },
       projectId: todo.projectId,
+      userId: todo.userId,
       ownerId: todo.ownerId,
       sharedWith: todo.sharedWith,
     });
@@ -259,10 +280,15 @@ class TodoService {
   }
 
   static async createTodo(todoData, memberId) {
-    const ownerId = normalizeMemberId(memberId);
-    if (!ownerId) {
-      throw new Error("OwnerId is required");
+    const normalizedMemberId = normalizeMemberId(memberId);
+    if (!normalizedMemberId) {
+      throw new Error("Member ID is required");
     }
+    
+    // Determine if this is an authenticated user or guest
+    const isAuthenticatedUser = mongoose.Types.ObjectId.isValid(normalizedMemberId);
+    const userId = isAuthenticatedUser ? normalizedMemberId : null;
+    const ownerId = !isAuthenticatedUser ? normalizedMemberId : null;
     const {
       title,
       description,
@@ -338,6 +364,7 @@ class TodoService {
       recurrence: processedRecurrence,
       reminder: processedReminder,
       projectId: mongoose.Types.ObjectId.isValid(projectId) ? projectId : null,
+      userId,
       ownerId,
       sharedWith: processedSharedWith,
     });
