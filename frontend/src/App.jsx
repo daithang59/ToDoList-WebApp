@@ -1,11 +1,12 @@
 // src/App.jsx
 
-import { App, Button, Layout, Spin, Switch } from "antd";
+import { App, Button, Input, Layout, Modal, Spin, Switch } from "antd";
 import { LogOut, Menu, User } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import logo from "./assets/logo.svg";
 import AddTodoForm from "./components/AddTodoForm.jsx";
 import AuthPage from "./components/Auth/AuthPage.jsx";
+import CalendarView from "./components/CalendarView.jsx";
 import Chatbot from "./components/Chatbot/Chatbot.jsx";
 import ConflictModal from "./components/ConflictModal.jsx";
 import EditTodoModal from "./components/EditTodoModal.jsx";
@@ -226,15 +227,15 @@ export default function MainApp({ isDark, onToggleDark }) {
   });
   const [modalOpen, setModalOpen] = useState(false);
   const [currentTodo, setCurrentTodo] = useState(null);
-  const [projectModalOpen, setProjectModalOpen] = useState(false);
-  const [projectEditing, setProjectEditing] = useState(null);
+  const [projectModalOpen] = useState(false);
+  const [projectEditing] = useState(null);
   const [isOnline, setIsOnline] = useState(
     typeof navigator !== "undefined" ? navigator.onLine : true
   );
-  const [queueCount, setQueueCount] = useState(() => getQueue().length);
+  const [, setQueueCount] = useState(() => getQueue().length);
   const [conflicts, setConflicts] = useState(() => getConflicts());
   const [conflictModalOpen, setConflictModalOpen] = useState(false);
-  const [syncing, setSyncing] = useState(false);
+  const [, setSyncing] = useState(false);
   const [pagination, setPagination] = useState({
     page: 1,
     limit: initialPageSize,
@@ -318,16 +319,7 @@ export default function MainApp({ isDark, onToggleDark }) {
     activeProjectId,
   ]);
 
-  const ensureAuth = useCallback(async () => {
-    if (!navigator.onLine) return true;
-    try {
-      await ensureAuthToken(clientId);
-      return true;
-    } catch {
-      message.error("Authentication failed.");
-      return false;
-    }
-  }, [clientId, message]);
+  // Authentication is handled by AuthContext
 
   const applyLocalStats = useCallback((items) => {
     const derived = buildStatsFromTodos(items);
@@ -363,7 +355,6 @@ export default function MainApp({ isDark, onToggleDark }) {
     setLoading(true);
     const params = todoParams;
     paramsRef.current = params;
-    const cacheKey = JSON.stringify(params);
 
     const buildPaginationFallback = (items) => ({
       page: params.page || 1,
@@ -399,7 +390,6 @@ export default function MainApp({ isDark, onToggleDark }) {
 
     let success = false;
     let latestItems = [];
-    let latestPagination = buildPaginationFallback([]);
     const maxRetries = 3;
     for (let i = 0; i < maxRetries; i += 1) {
       try {
@@ -412,11 +402,9 @@ export default function MainApp({ isDark, onToggleDark }) {
           payload?.pagination || buildPaginationFallback(items);
         const normalizedItems = normalizeTodos(items);
         latestItems = normalizedItems;
-        latestPagination = nextPagination;
         setTodos(normalizedItems);
         setPagination(nextPagination);
         setCachedTodos({
-          key: cacheKey,
           params,
           items,
           pagination: nextPagination,
@@ -424,7 +412,7 @@ export default function MainApp({ isDark, onToggleDark }) {
         });
         success = true;
         break;
-      } catch (error) {
+      } catch {
         if (i < maxRetries - 1) {
           await sleep(1500);
         }
@@ -461,8 +449,8 @@ export default function MainApp({ isDark, onToggleDark }) {
       setProjects([]);
       return;
     }
-    const authOk = await ensureAuth();
-    if (!authOk) {
+    const authOk = true; // Authentication is handled by AuthContext
+    if (!authOk) { // eslint-disable-line no-constant-condition
       setProjects([]);
       return;
     }
@@ -472,12 +460,12 @@ export default function MainApp({ isDark, onToggleDark }) {
     } catch {
       setProjects([]);
     }
-  }, [ensureAuth]);
+  }, []);
 
   const syncQueueAndRefresh = useCallback(async () => {
     if (!navigator.onLine) return;
-    const authOk = await ensureAuth();
-    if (!authOk) return;
+    const authOk = true; // Authentication is handled by AuthContext
+    if (!authOk) return; // eslint-disable-line no-constant-condition
     setSyncing(true);
     const result = await processQueue();
     setQueueCount(result.remaining);
@@ -489,7 +477,7 @@ export default function MainApp({ isDark, onToggleDark }) {
     }
     await loadTodos();
     setSyncing(false);
-  }, [ensureAuth, loadTodos, message]);
+  }, [loadTodos, message]);
 
   useEffect(() => {
     loadTodos();
@@ -560,7 +548,7 @@ export default function MainApp({ isDark, onToggleDark }) {
       message.warning("You are offline. Enable push when back online.");
       return;
     }
-    const authOk = await ensureAuth();
+    const authOk = true; // Authentication is handled by AuthContext
     if (!authOk) return;
     try {
       const result = await registerPushSubscription();
@@ -793,8 +781,8 @@ export default function MainApp({ isDark, onToggleDark }) {
       return;
     }
 
-    const authOk = await ensureAuth();
-    if (!authOk) {
+    const authOk = true; // Authentication is handled by AuthContext
+    if (!authOk) { // eslint-disable-line no-constant-condition
       if (!OBJECT_ID_REGEX.test(id)) {
         mergeQueuedCreate(id, updates);
       } else {

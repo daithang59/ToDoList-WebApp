@@ -1,0 +1,349 @@
+
+> todolist-webapp@1.0.0 lint
+> npm run lint:backend && npm run lint:frontend
+
+
+> todolist-webapp@1.0.0 lint:backend
+> cd backend && npm run lint
+
+
+> backend@1.0.0 lint
+> eslint .
+
+Warning: React version not specified in eslint-plugin-react settings. See https://github.com/jsx-eslint/eslint-plugin-react#configuration .
+
+> todolist-webapp@1.0.0 lint:frontend
+> cd frontend && npm run lint
+
+
+> frontend@1.0.0 lint
+> eslint .
+
+
+C:\Users\THANG\To-DoList_WebApp\frontend\dist\assets\index-CI-hW-M6.js
+    1:9031    error  Empty block statement                                                            no-empty
+    1:11100   error  Empty block statement                                                            no-empty
+    7:573     error  'define' is not defined                                                          no-undef
+    7:595     error  'define' is not defined                                                          no-undef
+    7:606     error  'define' is not defined                                                          no-undef
+    7:698     error  'L' is a function                                                                no-func-assign
+    7:941     error  'R' is a function                                                                no-func-assign
+    7:1645    error  'e' is defined but never used. Allowed unused args must match /^_/u              no-unused-vars
+    7:1647    error  't' is defined but never used. Allowed unused args must match /^_/u              no-unused-vars
+    7:1663    error  'e' is defined but never used. Allowed unused args must match /^_/u              no-unused-vars
+    7:1665    error  't' is defined but never used. Allowed unused args must match /^_/u              no-unused-vars
+    7:6191    error  '__REACT_DEVTOOLS_GLOBAL_HOOK__' is not defined                                  no-undef
+    7:6248    error  '__REACT_DEVTOOLS_GLOBAL_HOOK__' is not defined                                  no-undef
+    7:8377    error  Do not access Object.prototype method 'propertyIsEnumerable' from target object  no-prototype-builtins
+    7:17203   error  'ft' is a function                                                               no-func-assign
+    7:17602   error  'mt' is a function                                                               no-func-assign
+    7:17825   error  Empty block statement                                                            no-empty
+    7:17834   error  'ht' is a function                                                               no-func-assign
+    8:1081    error  Unsafe usage of ReturnStatement                                                  no-unsafe-finally
+    8:1101    error  Unsafe usage of ThrowStatement                                                   no-unsafe-finally
+    9:490     error  Expected a 'break' statement before 'case'                                       no-fallthrough
+    9:527     error  Expected a 'break' statement before 'case'                                       no-fallthrough
+    9:14351   error  Expected a 'break' statement before 'case'                                       no-fallthrough
+    9:14659   error  Expected a 'break' statement before 'case'                                       no-fallthrough
+    9:14715   error  Expected a 'break' statement before 'case'                                       no-fallthrough
+    9:14865   error  Expected a 'break' statement before 'default'                                    no-fallthrough
+    9:15003   error  Expected a 'break' statement before 'case'                                       no-fallthrough
+    9:15034   error  Expected a 'break' statement before 'default'                                    no-fallthrough
+    9:15046   error  Expected a 'break' statement before 'case'                                       no-fallthrough
+    9:15219   error  Expected a 'break' statement before 'default'                                    no-fallthrough
+    9:16016   error  Expected a 'break' statement before 'case'                                       no-fallthrough
+    9:17089   error  Unnecessary escape character: \:                                                 no-useless-escape
+   11:9053    error  'r' is assigned a value but never used                                           no-unused-vars
+   13:15879   error  'io' is assigned a value but never used                                          no-unused-vars
+   18:9925    error  'r' is already defined                                                           no-redeclare
+   50:484     error  'r' is already defined                                                           no-redeclare
+   50:12952   error  'e' is defined but never used. Allowed unused args must match /^_/u              no-unused-vars
+   50:14782   error  'r' is already defined                                                           no-redeclare
+  131:838     error  'r' is already defined                                                           no-redeclare
+  131:2110    error  'r' is already defined                                                           no-redeclare
+  131:4455    error  'zu' is a function                                                               no-func-assign
+  133:443     error  Expected a conditional expression and instead saw an assignment                  no-cond-assign
+  133:486     error  Expected a conditional expression and instead saw an assignment                  no-cond-assign
+  133:1056    error  Expected a conditional expression and instead saw an assignment                  no-cond-assign
+  133:1732    error  'Bu' is a function                                                               no-func-assign
+  133:3684    error  'Ku' is a function                                                               no-func-assign
+  133:4399    error  Empty block statement                                                            no-empty
+  133:4707    error  'e' is defined but never used. Allowed unused args must match /^_/u              no-unused-vars
+  133:4763    error  'sd' is a function                                                               no-func-assign
+  133:5067    error  'e' is defined but never used. Allowed unused args must match /^_/u              no-unused-vars
+  133:5123    error  'ud' is a function                                                               no-func-assign
+  133:5294    error  Expected a 'break' statement before 'case'                                       no-fallthrough
+  133:10444   error  'r' is already defined                                                           no-redeclare
+  133:12144   error  'r' is already defined                                                           no-redeclare
+  153:13691   error  'r' is already defined                                                           no-redeclare
+  153:18835   error  't' is defined but never used. Allowed unused args must match /^_/u              no-unused-vars
+  161:5576    error  Empty block statement                                                            no-empty
+  161:9614    error  'Xm' is a function                                                               no-func-assign
+  161:10478   error  Unreachable code                                                                 no-unreachable
+  161:12236   error  Do not access Object.prototype method 'hasOwnProperty' from target object        no-prototype-builtins
+  161:13414   error  Do not access Object.prototype method 'hasOwnProperty' from target object        no-prototype-builtins
+  161:13640   error  Unnecessary escape character: \$                                                 no-useless-escape
+  161:14197   error  Unnecessary escape character: \$                                                 no-useless-escape
+  161:14209   error  Unnecessary escape character: \$                                                 no-useless-escape
+  161:14230   error  Unnecessary escape character: \$                                                 no-useless-escape
+  161:14250   error  Unnecessary escape character: \$                                                 no-useless-escape
+  161:14840   error  Unnecessary escape character: \$                                                 no-useless-escape
+  161:14875   error  Unnecessary escape character: \[                                                 no-useless-escape
+  161:14900   error  Unnecessary escape character: \[                                                 no-useless-escape
+  161:15366   error  Unreachable code                                                                 no-unreachable
+  161:16435   error  Do not access Object.prototype method 'hasOwnProperty' from target object        no-prototype-builtins
+  161:16584   error  Do not access Object.prototype method 'hasOwnProperty' from target object        no-prototype-builtins
+  161:16793   error  Do not access Object.prototype method 'hasOwnProperty' from target object        no-prototype-builtins
+  161:16973   error  Do not access Object.prototype method 'hasOwnProperty' from target object        no-prototype-builtins
+  161:17248   error  Do not access Object.prototype method 'hasOwnProperty' from target object        no-prototype-builtins
+  161:17427   error  Do not access Object.prototype method 'hasOwnProperty' from target object        no-prototype-builtins
+  161:17629   error  Do not access Object.prototype method 'hasOwnProperty' from target object        no-prototype-builtins
+  161:17831   error  Do not access Object.prototype method 'hasOwnProperty' from target object        no-prototype-builtins
+  161:18011   error  Do not access Object.prototype method 'hasOwnProperty' from target object        no-prototype-builtins
+  161:18232   error  Do not access Object.prototype method 'hasOwnProperty' from target object        no-prototype-builtins
+  161:18412   error  Do not access Object.prototype method 'hasOwnProperty' from target object        no-prototype-builtins
+  161:18608   error  Do not access Object.prototype method 'hasOwnProperty' from target object        no-prototype-builtins
+  161:18878   error  Do not access Object.prototype method 'hasOwnProperty' from target object        no-prototype-builtins
+  161:19177   error  Do not access Object.prototype method 'hasOwnProperty' from target object        no-prototype-builtins
+  161:22962   error  Do not access Object.prototype method 'hasOwnProperty' from target object        no-prototype-builtins
+  161:24878   error  'e' is defined but never used. Allowed unused args must match /^_/u              no-unused-vars
+  161:24880   error  't' is defined but never used. Allowed unused args must match /^_/u              no-unused-vars
+  161:24882   error  'n' is defined but never used. Allowed unused args must match /^_/u              no-unused-vars
+  161:24884   error  'r' is defined but never used. Allowed unused args must match /^_/u              no-unused-vars
+  161:24886   error  'i' is defined but never used. Allowed unused args must match /^_/u              no-unused-vars
+  161:24942   error  'qh' is a function                                                               no-func-assign
+  161:25691   error  Expected a 'break' statement before 'case'                                       no-fallthrough
+  161:26980   error  Expected a 'break' statement before 'case'                                       no-fallthrough
+  161:27193   error  Expected a 'break' statement before 'case'                                       no-fallthrough
+  161:27251   error  't' is defined but never used. Allowed unused args must match /^_/u              no-unused-vars
+  161:27253   error  'n' is defined but never used. Allowed unused args must match /^_/u              no-unused-vars
+  161:27501   error  'e' is defined but never used. Allowed unused args must match /^_/u              no-unused-vars
+  161:27557   error  'Xh' is a function                                                               no-func-assign
+  161:27830   error  'e' is defined but never used. Allowed unused args must match /^_/u              no-unused-vars
+  161:27886   error  'Qh' is a function                                                               no-func-assign
+  170:2452    error  'r' is already defined                                                           no-redeclare
+  171:465     error  'r' is already defined                                                           no-redeclare
+  171:4889    error  'r' is already defined                                                           no-redeclare
+  171:15552   error  'r' is already defined                                                           no-redeclare
+  171:42219   error  Unnecessary escape character: \%                                                 no-useless-escape
+  173:37567   error  'r' is already defined                                                           no-redeclare
+  199:11550   error  'd' is defined but never used. Allowed unused args must match /^_/u              no-unused-vars
+  199:12396   error  'r' is already defined                                                           no-redeclare
+  199:19479   error  'r' is already defined                                                           no-redeclare
+  199:33598   error  'r' is already defined                                                           no-redeclare
+  199:34047   error  'y' is assigned a value but never used                                           no-unused-vars
+  199:39170   error  'r' is already defined                                                           no-redeclare
+  199:40358   error  'r' is already defined                                                           no-redeclare
+  199:69163   error  'r' is already defined                                                           no-redeclare
+  199:72428   error  'r' is already defined                                                           no-redeclare
+  211:6295    error  'r' is already defined                                                           no-redeclare
+  211:8934    error  'define' is not defined                                                          no-undef
+  211:8945    error  'define' is not defined                                                          no-undef
+  211:16054   error  'define' is not defined                                                          no-undef
+  211:16065   error  'define' is not defined                                                          no-undef
+  211:16447   error  'define' is not defined                                                          no-undef
+  211:16458   error  'define' is not defined                                                          no-undef
+  211:18496   error  'define' is not defined                                                          no-undef
+  211:18507   error  'define' is not defined                                                          no-undef
+  211:19237   error  'define' is not defined                                                          no-undef
+  211:19248   error  'define' is not defined                                                          no-undef
+  211:19598   error  'define' is not defined                                                          no-undef
+  211:19609   error  'define' is not defined                                                          no-undef
+  211:20662   error  'define' is not defined                                                          no-undef
+  211:20673   error  'define' is not defined                                                          no-undef
+  251:1320    error  'r' is already defined                                                           no-redeclare
+  251:3288    error  'r' is already defined                                                           no-redeclare
+  251:5172    error  'r' is already defined                                                           no-redeclare
+  251:7209    error  'r' is already defined                                                           no-redeclare
+  251:11292   error  'r' is already defined                                                           no-redeclare
+  251:21427   error  'r' is already defined                                                           no-redeclare
+  251:35013   error  Empty block statement                                                            no-empty
+  263:1833    error  'r' is already defined                                                           no-redeclare
+  263:4943    error  'r' is already defined                                                           no-redeclare
+  263:5341    error  'x' is assigned a value but never used                                           no-unused-vars
+  263:10868   error  'r' is already defined                                                           no-redeclare
+  263:13390   error  'r' is already defined                                                           no-redeclare
+  263:17475   error  'r' is already defined                                                           no-redeclare
+  263:19440   error  'r' is already defined                                                           no-redeclare
+  263:23161   error  'r' is already defined                                                           no-redeclare
+  263:24476   error  'r' is already defined                                                           no-redeclare
+  263:28157   error  'r' is already defined                                                           no-redeclare
+  263:29713   error  'r' is already defined                                                           no-redeclare
+  277:1141    error  'r' is already defined                                                           no-redeclare
+  277:3774    error  'r' is already defined                                                           no-redeclare
+  277:3969    error  'n' is defined but never used. Allowed unused args must match /^_/u              no-unused-vars
+  289:6618    error  'r' is already defined                                                           no-redeclare
+  289:15750   error  'r' is already defined                                                           no-redeclare
+  289:17674   error  'r' is already defined                                                           no-redeclare
+  289:24905   error  'r' is already defined                                                           no-redeclare
+  289:30387   error  'r' is already defined                                                           no-redeclare
+  289:38117   error  'r' is already defined                                                           no-redeclare
+  289:41353   error  'r' is already defined                                                           no-redeclare
+  289:43051   error  'r' is already defined                                                           no-redeclare
+  305:4936    error  'r' is already defined                                                           no-redeclare
+  305:10009   error  'r' is already defined                                                           no-redeclare
+  305:14496   error  'r' is already defined                                                           no-redeclare
+  305:14709   error  'a' is assigned a value but never used                                           no-unused-vars
+  305:15132   error  'r' is already defined                                                           no-redeclare
+  305:15601   error  'r' is already defined                                                           no-redeclare
+  305:16177   error  'r' is already defined                                                           no-redeclare
+  305:18344   error  Unreachable code                                                                 no-unreachable
+  305:23288   error  Empty block statement                                                            no-empty
+  310:202     error  Expected a conditional expression and instead saw an assignment                  no-cond-assign
+  312:547     error  Empty block statement                                                            no-empty
+  312:4217    error  Expected a conditional expression and instead saw an assignment                  no-cond-assign
+  312:4317    error  Expected a conditional expression and instead saw an assignment                  no-cond-assign
+  312:4400    error  Expected a conditional expression and instead saw an assignment                  no-cond-assign
+  312:5219    error  Unexpected combined character in character class                                 no-misleading-character-class
+  312:6369    error  Do not access Object.prototype method 'hasOwnProperty' from target object        no-prototype-builtins
+  312:8588    error  Do not access Object.prototype method 'hasOwnProperty' from target object        no-prototype-builtins
+  312:10696   error  Do not access Object.prototype method 'hasOwnProperty' from target object        no-prototype-builtins
+  312:10726   error  Do not access Object.prototype method 'hasOwnProperty' from target object        no-prototype-builtins
+  312:10845   error  Do not access Object.prototype method 'hasOwnProperty' from target object        no-prototype-builtins
+  312:10906   error  Do not access Object.prototype method 'hasOwnProperty' from target object        no-prototype-builtins
+  312:13869   error  Unexpected control character(s) in regular expression: \x00, \x1f                no-control-regex
+  312:15898   error  Expected to return a value in method 'get'                                       getter-return
+  312:16588   error  Do not access Object.prototype method 'hasOwnProperty' from target object        no-prototype-builtins
+  312:16930   error  Invalid typeof comparison value                                                  valid-typeof
+  312:17104   error  Invalid typeof comparison value                                                  valid-typeof
+  312:18968   error  Expected a conditional expression and instead saw an assignment                  no-cond-assign
+  312:25271   error  Do not access Object.prototype method 'hasOwnProperty' from target object        no-prototype-builtins
+  312:45373   error  Expected a 'break' statement before 'case'                                       no-fallthrough
+  312:45832   error  Unexpected constant condition                                                    no-constant-condition
+  312:58789   error  Empty block statement                                                            no-empty
+  312:64324   error  Expected a conditional expression and instead saw an assignment                  no-cond-assign
+  312:69199   error  Expected a conditional expression and instead saw an assignment                  no-cond-assign
+  312:72076   error  Expected a conditional expression and instead saw an assignment                  no-cond-assign
+  312:73177   error  Expected a conditional expression and instead saw an assignment                  no-cond-assign
+  312:74853   error  Expected a conditional expression and instead saw an assignment                  no-cond-assign
+  312:81470   error  Expected a conditional expression and instead saw an assignment                  no-cond-assign
+  312:86433   error  Unnecessary escape character: \/                                                 no-useless-escape
+  312:97120   error  Expected a 'break' statement before 'case'                                       no-fallthrough
+  312:98072   error  Empty block statement                                                            no-empty
+  312:98351   error  Expected a 'break' statement before 'case'                                       no-fallthrough
+  312:101547  error  Expected a conditional expression and instead saw an assignment                  no-cond-assign
+  312:103918  error  Do not access Object.prototype method 'hasOwnProperty' from target object        no-prototype-builtins
+  312:105732  error  Expected a 'break' statement before 'case'                                       no-fallthrough
+  312:106403  error  Expected a 'break' statement before 'case'                                       no-fallthrough
+  312:112152  error  Expected a 'break' statement before 'case'                                       no-fallthrough
+  312:112486  error  Unexpected constant condition                                                    no-constant-condition
+  312:115075  error  Unexpected constant condition                                                    no-constant-condition
+  312:115699  error  Expected a 'break' statement before 'case'                                       no-fallthrough
+  312:116018  error  Unexpected constant condition                                                    no-constant-condition
+  312:116417  error  Expected a 'break' statement before 'default'                                    no-fallthrough
+  312:118852  error  Expected a conditional expression and instead saw an assignment                  no-cond-assign
+  312:119644  error  Empty block statement                                                            no-empty
+  312:120373  error  Empty block statement                                                            no-empty
+  312:124224  error  Expected a conditional expression and instead saw an assignment                  no-cond-assign
+  312:127979  error  Expected a 'break' statement before 'case'                                       no-fallthrough
+  312:128166  error  Expected a 'break' statement before 'case'                                       no-fallthrough
+  312:129374  error  Expected a conditional expression and instead saw an assignment                  no-cond-assign
+  312:130451  error  Expected a conditional expression and instead saw an assignment                  no-cond-assign
+  312:130854  error  Expected a 'break' statement before 'case'                                       no-fallthrough
+  312:132368  error  Unexpected control character(s) in regular expression: \x00                      no-control-regex
+  313:476     error  Expected a 'break' statement before 'case'                                       no-fallthrough
+  313:5076    error  Do not access Object.prototype method 'hasOwnProperty' from target object        no-prototype-builtins
+  313:5648    error  Do not access Object.prototype method 'hasOwnProperty' from target object        no-prototype-builtins
+  313:5987    error  Do not access Object.prototype method 'hasOwnProperty' from target object        no-prototype-builtins
+  313:6382    error  Do not access Object.prototype method 'hasOwnProperty' from target object        no-prototype-builtins
+  313:6498    error  Expected a 'break' statement before 'default'                                    no-fallthrough
+  313:6658    error  Do not access Object.prototype method 'hasOwnProperty' from target object        no-prototype-builtins
+  313:6921    error  Do not access Object.prototype method 'hasOwnProperty' from target object        no-prototype-builtins
+  313:7415    error  Expected a 'break' statement before 'case'                                       no-fallthrough
+  313:7554    error  Do not access Object.prototype method 'hasOwnProperty' from target object        no-prototype-builtins
+  313:7732    error  Do not access Object.prototype method 'hasOwnProperty' from target object        no-prototype-builtins
+  313:7814    error  Do not access Object.prototype method 'hasOwnProperty' from target object        no-prototype-builtins
+  313:8075    error  Do not access Object.prototype method 'hasOwnProperty' from target object        no-prototype-builtins
+  313:8173    error  Expected a 'break' statement before 'default'                                    no-fallthrough
+  313:8183    error  Do not access Object.prototype method 'hasOwnProperty' from target object        no-prototype-builtins
+  313:8261    error  Do not access Object.prototype method 'hasOwnProperty' from target object        no-prototype-builtins
+  313:8649    error  Do not access Object.prototype method 'hasOwnProperty' from target object        no-prototype-builtins
+  313:8723    error  Expected a 'break' statement before 'default'                                    no-fallthrough
+  313:8733    error  Do not access Object.prototype method 'hasOwnProperty' from target object        no-prototype-builtins
+  313:8801    error  Do not access Object.prototype method 'hasOwnProperty' from target object        no-prototype-builtins
+  313:8919    error  Expected a 'break' statement before 'default'                                    no-fallthrough
+  313:9092    error  Do not access Object.prototype method 'hasOwnProperty' from target object        no-prototype-builtins
+  313:9123    error  Do not access Object.prototype method 'hasOwnProperty' from target object        no-prototype-builtins
+  313:9247    error  Do not access Object.prototype method 'hasOwnProperty' from target object        no-prototype-builtins
+  313:9521    error  Do not access Object.prototype method 'hasOwnProperty' from target object        no-prototype-builtins
+  313:9552    error  Do not access Object.prototype method 'hasOwnProperty' from target object        no-prototype-builtins
+  313:9672    error  Do not access Object.prototype method 'hasOwnProperty' from target object        no-prototype-builtins
+  313:10027   error  Do not access Object.prototype method 'hasOwnProperty' from target object        no-prototype-builtins
+  313:10058   error  Do not access Object.prototype method 'hasOwnProperty' from target object        no-prototype-builtins
+  313:10126   error  Do not access Object.prototype method 'hasOwnProperty' from target object        no-prototype-builtins
+  313:10338   error  Do not access Object.prototype method 'hasOwnProperty' from target object        no-prototype-builtins
+  313:10372   error  Do not access Object.prototype method 'hasOwnProperty' from target object        no-prototype-builtins
+  313:10440   error  Do not access Object.prototype method 'hasOwnProperty' from target object        no-prototype-builtins
+  313:10538   error  Do not access Object.prototype method 'hasOwnProperty' from target object        no-prototype-builtins
+  313:10569   error  Do not access Object.prototype method 'hasOwnProperty' from target object        no-prototype-builtins
+  313:10635   error  Do not access Object.prototype method 'hasOwnProperty' from target object        no-prototype-builtins
+  313:18670   error  Expected a conditional expression and instead saw an assignment                  no-cond-assign
+  313:19741   error  Expected a conditional expression and instead saw an assignment                  no-cond-assign
+  313:22274   error  Expected a conditional expression and instead saw an assignment                  no-cond-assign
+  313:35837   error  '__REACT_DEVTOOLS_GLOBAL_HOOK__' is not defined                                  no-undef
+  313:35936   error  Empty block statement                                                            no-empty
+  313:36440   error  '__REACT_DEVTOOLS_GLOBAL_HOOK__' is not defined                                  no-undef
+  313:36497   error  '__REACT_DEVTOOLS_GLOBAL_HOOK__' is not defined                                  no-undef
+  313:54966   error  'WorkerGlobalScope' is not defined                                               no-undef
+  314:439     error  Expected a conditional expression and instead saw an assignment                  no-cond-assign
+  314:1545    error  Expected a conditional expression and instead saw an assignment                  no-cond-assign
+  315:11425   error  Empty block statement                                                            no-empty
+  318:21      error  Empty block statement                                                            no-empty
+  318:43869   error  'ue' is assigned a value but never used                                          no-unused-vars
+  318:43896   error  'fe' is assigned a value but never used                                          no-unused-vars
+  318:43987   error  'he' is assigned a value but never used                                          no-unused-vars
+  318:44087   error  'xe' is assigned a value but never used                                          no-unused-vars
+  318:45278   error  'ensureAuthToken' is not defined                                                 no-undef
+  318:45294   error  'clientId' is not defined                                                        no-undef
+  318:45360   error  'clientId' is not defined                                                        no-undef
+  318:49565   error  'getClientId' is not defined                                                     no-undef
+  318:55071   error  'modal' is not defined                                                           no-undef
+  318:57137   error  'openProjectModal' is not defined                                                no-undef
+  318:57177   error  'openProjectModal' is not defined                                                no-undef
+  318:58044   error  'handleMoveTodo' is not defined                                                  no-undef
+  318:58165   error  'CalendarView' is not defined                                                    no-undef
+  318:58387   error  'Modal' is not defined                                                           no-undef
+  318:58509   error  'Input' is not defined                                                           no-undef
+  318:58722   error  'handleUseServer' is not defined                                                 no-undef
+  318:58753   error  'handleReapplyLocal' is not defined                                              no-undef
+  318:58832   error  'handleProjectSave' is not defined                                               no-undef
+  318:58859   error  'handleProjectDelete' is not defined                                             no-undef
+  318:58887   error  'closeProjectModal' is not defined                                               no-undef
+
+C:\Users\THANG\To-DoList_WebApp\frontend\dist\sw.js
+  19:5   error  'clients' is not defined  no-undef
+  27:13  error  'clients' is not defined  no-undef
+  28:18  error  'clients' is not defined  no-undef
+
+C:\Users\THANG\To-DoList_WebApp\frontend\src\App.jsx
+   385:26  error    'ensureAuth' is not defined                                                               no-undef
+   445:29  error    'ensureAuth' is not defined                                                               no-undef
+   453:20  warning  Unused eslint-disable directive (no problems were reported from 'no-constant-condition')
+   468:26  warning  Unused eslint-disable directive (no problems were reported from 'no-constant-condition')
+   676:16  error    'getClientId' is not defined                                                              no-undef
+   706:26  error    'ensureAuth' is not defined                                                               no-undef
+   785:20  warning  Unused eslint-disable directive (no problems were reported from 'no-constant-condition')
+   866:26  error    'ensureAuth' is not defined                                                               no-undef
+   936:26  error    'ensureAuth' is not defined                                                               no-undef
+  1039:26  error    'ensureAuth' is not defined                                                               no-undef
+  1194:5   error    'modal' is not defined                                                                    no-undef
+  1215:30  error    'ensureAuth' is not defined                                                               no-undef
+  1311:33  error    'openProjectModal' is not defined                                                         no-undef
+  1313:15  error    'openProjectModal' is not defined                                                         no-undef
+  1366:27  error    'handleMoveTodo' is not defined                                                           no-undef
+  1426:22  error    'handleUseServer' is not defined                                                          no-undef
+  1427:25  error    'handleReapplyLocal' is not defined                                                       no-undef
+  1434:17  error    'handleProjectSave' is not defined                                                        no-undef
+  1435:19  error    'handleProjectDelete' is not defined                                                      no-undef
+  1436:18  error    'closeProjectModal' is not defined                                                        no-undef
+
+âœ– 311 problems (308 errors, 3 warnings)
+  0 errors and 3 warnings potentially fixable with the `--fix` option.
+
+npm error Lifecycle script `lint` failed with error:
+npm error code 1
+npm error path C:\Users\THANG\To-DoList_WebApp\frontend
+npm error workspace frontend@1.0.0
+npm error location C:\Users\THANG\To-DoList_WebApp\frontend
+npm error command failed
+npm error command C:\WINDOWS\system32\cmd.exe /d /s /c eslint .
