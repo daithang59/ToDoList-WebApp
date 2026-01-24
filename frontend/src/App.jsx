@@ -17,28 +17,28 @@ import TodoList from "./components/TodoList.jsx";
 import Toolbar from "./components/Toolbar.jsx";
 import { useAuth } from "./contexts/AuthContext.jsx";
 import {
-    addConflict,
-    clearCompleted,
-    createTodo,
-    deleteTodo,
-    enqueueAction,
-    fetchProjects,
-    fetchStats,
-    fetchTodos,
-    getCachedTodos,
-    getConflicts,
-    getQueue,
-    processQueue,
-    QUEUE_ACTIONS,
-    setCachedTodos,
-    setQueue,
-    updateTodo
+  addConflict,
+  clearCompleted,
+  createTodo,
+  deleteTodo,
+  enqueueAction,
+  fetchProjects,
+  fetchStats,
+  fetchTodos,
+  getCachedTodos,
+  getConflicts,
+  getQueue,
+  processQueue,
+  QUEUE_ACTIONS,
+  setCachedTodos,
+  setQueue,
+  updateTodo
 } from "./services/todoService";
 
 import { registerPushSubscription } from "./services/notificationService";
 import {
-    addTemplate,
-    getTemplates,
+  addTemplate,
+  getTemplates,
 } from "./services/templateService";
 
 const { Header, Content } = Layout;
@@ -226,14 +226,12 @@ export default function MainApp({ isDark, onToggleDark }) {
   });
   const [modalOpen, setModalOpen] = useState(false);
   const [currentTodo, setCurrentTodo] = useState(null);
-  const [projectModalOpen] = useState(false);
-  const [projectEditing] = useState(null);
+  // Removed unused modal states - ConflictModal and ProjectModal are temporarily disabled
   const [isOnline, setIsOnline] = useState(
     typeof navigator !== "undefined" ? navigator.onLine : true
   );
   const [, setQueueCount] = useState(() => getQueue().length);
-  const [conflicts, setConflicts] = useState(() => getConflicts());
-  const [conflictModalOpen, setConflictModalOpen] = useState(false);
+  const setConflicts = useState(() => getConflicts())[1];
   const [, setSyncing] = useState(false);
   const [pagination, setPagination] = useState({
     page: 1,
@@ -464,7 +462,7 @@ export default function MainApp({ isDark, onToggleDark }) {
   const syncQueueAndRefresh = useCallback(async () => {
     if (!navigator.onLine) return;
     const authOk = true; // Authentication is handled by AuthContext
-    if (!authOk) return; // eslint-disable-line no-constant-condition
+    if (!authOk) return;
     setSyncing(true);
     const result = await processQueue();
     setQueueCount(result.remaining);
