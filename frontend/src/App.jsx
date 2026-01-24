@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 // src/App.jsx
 
 import { App, Button, Input, Layout, Modal, Spin, Switch } from "antd";
