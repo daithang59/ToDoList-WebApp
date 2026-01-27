@@ -140,7 +140,7 @@ class AuthController extends BaseController {
     let decoded;
     try {
       decoded = verifyToken(token, "refresh");
-    } catch (error) {
+    } catch {
       return res
         .status(401)
         .json({ message: "Invalid or expired refresh token" });

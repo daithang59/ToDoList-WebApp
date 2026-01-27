@@ -23,7 +23,7 @@ export default function ForgotPassword({ onBackToLogin, onSendReset, loading }) 
     }
 
     try {
-      const result = await onSendReset(email);
+      await onSendReset(email);
       setSuccess(true);
       setEmail("");
     } catch (err) {
