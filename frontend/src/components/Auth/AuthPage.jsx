@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import "../../styles/Auth.css";
 import Toast from "../common/Toast";
@@ -12,18 +11,18 @@ export default function AuthPage() {
   const [view, setView] = useState("login"); // login, register, forgot-password, reset-password
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState(null);
-  const [searchParams] = useSearchParams();
   const { login, register, loginAsGuest, sendPasswordReset, resetPassword } = useAuth();
 
   // Handle email verification and password reset tokens from URL
   useEffect(() => {
-    const token = searchParams.get("token");
-    const action = searchParams.get("action");
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("token");
+    const action = params.get("action");
 
     if (token && action === "reset-password") {
       setView("reset-password");
     }
-  }, [searchParams]);
+  }, []);
 
   const showToast = (message, type = "info") => {
     setToast({ message, type });
@@ -112,7 +111,7 @@ export default function AuthPage() {
 
         {view === "reset-password" && (
           <ResetPassword
-            token={searchParams.get("token")}
+            token={new URLSearchParams(window.location.search).get("token")}
             onResetPassword={handleResetPassword}
             onBackToLogin={() => setView("login")}
             loading={loading}
