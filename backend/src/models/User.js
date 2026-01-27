@@ -1,5 +1,6 @@
 import bcrypt from "bcrypt";
 import mongoose from "mongoose";
+import { generateRandomToken, hashToken } from "../utils/jwtUtils.js";
 
 const userSchema = new mongoose.Schema(
   {
@@ -35,6 +36,33 @@ const userSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    isEmailVerified: {
+      type: Boolean,
+      default: false,
+    },
+    emailVerificationToken: {
+      type: String,
+      select: false,
+    },
+    emailVerificationExpires: {
+      type: Date,
+      select: false,
+    },
+    passwordResetToken: {
+      type: String,
+      select: false,
+    },
+    passwordResetExpires: {
+      type: Date,
+      select: false,
+    },
+    loginAttempts: {
+      type: Number,
+      default: 0,
+    },
+    lockUntil: {
+      type: Date,
+    },
   },
   {
     timestamps: true,
@@ -69,10 +97,90 @@ userSchema.methods.comparePassword = async function (candidatePassword) {
   }
 };
 
-// Method to convert user to JSON (exclude password)
+// Computed property to check if account is locked
+userSchema.virtual("isLocked").get(function () {
+  // Check if lockUntil exists and is in the future
+  return !!(this.lockUntil && this.lockUntil > Date.now());
+});
+
+// Method to increment login attempts and lock account if needed
+userSchema.methods.incrementLoginAttempts = async function () {
+  const MAX_LOGIN_ATTEMPTS = parseInt(process.env.MAX_LOGIN_ATTEMPTS || "5");
+  const LOCK_TIME_MS = 15 * 60 * 1000; // 15 minutes in milliseconds
+
+  // If lock has expired, reset attempts
+  if (this.lockUntil && this.lockUntil < Date.now()) {
+    return this.updateOne({
+      $set: { loginAttempts: 1 },
+      $unset: { lockUntil: 1 },
+    });
+  }
+
+  // Increment attempts
+  const updates = { $inc: { loginAttempts: 1 } };
+
+  // Lock account if max attempts reached
+  const attemptsAfterIncrement = this.loginAttempts + 1;
+  if (attemptsAfterIncrement >= MAX_LOGIN_ATTEMPTS && !this.isLocked) {
+    updates.$set = { lockUntil: Date.now() + LOCK_TIME_MS };
+  }
+
+  return this.updateOne(updates);
+};
+
+// Method to reset login attempts on successful login
+userSchema.methods.resetLoginAttempts = function () {
+  return this.updateOne({
+    $set: { loginAttempts: 0 },
+    $unset: { lockUntil: 1 },
+  });
+};
+
+// Method to create password reset token
+userSchema.methods.createPasswordResetToken = function () {
+  // Generate random token
+  const resetToken = generateRandomToken();
+
+  // Hash token and save to database
+  this.passwordResetToken = hashToken(resetToken);
+
+  // Set expiration (1 hour from now)
+  const expirationHours = parseInt(
+    process.env.PASSWORD_RESET_EXPIRATION_HOURS || "1"
+  );
+  this.passwordResetExpires = Date.now() + expirationHours * 60 * 60 * 1000;
+
+  // Return unhashed token to send to user
+  return resetToken;
+};
+
+// Method to create email verification token
+userSchema.methods.createEmailVerificationToken = function () {
+  // Generate random token
+  const verificationToken = generateRandomToken();
+
+  // Hash token and save to database
+  this.emailVerificationToken = hashToken(verificationToken);
+
+  // Set expiration (24 hours from now)
+  const expirationHours = parseInt(
+    process.env.EMAIL_VERIFICATION_EXPIRATION_HOURS || "24"
+  );
+  this.emailVerificationExpires =
+    Date.now() + expirationHours * 60 * 60 * 1000;
+
+  // Return unhashed token to send to user
+  return verificationToken;
+};
+
+// Method to convert user to JSON (exclude password and sensitive fields)
 userSchema.methods.toJSON = function () {
   const userObject = this.toObject();
   delete userObject.password;
+  delete userObject.emailVerificationToken;
+  delete userObject.passwordResetToken;
+  delete userObject.loginAttempts;
+  delete userObject.lockUntil;
   return userObject;
 };
 

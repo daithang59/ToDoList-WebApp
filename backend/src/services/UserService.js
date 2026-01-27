@@ -2,6 +2,7 @@ import NotificationSubscription from "../models/NotificationSubscription.js";
 import Project from "../models/Project.js";
 import Todo from "../models/Todo.js";
 import User from "../models/User.js";
+import { hashToken } from "../utils/jwtUtils.js";
 
 /**
  * UserService - Business logic for user operations
@@ -57,23 +58,41 @@ class UserService {
       throw new Error("Email and password are required");
     }
 
-    // Find user and include password field
+    // Find user and include password and lock fields
     const user = await User.findOne({
       email: email.trim().toLowerCase(),
-    }).select("+password");
+    }).select("+password +loginAttempts +lockUntil");
 
     if (!user) {
-      const error = new Error("Invalid email or password");
+      const error = new Error("Email hoặc mật khẩu không đúng");
       error.status = 401;
+      throw error;
+    }
+
+    // Check if account is locked
+    if (user.isLocked) {
+      const error = new Error(
+        "Tài khoản đã bị khóa do quá nhiều lần đăng nhập thất bại. Vui lòng thử lại sau 15 phút."
+      );
+      error.status = 423; // 423 Locked
+      error.code = "ACCOUNT_LOCKED";
       throw error;
     }
 
     // Compare password
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
-      const error = new Error("Invalid email or password");
+      // Increment login attempts
+      await user.incrementLoginAttempts();
+
+      const error = new Error("Email hoặc mật khẩu không đúng");
       error.status = 401;
       throw error;
+    }
+
+    // Reset login attempts on successful login
+    if (user.loginAttempts > 0 || user.lockUntil) {
+      await user.resetLoginAttempts();
     }
 
     // Update last login
@@ -156,6 +175,106 @@ class UserService {
       migratedSubscriptions: subsResult.modifiedCount,
     };
   }
-}
 
-export default UserService;
+  /**
+   * Verify user email with token
+   */
+  static async verifyUserEmail(token) {
+    if (!token?.trim()) {
+      throw new Error("Verification token is required");
+    }
+
+    const hashedToken = hashToken(token);
+
+    // Find user with valid token
+    const user = await User.findOne({
+      emailVerificationToken: hashedToken,
+      emailVerificationExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      const error = new Error(
+        "Token xác thực không hợp lệ hoặc đã hết hạn"
+      );
+      error.status = 400;
+      error.code = "INVALID_VERIFICATION_TOKEN";
+      throw error;
+    }
+
+    // Mark email as verified and clear token
+    user.isEmailVerified = true;
+    user.emailVerificationToken = undefined;
+    user.emailVerificationExpires = undefined;
+    await user.save();
+
+    return user;
+  }
+
+  /**
+   * Initiate password reset - Generate token
+   */
+  static async initiatePasswordReset(email) {
+    if (!email?.trim()) {
+      throw new Error("Email is required");
+    }
+
+    const user = await User.findOne({
+      email: email.trim().toLowerCase(),
+    });
+
+    if (!user) {
+      // Don't reveal that user doesn't exist
+      // Return success to prevent email enumeration
+      return null;
+    }
+
+    // Generate reset token
+    const resetToken = user.createPasswordResetToken();
+    await user.save({ validateBeforeSave: false });
+
+    return { user, resetToken };
+  }
+
+  /**
+   * Reset password with token
+   */
+  static async resetPassword(token, newPassword) {
+    if (!token?.trim()) {
+      throw new Error("Reset token is required");
+    }
+    if (!newPassword) {
+      throw new Error("New password is required");
+    }
+    if (newPassword.length < 8) {
+      throw new Error("Password must be at least 8 characters long");
+    }
+
+    const hashedToken = hashToken(token);
+
+    // Find user with valid token
+    const user = await User.findOne({
+      passwordResetToken: hashedToken,
+      passwordResetExpires: { $gt: Date.now() },
+    }).select("+password");
+
+    if (!user) {
+      const error = new Error(
+        "Token đặt lại mật khẩu không hợp lệ hoặc đã hết hạn"
+      );
+      error.status = 400;
+      error.code = "INVALID_RESET_TOKEN";
+      throw error;
+    }
+
+    // Update password and clear token
+    user.password = newPassword;
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    // Also reset login attempts in case account was locked
+    user.loginAttempts = 0;
+    user.lockUntil = undefined;
+    await user.save();
+
+    return user;
+  }
+}

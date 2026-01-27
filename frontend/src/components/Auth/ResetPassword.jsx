@@ -1,47 +1,31 @@
 import { useState } from "react";
 import "../../styles/Auth.css";
 import { getErrorMessage } from "../../utils/errorMessages";
-import { validateConfirmPassword, validateEmail, validateName, validatePassword } from "../../utils/validators";
+import { validateConfirmPassword, validatePassword } from "../../utils/validators";
 import PasswordStrengthIndicator from "./PasswordStrengthIndicator";
 
-export default function Register({ onRegister, onSwitchToLogin, onGuestMode, loading }) {
+export default function ResetPassword({ token, onResetPassword, onBackToLogin, loading }) {
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
     password: "",
     confirmPassword: "",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
-    // Validation
-    const nameValidation = validateName(formData.name);
-    if (!nameValidation.valid) {
-      setError(nameValidation.error);
-      return;
-    }
-
-    if (!formData.email) {
-      setError("Vui lòng nhập email");
-      return;
-    }
-
-    if (!validateEmail(formData.email)) {
-      setError("Email không hợp lệ");
-      return;
-    }
-
+    // Validate password
     const passwordValidation = validatePassword(formData.password);
     if (!passwordValidation.valid) {
       setError(passwordValidation.errors[0]);
       return;
     }
 
+    // Validate confirm password
     const confirmValidation = validateConfirmPassword(
       formData.password,
       formData.confirmPassword
@@ -52,7 +36,8 @@ export default function Register({ onRegister, onSwitchToLogin, onGuestMode, loa
     }
 
     try {
-      await onRegister(formData.name, formData.email, formData.password);
+      await onResetPassword(token, formData.password);
+      setSuccess(true);
     } catch (err) {
       setError(getErrorMessage(err));
     }
@@ -66,53 +51,44 @@ export default function Register({ onRegister, onSwitchToLogin, onGuestMode, loa
     }));
   };
 
+  if (success) {
+    return (
+      <div className="auth-card">
+        <div className="auth-header">
+          <h1 className="auth-title">✓ Đặt lại mật khẩu thành công!</h1>
+        </div>
+
+        <div className="auth-success">
+          <p>Mật khẩu của bạn đã được đặt lại thành công.</p>
+          <p style={{ marginTop: "12px" }}>
+            Bạn có thể đăng nhập với mật khẩu mới ngay bây giờ.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          className="auth-button"
+          onClick={onBackToLogin}
+        >
+          Đăng nhập
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="auth-card">
       <div className="auth-header">
-        <h1 className="auth-title">Đăng ký</h1>
-        <p className="auth-subtitle">Tạo tài khoản mới để bắt đầu</p>
+        <h1 className="auth-title">Đặt lại mật khẩu</h1>
+        <p className="auth-subtitle">Nhập mật khẩu mới của bạn</p>
       </div>
 
       {error && <div className="auth-error">{error}</div>}
 
       <form className="auth-form" onSubmit={handleSubmit}>
         <div className="form-group">
-          <label className="form-label" htmlFor="name">
-            Họ và tên
-          </label>
-          <input
-            id="name"
-            name="name"
-            type="text"
-            className="form-input"
-            placeholder="Nguyễn Văn A"
-            value={formData.name}
-            onChange={handleChange}
-            disabled={loading}
-            autoComplete="name"
-          />
-        </div>
-
-        <div className="form-group">
-          <label className="form-label" htmlFor="email">
-            Email
-          </label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            className="form-input"
-            placeholder="your@email.com"
-            value={formData.email}
-            onChange={handleChange}
-            disabled={loading}
-            autoComplete="email"
-          />
-        </div>
-
-        <div className="form-group">
           <label className="form-label" htmlFor="password">
-            Mật khẩu
+            Mật khẩu mới
           </label>
           <div className="password-input-wrapper">
             <input
@@ -125,6 +101,7 @@ export default function Register({ onRegister, onSwitchToLogin, onGuestMode, loa
               onChange={handleChange}
               disabled={loading}
               autoComplete="new-password"
+              autoFocus
             />
             <button
               type="button"
@@ -166,24 +143,13 @@ export default function Register({ onRegister, onSwitchToLogin, onGuestMode, loa
         </div>
 
         <button type="submit" className="auth-button" disabled={loading}>
-          {loading ? "Đang đăng ký..." : "Đăng ký"}
-        </button>
-
-        <div className="auth-divider">hoặc</div>
-
-        <button
-          type="button"
-          className="auth-button secondary"
-          onClick={onGuestMode}
-          disabled={loading}
-        >
-          Tiếp tục với chế độ khách
+          {loading ? "Đang đặt lại..." : "Đặt lại mật khẩu"}
         </button>
       </form>
 
       <div className="auth-footer">
-        Đã có tài khoản?{" "}
-        <a className="auth-link" onClick={onSwitchToLogin}>
+        Nhớ mật khẩu rồi?{" "}
+        <a className="auth-link" onClick={onBackToLogin}>
           Đăng nhập
         </a>
       </div>

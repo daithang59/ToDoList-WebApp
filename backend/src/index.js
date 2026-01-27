@@ -1,6 +1,7 @@
 import process from "process";
 import createApp from "./app.js";
 import { connectDB } from "./config/db.js";
+import emailService from "./services/EmailService.js";
 import { startReminderScheduler } from "./services/reminderScheduler.js";
 
 const app = createApp();
@@ -18,7 +19,10 @@ console.log(
 console.log("");
 
 connectDB(process.env.MONGODB_URI)
-  .then(() => {
+  .then(async () => {
+    // Initialize email service
+    await emailService.initialize();
+
     app.listen(PORT, () => {
       console.log("✅ Server started successfully!");
       console.log(`🌐 Server running at: http://localhost:${PORT}`);

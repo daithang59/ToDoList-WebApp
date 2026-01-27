@@ -1,18 +1,38 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import "../../styles/Auth.css";
+import Toast from "../common/Toast";
+import ForgotPassword from "./ForgotPassword";
 import Login from "./Login";
 import Register from "./Register";
+import ResetPassword from "./ResetPassword";
 
 export default function AuthPage() {
-  const [isLogin, setIsLogin] = useState(true);
+  const [view, setView] = useState("login"); // login, register, forgot-password, reset-password
   const [loading, setLoading] = useState(false);
-  const { login, register, loginAsGuest } = useAuth();
+  const [toast, setToast] = useState(null);
+  const [searchParams] = useSearchParams();
+  const { login, register, loginAsGuest, sendPasswordReset, resetPassword } = useAuth();
 
-  const handleLogin = async (email, password, rememberMe) => {
+  // Handle email verification and password reset tokens from URL
+  useEffect(() => {
+    const token = searchParams.get("token");
+    const action = searchParams.get("action");
+
+    if (token && action === "reset-password") {
+      setView("reset-password");
+    }
+  }, [searchParams]);
+
+  const showToast = (message, type = "info") => {
+    setToast({ message, type });
+  };
+
+  const handleLogin = async (email, password) => {
     setLoading(true);
     try {
-      await login(email, password, rememberMe);
+      await login(email, password);
     } finally {
       setLoading(false);
     }
@@ -21,7 +41,10 @@ export default function AuthPage() {
   const handleRegister = async (name, email, password) => {
     setLoading(true);
     try {
-      await register(name, email, password);
+      const result = await register(name, email, password);
+      if (result.message) {
+        showToast(result.message, "success");
+      }
     } finally {
       setLoading(false);
     }
@@ -36,25 +59,74 @@ export default function AuthPage() {
     }
   };
 
+  const handleForgotPassword = async (email) => {
+    setLoading(true);
+    try {
+      const result = await sendPasswordReset(email);
+      return result;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResetPassword = async (token, password) => {
+    setLoading(true);
+    try {
+      const result = await resetPassword(token, password);
+      showToast(result.message, "success");
+      return result;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="auth-page">
       <div className="auth-container">
-        {isLogin ? (
+        {view === "login" && (
           <Login
             onLogin={handleLogin}
-            onSwitchToRegister={() => setIsLogin(false)}
-            onGuestMode={handleGuestMode}
-            loading={loading}
-          />
-        ) : (
-          <Register
-            onRegister={handleRegister}
-            onSwitchToLogin={() => setIsLogin(true)}
+            onSwitchToRegister={() => setView("register")}
+            onSwitchToForgotPassword={() => setView("forgot-password")}
             onGuestMode={handleGuestMode}
             loading={loading}
           />
         )}
+
+        {view === "register" && (
+          <Register
+            onRegister={handleRegister}
+            onSwitchToLogin={() => setView("login")}
+            onGuestMode={handleGuestMode}
+            loading={loading}
+          />
+        )}
+
+        {view === "forgot-password" && (
+          <ForgotPassword
+            onBackToLogin={() => setView("login")}
+            onSendReset={handleForgotPassword}
+            loading={loading}
+          />
+        )}
+
+        {view === "reset-password" && (
+          <ResetPassword
+            token={searchParams.get("token")}
+            onResetPassword={handleResetPassword}
+            onBackToLogin={() => setView("login")}
+            loading={loading}
+          />
+        )}
       </div>
+
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   );
 }

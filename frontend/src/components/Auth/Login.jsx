@@ -1,12 +1,14 @@
 import { useState } from "react";
 import "../../styles/Auth.css";
+import { getErrorMessage, getRetryAfter, isAccountLocked } from "../../utils/errorMessages";
+import { validateEmail } from "../../utils/validators";
 
-export default function Login({ onLogin, onSwitchToRegister, onGuestMode, loading }) {
+export default function Login({ onLogin, onSwitchToRegister, onSwitchToForgotPassword, onGuestMode, loading }) {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
-    rememberMe: false,
   });
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
 
   const handleSubmit = async (e) => {
@@ -18,18 +20,35 @@ export default function Login({ onLogin, onSwitchToRegister, onGuestMode, loadin
       return;
     }
 
+    if (!validateEmail(formData.email)) {
+      setError("Email không hợp lệ");
+      return;
+    }
+
     try {
-      await onLogin(formData.email, formData.password, formData.rememberMe);
+      await onLogin(formData.email, formData.password);
     } catch (err) {
-      setError(err.response?.data?.message || "Đăng nhập thất bại");
+      const errorMsg = getErrorMessage(err);
+      
+      // Add retry time for locked accounts
+      if (isAccountLocked(err)) {
+        const retryAfter = getRetryAfter(err);
+        if (retryAfter) {
+          setError(`${errorMsg} (Thử lại sau ${retryAfter} phút)`);
+        } else {
+          setError(errorMsg);
+        }
+      } else {
+        setError(errorMsg);
+      }
     }
   };
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? checked : value,
+      [name]: value,
     }));
   };
 
@@ -64,29 +83,36 @@ export default function Login({ onLogin, onSwitchToRegister, onGuestMode, loadin
           <label className="form-label" htmlFor="password">
             Mật khẩu
           </label>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            className="form-input"
-            placeholder="••••••••"
-            value={formData.password}
-            onChange={handleChange}
-            disabled={loading}
-            autoComplete="current-password"
-          />
+          <div className="password-input-wrapper">
+            <input
+              id="password"
+              name="password"
+              type={showPassword ? "text" : "password"}
+              className="form-input"
+              placeholder="••••••••"
+              value={formData.password}
+              onChange={handleChange}
+              disabled={loading}
+              autoComplete="current-password"
+            />
+            <button
+              type="button"
+              className="password-toggle"
+              onClick={() => setShowPassword(!showPassword)}
+              tabIndex={-1}
+            >
+              {showPassword ? "👁️" : "👁️‍🗨️"}
+            </button>
+          </div>
         </div>
 
-        <div className="form-checkbox">
-          <input
-            id="rememberMe"
-            name="rememberMe"
-            type="checkbox"
-            checked={formData.rememberMe}
-            onChange={handleChange}
-            disabled={loading}
-          />
-          <label htmlFor="rememberMe">Ghi nhớ đăng nhập</label>
+        <div className="form-actions">
+          <a
+            className="forgot-password-link"
+            onClick={onSwitchToForgotPassword}
+          >
+            Quên mật khẩu?
+          </a>
         </div>
 
         <button type="submit" className="auth-button" disabled={loading}>

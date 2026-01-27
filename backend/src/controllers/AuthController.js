@@ -1,9 +1,28 @@
-import jwt from "jsonwebtoken";
+import RefreshToken from "../models/RefreshToken.js";
+import emailService from "../services/EmailService.js";
 import UserService from "../services/UserService.js";
+import {
+    generateAccessToken,
+    generateRefreshToken,
+    getTokenExpiration,
+    verifyToken
+} from "../utils/jwtUtils.js";
 import BaseController from "./BaseController.js";
 
 const normalizeClientId = (value) =>
   typeof value === "string" ? value.trim() : "";
+
+/**
+ * Get client IP address from request
+ */
+function getClientIp(req) {
+  return (
+    req.headers["x-forwarded-for"]?.split(",")[0] ||
+    req.connection?.remoteAddress ||
+    req.socket?.remoteAddress ||
+    "unknown"
+  );
+}
 
 class AuthController extends BaseController {
   /**
@@ -18,28 +37,14 @@ class AuthController extends BaseController {
       return res.status(400).json({ message: "clientId is too long" });
     }
 
-    if (!process.env.JWT_SECRET) {
-      const error = new Error("JWT_SECRET is not configured");
-      error.status = 500;
-      throw error;
-    }
-
-    const expiresIn = process.env.JWT_EXPIRES_IN || "30d";
-    const token = jwt.sign(
-      { sub: clientId, role: "member" },
-      process.env.JWT_SECRET,
-      { expiresIn }
-    );
-
-    const decoded = jwt.decode(token);
-    const expiresAt =
-      decoded?.exp ? new Date(decoded.exp * 1000).toISOString() : null;
+    const token = generateAccessToken(clientId, "member");
+    const expiresAt = getTokenExpiration(token);
 
     res.json({
       token,
       tokenType: "Bearer",
-      expiresIn,
-      expiresAt,
+      expiresIn: process.env.JWT_ACCESS_EXPIRATION || "15m",
+      expiresAt: expiresAt?.toISOString(),
       ownerId: clientId,
     });
   });
@@ -53,30 +58,39 @@ class AuthController extends BaseController {
     // Create user
     const user = await UserService.createUser({ email, password, name });
 
-    // Generate JWT token for the new user
-    if (!process.env.JWT_SECRET) {
-      const error = new Error("JWT_SECRET is not configured");
-      error.status = 500;
-      throw error;
-    }
+    // Generate verification token and send email
+    const verificationToken = user.createEmailVerificationToken();
+    await user.save({ validateBeforeSave: false });
 
-    const expiresIn = process.env.JWT_EXPIRES_IN || "30d";
-    const token = jwt.sign(
-      { sub: user._id.toString(), role: "user" },
-      process.env.JWT_SECRET,
-      { expiresIn }
-    );
+    // Send verification email (don't wait for it)
+    emailService
+      .sendVerificationEmail(user, verificationToken)
+      .catch((error) => {
+        console.error("Failed to send verification email:", error);
+      });
 
-    const decoded = jwt.decode(token);
-    const expiresAt =
-      decoded?.exp ? new Date(decoded.exp * 1000).toISOString() : null;
+    // Generate tokens
+    const accessToken = generateAccessToken(user._id.toString(), "user");
+    const refreshToken = generateRefreshToken(user._id.toString());
+
+    // Save refresh token to database
+    const refreshExpiration = getTokenExpiration(refreshToken);
+    await RefreshToken.create({
+      userId: user._id,
+      token: refreshToken,
+      expiresAt: refreshExpiration,
+      createdByIp: getClientIp(req),
+    });
 
     res.status(201).json({
-      token,
+      accessToken,
+      refreshToken,
       tokenType: "Bearer",
-      expiresIn,
-      expiresAt,
+      expiresIn: process.env.JWT_ACCESS_EXPIRATION || "15m",
+      expiresAt: getTokenExpiration(accessToken)?.toISOString(),
       user: user.toJSON(),
+      message:
+        "Đăng ký thành công! Vui lòng kiểm tra email để xác thực tài khoản.",
     });
   });
 
@@ -84,38 +98,218 @@ class AuthController extends BaseController {
    * Login with email and password
    */
   static login = BaseController.asyncHandler(async (req, res) => {
-    const { email, password, rememberMe } = req.body;
+    const { email, password } = req.body;
 
     // Authenticate user
     const user = await UserService.authenticateUser(email, password);
 
-    // Generate JWT token
-    if (!process.env.JWT_SECRET) {
-      const error = new Error("JWT_SECRET is not configured");
-      error.status = 500;
-      throw error;
-    }
+    // Generate tokens
+    const accessToken = generateAccessToken(user._id.toString(), "user");
+    const refreshToken = generateRefreshToken(user._id.toString());
 
-    // Set expiration based on rememberMe option
-    const expiresIn = rememberMe ? "90d" : process.env.JWT_EXPIRES_IN || "30d";
-    const token = jwt.sign(
-      { sub: user._id.toString(), role: "user" },
-      process.env.JWT_SECRET,
-      { expiresIn }
-    );
-
-    const decoded = jwt.decode(token);
-    const expiresAt =
-      decoded?.exp ? new Date(decoded.exp * 1000).toISOString() : null;
+    // Save refresh token to database
+    const refreshExpiration = getTokenExpiration(refreshToken);
+    await RefreshToken.create({
+      userId: user._id,
+      token: refreshToken,
+      expiresAt: refreshExpiration,
+      createdByIp: getClientIp(req),
+    });
 
     res.json({
-      token,
+      accessToken,
+      refreshToken,
       tokenType: "Bearer",
-      expiresIn,
-      expiresAt,
+      expiresIn: process.env.JWT_ACCESS_EXPIRATION || "15m",
+      expiresAt: getTokenExpiration(accessToken)?.toISOString(),
       user: user.toJSON(),
     });
   });
+
+  /**
+   * Refresh access token using refresh token
+   */
+  static refreshToken = BaseController.asyncHandler(async (req, res) => {
+    const { refreshToken: token } = req.body;
+
+    if (!token) {
+      return res.status(400).json({ message: "Refresh token is required" });
+    }
+
+    // Verify token signature
+    let decoded;
+    try {
+      decoded = verifyToken(token, "refresh");
+    } catch (error) {
+      return res
+        .status(401)
+        .json({ message: "Invalid or expired refresh token" });
+    }
+
+    // Check if token exists in database and is active
+    const refreshToken = await RefreshToken.findActiveToken(token);
+
+    if (!refreshToken) {
+      return res.status(401).json({
+        message: "Refresh token is invalid or has been revoked",
+      });
+    }
+
+    // Generate new access token
+    const accessToken = generateAccessToken(decoded.sub, "user");
+
+    // Optionally: Implement refresh token rotation
+    // Generate new refresh token and revoke old one
+    const newRefreshToken = generateRefreshToken(decoded.sub);
+    const newRefreshExpiration = getTokenExpiration(newRefreshToken);
+
+    // Revoke old token
+    refreshToken.revoke(getClientIp(req), newRefreshToken);
+    await refreshToken.save();
+
+    // Create new refresh token
+    await RefreshToken.create({
+      userId: decoded.sub,
+      token: newRefreshToken,
+      expiresAt: newRefreshExpiration,
+      createdByIp: getClientIp(req),
+    });
+
+    res.json({
+      accessToken,
+      refreshToken: newRefreshToken,
+      tokenType: "Bearer",
+      expiresIn: process.env.JWT_ACCESS_EXPIRATION || "15m",
+      expiresAt: getTokenExpiration(accessToken)?.toISOString(),
+    });
+  });
+
+  /**
+   * Logout - Revoke refresh token
+   */
+  static logout = BaseController.asyncHandler(async (req, res) => {
+    const { refreshToken: token } = req.body;
+
+    if (!token) {
+      return res.status(400).json({ message: "Refresh token is required" });
+    }
+
+    // Find and revoke token
+    const refreshToken = await RefreshToken.findOne({ token });
+
+    if (refreshToken && !refreshToken.revokedAt) {
+      refreshToken.revoke(getClientIp(req));
+      await refreshToken.save();
+    }
+
+    res.json({ message: "Đăng xuất thành công" });
+  });
+
+  /**
+   * Forgot password - Send reset email
+   */
+  static forgotPassword = BaseController.asyncHandler(async (req, res) => {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    const result = await UserService.initiatePasswordReset(email);
+
+    // Always return success to prevent email enumeration
+    if (result) {
+      // Send email (don't wait for it)
+      emailService
+        .sendPasswordResetEmail(result.user, result.resetToken)
+        .catch((error) => {
+          console.error("Failed to send password reset email:", error);
+        });
+    }
+
+    res.json({
+      message:
+        "Nếu email tồn tại trong hệ thống, bạn sẽ nhận được hướng dẫn đặt lại mật khẩu.",
+    });
+  });
+
+  /**
+   * Reset password with token
+   */
+  static resetPassword = BaseController.asyncHandler(async (req, res) => {
+    const { token, password } = req.body;
+
+    if (!token || !password) {
+      return res
+        .status(400)
+        .json({ message: "Token and new password are required" });
+    }
+
+    const user = await UserService.resetPassword(token, password);
+
+    // Revoke all existing refresh tokens for security
+    await RefreshToken.revokeAllForUser(
+      user._id.toString(),
+      getClientIp(req)
+    );
+
+    // Send confirmation email
+    emailService.sendPasswordChangedEmail(user).catch((error) => {
+      console.error("Failed to send password changed email:", error);
+    });
+
+    res.json({
+      message: "Mật khẩu đã được đặt lại thành công. Vui lòng đăng nhập lại.",
+    });
+  });
+
+  /**
+   * Verify email with token
+   */
+  static verifyEmail = BaseController.asyncHandler(async (req, res) => {
+    const { token } = req.body;
+
+    if (!token) {
+      return res.status(400).json({ message: "Verification token is required" });
+    }
+
+    const user = await UserService.verifyUserEmail(token);
+
+    res.json({
+      message: "Email đã được xác thực thành công!",
+      user: user.toJSON(),
+    });
+  });
+
+  /**
+   * Resend verification email
+   */
+  static resendVerificationEmail = BaseController.asyncHandler(
+    async (req, res) => {
+      const userId = req.user?.id;
+
+      if (!userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const user = await UserService.getUserById(userId);
+
+      if (user.isEmailVerified) {
+        return res.status(400).json({ message: "Email đã được xác thực rồi" });
+      }
+
+      // Generate new verification token
+      const verificationToken = user.createEmailVerificationToken();
+      await user.save({ validateBeforeSave: false });
+
+      // Send verification email
+      await emailService.sendVerificationEmail(user, verificationToken);
+
+      res.json({
+        message: "Email xác thực đã được gửi lại. Vui lòng kiểm tra hộp thư.",
+      });
+    }
+  );
 
   /**
    * Get current authenticated user
@@ -129,7 +323,9 @@ class AuthController extends BaseController {
 
     // Check if user is authenticated (not guest)
     if (req.user?.role !== "user") {
-      return res.status(401).json({ message: "Guest users cannot access user profile" });
+      return res
+        .status(401)
+        .json({ message: "Guest users cannot access user profile" });
     }
 
     const user = await UserService.getUserById(userId);
@@ -149,14 +345,19 @@ class AuthController extends BaseController {
 
     // Check if user is authenticated (not guest)
     if (req.user?.role !== "user") {
-      return res.status(401).json({ message: "Only authenticated users can migrate data" });
+      return res
+        .status(401)
+        .json({ message: "Only authenticated users can migrate data" });
     }
 
     if (!guestOwnerId?.trim()) {
       return res.status(400).json({ message: "guestOwnerId is required" });
     }
 
-    const result = await UserService.migrateGuestData(userId, guestOwnerId.trim());
+    const result = await UserService.migrateGuestData(
+      userId,
+      guestOwnerId.trim()
+    );
 
     res.json({
       message: "Guest data migrated successfully",
@@ -166,4 +367,3 @@ class AuthController extends BaseController {
 }
 
 export default AuthController;
-
